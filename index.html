@@ -2078,7 +2078,7 @@
                 btn1.className = 'bg-purple-600 hover:bg-purple-500 text-white p-2 rounded-full shadow-md transition';
                 btn1.innerHTML = '<i data-lucide="graduation-cap" class="w-5 h-5"></i>';
                 btn1.title = 'Entrenamiento Avanzado';
-                btn1.onclick = () => alert('Próximamente: Módulo de práctica');
+               btn1.onclick = () => window.dispatchEvent(new Event('toggleAdvancedModal'));
                 const btn2 = document.createElement('button');
                 btn2.className = 'bg-amber-600 hover:bg-amber-500 text-white p-2 rounded-full shadow-md transition';
                 btn2.innerHTML = '<i data-lucide="headphones" class="w-5 h-5"></i>';
