@@ -238,29 +238,17 @@
           const [customVocabLessons, setCustomVocabLessons] = useState([]);
           const [vocabTitleInput, setVocabTitleInput] = useState("");
           const [vocabTextInput, setVocabTextInput] = useState("");
-        // --- FUNCIÓN DE RANGO MÜLLER (Ponla justo ANTES de la función App) ---
-const getUserRank = (xp) => {
-    if (xp < 500) return "🥔 Kartoffel";
-    if (xp < 2000) return "🍺 Bier-Trinker";
-    if (xp < 5000) return "🎓 Grammatik-Meister";
-    return "👑 Echter Müller";
-};
-
-// --- DENTRO DE App() ---
-const [userStats, setUserStats] = useState({
-    username: "Estudiante", isPremium: true,
-    xp: 0, streakDays: 1, lastPlayedDate: new Date().toISOString().split('T')[0],
-    coins: 150, hearts: 5, 
-    diktatAttempts: 0, diktatCorrect: 0,
-    pronunciationTotalScore: 0, pronunciationAttempts: 0,
-    difficultVocab: [], normalVocab: [], 
-    difficultGrammar: [], 
-    failedDiktatScenes: [],
-    failedArticles: {}, // 🔴 NUEVO: Para el Muro de la Vergüenza
-    activityLog: [40, 60, 45, 80, 55, 90, 75] 
-});
-
-          const [isStressMode, setIsStressMode] = useState(false); // 🔴 NUEVO: Modo Reloj
+          const [userStats, setUserStats] = useState({
+              username: "Estudiante", isPremium: true,
+              xp: 0, streakDays: 1, lastPlayedDate: new Date().toISOString().split('T')[0],
+              coins: 150, hearts: 5, 
+              diktatAttempts: 0, diktatCorrect: 0,
+              pronunciationTotalScore: 0, pronunciationAttempts: 0,
+              difficultVocab: [], normalVocab: [], 
+              difficultGrammar: [], 
+              failedDiktatScenes: [],
+              activityLog: [40, 60, 45, 80, 55, 90, 75] 
+          });
           const [vocabReviewIndex, setVocabReviewIndex] = useState(0);
           const [showVocabTranslation, setShowVocabTranslation] = useState(false);
           const [currentVocabList, setCurrentVocabList] = useState([]); 
@@ -2009,12 +1997,10 @@ function ArticlePracticeFinal({ onBack }) {
         setFeedback(null);
     };
 
-const check = (guess) => {
+    const check = (guess) => {
         if (queue.length === 0) return;
         const current = queue[0];
-        const parts = current.de.split(' ');
-        const correct = parts[0].toLowerCase();
-        const noun = parts.slice(1).join(' '); // Extrae el sustantivo sin el artículo
+        const correct = current.de.split(' ')[0].toLowerCase();
 
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(current.de);
@@ -2025,21 +2011,8 @@ const check = (guess) => {
             setFeedback({ type: 'success', text: `¡Richtig! 🟢 ${current.de}` });
         } else {
             setFeedback({ type: 'error', text: `⚠️ FALSCH! Era: ${current.de}` });
-            
-            // --- Lógica del Muro de la Vergüenza ---
-            try {
-                const stats = JSON.parse(localStorage.getItem('mullerStats') || '{}');
-                if (!stats.failedArticles) stats.failedArticles = {};
-                
-                // Incrementa el contador de fallos para este sustantivo específico
-                stats.failedArticles[noun] = (stats.failedArticles[noun] || 0) + 1;
-                
-                localStorage.setItem('mullerStats', JSON.stringify(stats));
-            } catch (e) {
-                console.warn("Error guardando en el Muro de la Vergüenza:", e);
-            }
         }
-    };-- Aquí termina la función check correctamente
+    };
 
     if (!mode) return (
         <div className="flex flex-col items-center justify-center p-4 h-full w-full max-w-4xl mx-auto animate-in fade-in">
