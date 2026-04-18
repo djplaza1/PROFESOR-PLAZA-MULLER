@@ -1984,25 +1984,27 @@ function CloudPracticeFinal({ onBack, type }) {
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
-        // CONEXIÓN GITHUB GIST - TU URL REAL ESTÁ AQUÍ
+        // 🔗 URL PERMANENTE (Siempre apunta a la última versión)
         const GIST_URL = type === 'verbos' 
-            ? "https://gist.githubusercontent.com/djplaza1/142845d2f0fb5a0b2b86e28fbf308809/raw/c713f448a680c28c1a73219a43dc5544cd76b4fa/verbos_con_preposiciones.json" 
-            : "URL_RAW_DE_TU_GIST_DE_PREPOSICIONES"; // Preparado para el futuro
+            ? "https://gist.githubusercontent.com/djplaza1/142845d2f0fb5a0b2b86e28fbf308809/raw/verbos_con_preposiciones.json" 
+            : "URL_RAW_DE_TU_GIST_DE_PREPOSICIONES";
 
-        // Fallback de emergencia
-        const fallback = type === 'verbos' 
-            ? [{ de: "Wir warten ___ den Bus.", answer: "auf", prepCase: "Akk", es: "Esperamos al autobús." }]
-            : [{ de: "Das Bild hängt an ___ Wand (die).", answer: "der", prepCase: "Dat", es: "El cuadro cuelga en la pared." }];
+        const fallback = [{ de: "Wir warten ___ den Bus.", answer: "auf", prepCase: "Akk", es: "Esperamos al autobús." }];
 
-        if (GIST_URL.includes("URL_RAW")) {
-            setQueue(fallback.sort(() => Math.random() - 0.5));
-            setLoading(false);
-        } else {
-            fetch(GIST_URL)
-                .then(res => res.json())
-                .then(data => { setQueue(data.sort(() => Math.random() - 0.5)); setLoading(false); })
-                .catch(() => { setQueue(fallback); setLoading(false); });
-        }
+        setLoading(true);
+        fetch(GIST_URL + "?nocache=" + new Date().getTime()) // 🚀 Anti-Cache para actualizar al instante
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(data => { 
+                setQueue(data.sort(() => Math.random() - 0.5)); 
+                setLoading(false); 
+            })
+            .catch(() => { 
+                setQueue(fallback); 
+                setLoading(false); 
+            });
     }, [type]);
 
     const check = (guess) => {
@@ -2016,44 +2018,51 @@ function CloudPracticeFinal({ onBack, type }) {
 
         if (guess === current.answer) {
             setFeedback({ type: 'success', text: `¡Richtig! Rige ${current.prepCase}` });
-            setTimeout(() => { setQueue(prev => prev.slice(1)); setFeedback(null); }, 1500);
+            setTimeout(() => { setQueue(prev => prev.slice(1)); setFeedback(null); }, 1200);
         } else {
-            setFeedback({ type: 'error', text: `⚠️ PELIGRO: Exige '${current.answer}'` });
-            setTimeout(() => { setQueue(prev => [...prev.slice(1), prev[0]]); setFeedback(null); }, 2500);
+            setFeedback({ type: 'error', text: `⚠️ FALSCH: Exige '${current.answer}' (${current.prepCase})` });
+            setTimeout(() => { setQueue(prev => [...prev.slice(1), prev[0]]); setFeedback(null); }, 2200);
         }
     };
 
-    if (loading) return <div className="text-center mt-10 text-white font-bold text-xl">Conectando con GitHub...</div>;
-    if (queue.length === 0) return <div className="flex flex-col items-center justify-center h-full p-4"><button onClick={onBack} className="absolute top-4 left-4 bg-gray-800 p-2 rounded text-white hover:bg-gray-700">⬅ Volver</button><h2 className="text-3xl font-bold text-green-400">¡Completado! 🏆</h2></div>;
+    if (loading) return <div className="flex items-center justify-center h-full"><div className="text-white text-2xl font-bold animate-pulse">📡 Cargando base de datos Müller...</div></div>;
+    
+    if (queue.length === 0) return (
+        <div className="flex flex-col items-center justify-center h-full p-4">
+            <button onClick={onBack} className="absolute top-4 left-4 bg-gray-800 p-2 rounded text-white">⬅ Volver</button>
+            <h2 className="text-3xl font-bold text-green-400">¡Pack Completado! 🏆</h2>
+        </div>
+    );
 
     const current = queue[0];
-    
-    // TODAS TUS PREPOSICIONES ESTÁN AQUÍ
     const options = type === 'verbos' 
-        ? ['für', 'auf', 'an', 'von', 'über', 'mit', 'um', 'zu', 'vor', 'nach', 'in'] 
+        ? ['für', 'auf', 'an', 'von', 'über', 'mit', 'um', 'zu', 'vor', 'nach', 'in', 'bei', 'aus', 'durch', 'ohne', 'am', 'im', 'ins', 'zur', 'zum', 'dem', 'der', 'das', 'den', 'die', 'einem', 'einer'] 
         : ['den', 'dem', 'die', 'der', 'das', 'des'];
 
     return (
         <div className="flex flex-col items-center justify-center p-4 animate-in fade-in h-full">
             <button onClick={onBack} className="absolute top-4 left-4 bg-gray-800 p-2 rounded text-gray-300 hover:text-white">⬅ Volver</button>
-            <h2 className="text-3xl font-bold mb-8 text-amber-300">{type === 'verbos' ? 'Verbos + Prep' : 'Preposiciones'}</h2>
-            
-            <div className="bg-slate-800 p-8 rounded-2xl shadow-2xl text-center max-w-2xl w-full border border-slate-700">
-                <p className="text-gray-400 mb-2">{current.es}</p>
-                <h3 className="text-3xl font-bold text-white mb-8">{current.de.replace('___', '_____')}</h3>
+            <div className="bg-slate-800 p-8 rounded-2xl shadow-2xl text-center max-w-4xl w-full border border-slate-700">
+                <p className="text-blue-400 font-bold mb-2 text-lg uppercase tracking-widest">{current.prepCase}</p>
+                <h3 className="text-4xl font-bold text-white mb-4 leading-tight">{current.de.replace('___', '_____')}</h3>
+                <p className="text-gray-400 mb-8 text-xl italic">{current.es}</p>
                 
                 {!feedback ? (
-                    <div className="flex flex-wrap justify-center gap-3">
-                        {options.map(p => (
-                            <button key={p} onClick={() => check(p)} className="bg-gray-700 hover:bg-amber-600 py-3 px-6 rounded-lg font-bold text-xl transition min-w-[80px]">{p}</button>
+                    <div className="flex flex-wrap justify-center gap-2">
+                        {options.filter(o => {
+                            // Mostrar solo opciones relevantes para no saturar la pantalla
+                            const relevant = [current.answer, 'für', 'auf', 'an', 'von', 'über', 'mit', 'um', 'zu', 'vor', 'nach', 'in'];
+                            return relevant.includes(o) || o.length > 3;
+                        }).map(p => (
+                            <button key={p} onClick={() => check(p)} className="bg-gray-700 hover:bg-amber-600 py-3 px-5 rounded-lg font-bold text-lg transition min-w-[70px]">{p}</button>
                         ))}
                     </div>
                 ) : (
-                    <div className={`p-4 rounded-xl font-bold text-2xl animate-in zoom-in ${feedback.type === 'error' ? 'bg-red-900 text-red-200 border border-red-500' : 'bg-green-900 text-green-200 border border-green-500'}`}>
+                    <div className={`p-6 rounded-xl font-bold text-2xl animate-in zoom-in ${feedback.type === 'error' ? 'bg-red-900 text-red-100 border-2 border-red-500' : 'bg-green-900 text-green-100 border-2 border-green-500'}`}>
                         {feedback.text}
                     </div>
                 )}
-                <p className="text-gray-500 text-sm mt-6 font-bold">Faltan: {queue.length}</p>
+                <p className="text-gray-500 text-sm mt-8 font-bold">Tarjetas restantes en este mazo: {queue.length}</p>
             </div>
         </div>
     );
