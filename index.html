@@ -292,6 +292,9 @@
           const [showVocabMixModal, setShowVocabMixModal] = useState(false);
           const [mixLessonSelection, setMixLessonSelection] = useState({});
           const [mullerProgresoSnapshot, setMullerProgresoSnapshot] = useState(null);
+          const [audiobookPlaying, setAudiobookPlaying] = useState(false);
+          const [shadowRate, setShadowRate] = useState(0.88);
+          const [shadowShowText, setShadowShowText] = useState(true);
 
           const isPlayingRef = useRef(false);
           const timeoutRef = useRef(null);
@@ -302,6 +305,12 @@
           const noiseGainRef = useRef(null);
 
           useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
+
+          useEffect(() => {
+              const onAb = (e) => setAudiobookPlaying(!!e.detail?.playing);
+              window.addEventListener('mullerAudiobookState', onAb);
+              return () => window.removeEventListener('mullerAudiobookState', onAb);
+          }, []);
 
           // Cargar datos guardados
           useEffect(() => {
@@ -315,6 +324,10 @@
           }, []);
 
           useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+          useEffect(() => {
+              window.__MULLER_ACTIVE_GUION__ = guionData;
+          }, [guionData]);
 
           const saveProgress = (newStatsUpdates) => {
               const mergedStats = { ...userStats, ...newStatsUpdates, lastPlayedDate: new Date().toISOString().split('T')[0] };
@@ -1108,6 +1121,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               if (activeTab === 'vocabulario') return 'bg-amber-950/70'; // Suavizado
               if (activeTab === 'b1meister' || activeTab === 'b2ausblick') return 'bg-slate-900'; // Suavizado
               if (activeTab === 'storybuilder') return 'bg-indigo-950'; // Suavizado
+              if (activeTab === 'shadowing') return 'bg-violet-950/90';
               if (fluesternMode) return 'bg-zinc-900 filter contrast-125 sepia-50'; 
               if (isReviewing || practiceActive) return 'bg-gray-900'; // Suavizado
               const speaker = guionData[getActualSceneIndex()]?.speaker;
@@ -1182,12 +1196,22 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               <div className="w-full bg-gradient-to-b from-zinc-900/95 via-black/90 to-black/95 backdrop-blur-xl border-b border-white/[0.07] shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-2 md:p-3 flex flex-col md:flex-row gap-2 md:gap-3 justify-between items-center z-20">
                   <div className="flex gap-1 md:gap-2 bg-zinc-950/80 p-1 rounded-xl ring-1 ring-white/[0.06] w-full md:w-auto overflow-x-auto hide-scrollbar">
                       <button onClick={()=>{setActiveTab('historia'); setMode('dialogue'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'historia' ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.35)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="play" className="w-3 h-3 md:w-4 md:h-4" /> Historia</button>
+                      <button onClick={()=>{setActiveTab('shadowing'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'shadowing' ? 'bg-violet-600 text-white shadow-[0_0_18px_rgba(124,58,237,0.45)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="audio-lines" className="w-3 h-3 md:w-4 md:h-4" /> Shadowing</button>
                       <button onClick={()=>{setActiveTab('vocabulario'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'vocabulario' ? 'bg-amber-600 text-white shadow-[0_0_20px_rgba(217,119,6,0.35)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="book-open" className="w-3 h-3 md:w-4 md:h-4" /> Vocab</button>
                       <button onClick={()=>{setActiveTab('b1meister'); stopAudio(); setPracticeActive(null); setBxCategory('mix');}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'b1meister' ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.8)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="target" className="w-3 h-3 md:w-4 md:h-4" /> B1</button>
                       <button onClick={()=>{setActiveTab('b2ausblick'); stopAudio(); setPracticeActive(null); setBxCategory('mix');}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'b2ausblick' ? 'bg-sky-600 text-white shadow-[0_0_15px_rgba(2,132,199,0.8)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="layers" className="w-3 h-3 md:w-4 md:h-4" /> B2</button>
                       <button onClick={()=>{setActiveTab('progreso'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'progreso' ? 'bg-yellow-600 text-white shadow-[0_0_18px_rgba(202,138,4,0.35)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="bar-chart" className="w-3 h-3 md:w-4 md:h-4" /> Progreso</button>
                       <button onClick={()=>{setActiveTab('guiones'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'guiones' ? 'bg-purple-600 text-white shadow-[0_0_18px_rgba(147,51,234,0.4)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="file-text" className="w-3 h-3 md:w-4 md:h-4" /> Biblioteca</button>
                       <button onClick={()=>{setActiveTab('storybuilder'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'storybuilder' ? 'bg-fuchsia-600 text-white shadow-[0_0_18px_rgba(192,38,211,0.4)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="sparkles" className="w-3 h-3 md:w-4 md:h-4" /> IA</button>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                      <button type="button" onClick={() => window.dispatchEvent(new Event('toggleAdvancedModal'))} className="bg-gradient-to-br from-fuchsia-600 to-purple-900 hover:from-fuchsia-500 hover:to-purple-800 text-white p-2 rounded-full shadow-lg ring-2 ring-white/15 transition" title="Entrenamiento avanzado (artículos, verbos, prep.)">
+                          <Icon name="graduation-cap" className="w-5 h-5" />
+                      </button>
+                      <button type="button" onClick={() => { if (window.__mullerAudiobook) window.__mullerAudiobook.toggle(); }} className={`p-2 rounded-full shadow-lg ring-2 ring-white/15 transition text-white ${audiobookPlaying ? 'bg-red-600 hover:bg-red-500' : 'bg-gradient-to-br from-amber-500 to-orange-800 hover:from-amber-400 hover:to-orange-700'}`} title={audiobookPlaying ? 'Detener audiolibro' : 'Audiolibro: reproduce todo el guión'}>
+                          <Icon name={audiobookPlaying ? 'square' : 'headphones'} className="w-5 h-5" />
+                      </button>
                   </div>
                   
                   <div className="flex items-center gap-2 md:gap-3 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 justify-end">
@@ -1585,6 +1609,70 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                               </div>
                           )}
                           {showHandwriting && <HandwritingPad onClose={() => setShowHandwriting(false)} />}
+                      </div>
+                  )}
+
+                  {activeTab === 'shadowing' && !practiceActive && (
+                      <div className="flex-1 flex flex-col p-4 md:p-8 max-w-3xl mx-auto w-full animate-in fade-in duration-500 overflow-y-auto">
+                          <h1 className="text-2xl md:text-4xl font-black text-violet-200 mb-2 flex items-center gap-2 md:gap-3">
+                              <Icon name="audio-lines" className="w-8 h-8 md:w-10 md:h-10" /> Shadowing
+                          </h1>
+                          <p className="text-violet-100/85 text-sm md:text-base mb-6 leading-relaxed">
+                              Escucha el modelo en alemán (voz del sistema), luego repite en voz alta siguiendo el ritmo y la entonación. Es la técnica de <strong className="text-white">shadowing</strong> para ganar fluidez y pronunciación tipo TELC.
+                          </p>
+                          {guionData.length === 0 ? (
+                              <p className="text-gray-400 text-center py-12">No hay guion cargado. Abre <strong>Biblioteca</strong> y carga un guion.</p>
+                          ) : (
+                              <>
+                                  {(() => {
+                                      const si = Math.min(Math.max(0, sceneIndex), guionData.length - 1);
+                                      const scene = guionData[si];
+                                      const playModel = () => {
+                                          if (!scene?.text) return;
+                                          window.speechSynthesis.cancel();
+                                          const u = new SpeechSynthesisUtterance(scene.text);
+                                          u.lang = 'de-DE';
+                                          u.rate = Math.min(1.15, Math.max(0.65, shadowRate));
+                                          window.speechSynthesis.speak(u);
+                                      };
+                                      return (
+                                          <>
+                                              <div className="bg-black/45 border border-violet-500/35 rounded-2xl p-4 md:p-6 mb-4 shadow-inner">
+                                                  <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest mb-2">Escena {si + 1} / {guionData.length} · {scene?.speaker || '—'}</p>
+                                                  {shadowShowText ? (
+                                                      <p className="text-xl md:text-2xl text-white font-medium leading-relaxed">{scene?.text}</p>
+                                                  ) : (
+                                                      <p className="text-gray-500 italic text-lg">Texto oculto — escucha el modelo y repite de memoria (shadowing ciego).</p>
+                                                  )}
+                                                  {shadowShowText && scene?.translation && (
+                                                      <p className="text-gray-400 mt-3 text-sm italic border-t border-white/10 pt-3">({scene.translation})</p>
+                                                  )}
+                                              </div>
+                                              <div className="flex flex-wrap gap-2 mb-4 items-center">
+                                                  <span className="text-xs text-gray-400 w-full sm:w-auto">Velocidad del modelo:</span>
+                                                  {[0.75, 0.88, 1].map((r) => (
+                                                      <button key={r} type="button" onClick={() => setShadowRate(r)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${shadowRate === r ? 'bg-violet-600 text-white ring-1 ring-white/25' : 'bg-gray-800/90 text-gray-300 hover:bg-gray-700'}`}>{r === 0.75 ? 'Lenta' : r === 0.88 ? 'Media' : 'Normal'}</button>
+                                                  ))}
+                                                  <button type="button" onClick={() => setShadowShowText(!shadowShowText)} className="ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-amber-100 border border-amber-700/40 hover:bg-gray-700">{shadowShowText ? 'Ocultar texto' : 'Mostrar texto'}</button>
+                                              </div>
+                                              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                                                  <button type="button" onClick={playModel} className="flex-1 bg-violet-600 hover:bg-violet-500 text-white py-4 rounded-xl font-black flex items-center justify-center gap-2 shadow-lg transition">
+                                                      <Icon name="volume-2" className="w-5 h-5" /> Escuchar modelo
+                                                  </button>
+                                                  <button type="button" onClick={playModel} className="flex-1 bg-violet-900/85 hover:bg-violet-800 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 border border-violet-500/30 transition">
+                                                      <Icon name="repeat" className="w-5 h-5" /> Repetir audio
+                                                  </button>
+                                              </div>
+                                              <p className="text-center text-gray-500 text-xs mb-5">Después de escuchar: habla al mismo tiempo o justo después; prioriza fluidez, no perfección.</p>
+                                              <div className="flex gap-3 justify-center flex-wrap">
+                                                  <button type="button" disabled={si <= 0} onClick={() => setSceneIndex((s) => Math.max(0, s - 1))} className="px-5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold disabled:opacity-30 disabled:pointer-events-none">← Anterior</button>
+                                                  <button type="button" disabled={si >= guionData.length - 1} onClick={() => setSceneIndex((s) => Math.min(guionData.length - 1, s + 1))} className="px-5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold disabled:opacity-30 disabled:pointer-events-none">Siguiente →</button>
+                                              </div>
+                                          </>
+                                      );
+                                  })()}
+                              </>
+                          )}
                       </div>
                   )}
 
@@ -3156,69 +3244,36 @@ function AdvancedPracticePanelFinal() {
 
 // ============================================================================
 
-// ============================================================================
-// -------------------- INYECCIÓN DE BOTONES (morado y naranja) --------------------
-setTimeout(() => {
-    const injectButtons = () => {
-        const bar = document.querySelector('.bg-gray-950.p-3.md\\:p-6.flex.flex-col.sm\\:flex-row');
-        if (!bar) return false;
-        if (document.getElementById('injected-advanced-btn')) return true;
-        const container = document.createElement('div');
-        container.className = 'flex items-center gap-2 mr-3';
-        container.id = 'injected-advanced-btn';
-        
-        // Botón morado (entrenamiento avanzado)
-        const btn1 = document.createElement('button');
-        btn1.className = 'bg-gradient-to-br from-fuchsia-600 to-purple-900 hover:from-fuchsia-500 hover:to-purple-800 text-white p-2 rounded-full shadow-lg ring-2 ring-white/15 transition';
-        btn1.innerHTML = '<i data-lucide="graduation-cap" class="w-5 h-5"></i>';
-        btn1.title = 'Entrenamiento Avanzado';
-        btn1.onclick = () => window.dispatchEvent(new Event('toggleAdvancedModal'));
-        
-        // Botón naranja (audiolibro real)
-        const btn2 = document.createElement('button');
-        btn2.className = 'bg-gradient-to-br from-amber-500 to-orange-800 hover:from-amber-400 hover:to-orange-700 text-white p-2 rounded-full shadow-lg ring-2 ring-white/15 transition';
-        btn2.innerHTML = '<i data-lucide="headphones" class="w-5 h-5"></i>';
-        btn2.title = 'Modo Audiolibro (reproduce toda la historia)';
-        btn2.id = 'audiobook-real-btn';
-        
-        container.appendChild(btn1);
-        container.appendChild(btn2);
-        bar.insertBefore(container, bar.firstChild);
-        if (window.lucide) window.lucide.createIcons();
-        return true;
-    };
-    const tryInject = () => { if (!injectButtons()) setTimeout(tryInject, 500); };
-    tryInject();
-}, 500);
-
-// -------------------- IMPLEMENTACIÓN DEL MODO AUDIOLIBRO (REAL) --------------------
+// -------------------- MODO AUDIOLIBRO (guion TTS encadenado) — control desde React --------------------
 (function() {
     let isPlaying = false;
     let currentIdx = 0;
     let guionCache = null;
     let timeoutId = null;
-    let btnRef = null;
+
+    function dispatchPlaying(playing) {
+        window.dispatchEvent(new CustomEvent('mullerAudiobookState', { detail: { playing } }));
+    }
 
     function getCurrentGuion() {
-        // Prioridad: guion activo en la interfaz (si se puede obtener)
-        // Si no, el último guardado o el por defecto
+        const live = window.__MULLER_ACTIVE_GUION__;
+        if (Array.isArray(live) && live.length > 0) return live;
         const scripts = JSON.parse(localStorage.getItem('mullerScripts') || '[]');
         if (scripts.length > 0) {
             const last = scripts[scripts.length - 1];
-            try { return JSON.parse(last.data); } catch(e) {}
+            try { return JSON.parse(last.data); } catch (e) {}
         }
         return window.__DEFAULT_GUION__ || [];
     }
 
     function stopAudioBook() {
-        if (timeoutId) clearTimeout(timeoutId);
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+        }
         window.speechSynthesis.cancel();
         isPlaying = false;
-        if (btnRef) {
-            btnRef.style.backgroundColor = '#d97706';
-            btnRef.innerHTML = '<i data-lucide="headphones" class="w-5 h-5"></i>';
-            if (window.lucide) window.lucide.createIcons();
-        }
+        dispatchPlaying(false);
     }
 
     function playScene(index) {
@@ -3249,28 +3304,22 @@ setTimeout(() => {
         }
         stopAudioBook();
         isPlaying = true;
+        dispatchPlaying(true);
         playScene(0);
-        if (btnRef) {
-            btnRef.style.backgroundColor = '#ef4444';
-            btnRef.innerHTML = '<i data-lucide="square" class="w-5 h-5"></i>';
-            if (window.lucide) window.lucide.createIcons();
-        }
     }
 
-    // Esperar a que el botón naranja exista y asignarle la función
-    const waitForOrangeBtn = setInterval(() => {
-        const orangeBtn = document.querySelector('.bg-amber-600.hover\\:bg-amber-500.text-white.p-2.rounded-full');
-        if (orangeBtn && !orangeBtn.hasAttribute('data-audiobook-ready')) {
-            orangeBtn.setAttribute('data-audiobook-ready', 'true');
-            btnRef = orangeBtn;
-            orangeBtn.onclick = (e) => {
-                e.stopPropagation();
-                if (isPlaying) stopAudioBook();
-                else startAudioBook();
-            };
-            clearInterval(waitForOrangeBtn);
-        }
-    }, 500);
+    function toggleAudioBook() {
+        if (isPlaying) stopAudioBook();
+        else startAudioBook();
+    }
+
+    window.__mullerAudiobook = {
+        toggle: toggleAudioBook,
+        start: startAudioBook,
+        stop: stopAudioBook,
+        get playing() { return isPlaying; },
+        get currentIndex() { return currentIdx; }
+    };
 })();
     </script>
     <script>
