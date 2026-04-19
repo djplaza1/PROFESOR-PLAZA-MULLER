@@ -789,7 +789,8 @@
             practice_mazos: { title: 'Entrenamiento rápido (mazos)', what: 'Repasas tarjetas guardadas como difícil, normal o gramática: audio, revelar traducción, siguiente.', tips: ['No mires revelar hasta haber intentado recordar.', 'Haz lotes cortos varias veces al día.', 'Cuando vacíe un mazo, vuelve a Historia para añadir nuevas frases.'] },
             advanced_menu: { title: 'Entrenamiento avanzado (panel morado)', what: 'Práctica guiada de artículos, verbos con preposición, preposiciones puras, conectores y simulacro tipo examen con cronómetro.', tips: ['Empieza por la categoría con peor porcentaje en el dashboard.', 'El modo examen entrena gestión de tiempo, no solo aciertos.', 'Cierra sesiones cortas para fijar mejor.'] },
             advanced_exam: { title: 'Simulacro TELC (avanzado)', what: 'Cronómetro orientativo, pistas limitadas y mezcla de ítems según lo que elijas.', tips: ['Elige duración realista (20–30 min al principio).', 'Usa pistas solo cuando lleves bloqueado más de un minuto.', 'Al terminar, repasa solo los fallos en modo categoría.'] },
-            hub_centro: { title: 'Centro Müller', what: 'Voces del sistema, plan del día, resumen y atajos; complementa la barra inferior de sync.', tips: ['Configura voces antes de sesiones largas.', 'Esc para cerrar el panel.', 'Repite el tour si te pierdes.'] },
+            hub_centro: { title: 'Centro Müller', what: 'Voces del sistema, plan del día, resumen y atajos; complementa la barra inferior de sync.', tips: ['Configura voces antes de sesiones largas.', 'Pestaña “IA Chrome”: resumen local con Gemini Nano si tu Chrome lo permite.', 'Esc para cerrar el panel.', 'Repite el tour si te pierdes.'] },
+            hub_chrome_ai: { title: 'IA local (Chrome / Gemini Nano)', what: 'Usa la API Summarizer del navegador: el modelo se descarga en tu PC y el resumen se genera en local sin API key. Requiere Chrome de escritorio reciente y requisitos de hardware.', tips: ['Si no aparece la API, activa las funciones de IA en chrome://flags y reinicia.', 'Edge puede llevar APIs similares detrás de flags; Firefox/Safari no suelen soportarlo aún.', 'No sustituye un profesor: revisa los resúmenes.'] },
         };
 
         window.__MULLER_OPEN_EXERCISE_HELP = function (id) {
@@ -848,6 +849,10 @@
           const [bxImportText, setBxImportText] = useState('');
           const [bxImportSummary, setBxImportSummary] = useState('');
           const [bxMoveTargetCat, setBxMoveTargetCat] = useState('verbos');
+          const [chromeAiText, setChromeAiText] = useState('');
+          const [chromeAiOut, setChromeAiOut] = useState('');
+          const [chromeAiBusy, setChromeAiBusy] = useState(false);
+          const [chromeAiLine, setChromeAiLine] = useState('');
           const bxEffectiveDatabases = useMemo(() => mergeBxDatabases(bxRemoteDatabases || BX_DB_FALLBACK, bxUserOverlay), [bxRemoteDatabases, bxUserOverlay]);
           const [practiceActive, setPracticeActive] = useState(null);
           const [practiceIndex, setPracticeIndex] = useState(0);
@@ -1611,6 +1616,66 @@
                   try { localStorage.setItem(MULLER_BX_USER_OVERLAY_KEY, JSON.stringify(base)); } catch (e) {}
                   return base;
               });
+          };
+
+          const fillChromeAiFromScene = () => {
+              try {
+                  const idx = getActualSceneIndex();
+                  const scene = guionData[idx];
+                  if (!scene || !scene.text) { alert('No hay texto en la escena actual de Historia.'); return; }
+                  const block = [scene.text, scene.translation ? '(' + scene.translation + ')' : ''].filter(Boolean).join('\n');
+                  setChromeAiText(block);
+                  setChromeAiLine('Texto cargado desde la escena ' + (idx + 1) + '.');
+              } catch (e) { alert('No se pudo leer el guion.'); }
+          };
+
+          const runChromeLocalSummarize = async () => {
+              const text = (chromeAiText || '').trim();
+              if (text.length < 40) {
+                  alert('Pega un texto más largo o usa “Cargar escena actual”.');
+                  return;
+              }
+              if (!('Summarizer' in self)) {
+                  setChromeAiLine('Tu navegador no expone la API Summarizer. Usa Google Chrome 138+ en escritorio con IA integrada (Gemini Nano). En Edge puede ir detrás de flags; revisa la documentación de Built-in AI.');
+                  setChromeAiOut('');
+                  return;
+              }
+              setChromeAiBusy(true);
+              setChromeAiOut('');
+              setChromeAiLine('Comprobando…');
+              try {
+                  const Summarizer = self.Summarizer;
+                  const availability = await Summarizer.availability();
+                  if (availability === 'unavailable') {
+                      setChromeAiLine('Gemini Nano no disponible en este equipo (requisitos de hardware, espacio ~22 GB libres en el perfil de Chrome, o política).');
+                      setChromeAiBusy(false);
+                      return;
+                  }
+                  setChromeAiLine('Preparando modelo local (la primera vez puede descargarse)…');
+                  const summarizer = await Summarizer.create({
+                      type: 'key-points',
+                      format: 'markdown',
+                      length: 'short',
+                      expectedInputLanguages: ['de', 'en'],
+                      outputLanguage: 'es',
+                      sharedContext: 'Estudiante de alemán TELC; resúmenes claros en español.',
+                      monitor(m) {
+                          m.addEventListener('downloadprogress', (e) => {
+                              const p = typeof e.loaded === 'number' ? Math.round(e.loaded * 100) : 0;
+                              setChromeAiLine('Descarga del modelo en tu PC… ' + p + '%');
+                          });
+                      }
+                  });
+                  setChromeAiLine('Generando resumen (proceso local)…');
+                  const summary = await summarizer.summarize(text, { context: 'Texto o diálogo en alemán para estudio.' });
+                  setChromeAiOut(typeof summary === 'string' ? summary : String(summary));
+                  setChromeAiLine('Listo: sin enviar datos a los servidores de Müller.');
+                  try { if (typeof summarizer.destroy === 'function') summarizer.destroy(); } catch (e2) {}
+              } catch (err) {
+                  setChromeAiLine('Error: ' + (err && err.message ? err.message : String(err)));
+              } finally {
+                  setChromeAiBusy(false);
+              }
           };
 
           const loadSavedScript = (script) => {
@@ -2636,6 +2701,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       { id: 'today', label: 'Hoy' },
                                       { id: 'report', label: 'Resumen' },
                                       { id: 'tips', label: 'Ayuda' },
+                                      { id: 'chromeai', label: 'IA Chrome' },
                                   ].map((t) => (
                                       <button key={t.id} type="button" onClick={() => setMullerHubTab(t.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${mullerHubTab === t.id ? 'bg-sky-600 text-white' : 'bg-slate-800 text-gray-400 hover:text-white'}`}>{t.label}</button>
                                   ))}
@@ -2803,6 +2869,34 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       <p>Si la lista sale vacía, pulsa <strong className="text-white">Recargar lista de voces</strong> en la pestaña Voces o recarga la página.</p>
                                       <p><kbd className="px-1 py-0.5 rounded bg-black/50 border border-white/20 text-[10px]">Esc</kbd> cierra este panel.</p>
                                       <button type="button" onClick={() => { setTourStep(1); setShowMullerHub(false); }} className="w-full py-2 rounded-xl bg-indigo-700 hover:bg-indigo-600 font-bold text-xs">Repetir tour guiado (5 pasos)</button>
+                                  </div>
+                              )}
+                              {mullerHubTab === 'chromeai' && (
+                                  <div className="space-y-3 text-xs text-gray-300">
+                                      <ExerciseHelpBtn helpId="hub_chrome_ai" compact className="!border-violet-500/40" />
+                                      <p className="text-[11px] leading-relaxed text-gray-400">
+                                          Esto usa la <strong className="text-white">IA integrada de Google Chrome</strong> (<strong className="text-violet-300">Gemini Nano</strong>): el modelo se <strong className="text-white">descarga en tu PC</strong> y luego puede funcionar <strong className="text-white">sin depender de nuestro servidor</strong>. No es la “galería” de Edge: Microsoft Edge puede tener APIs parecidas <strong className="text-gray-300">con flags</strong>.
+                                      </p>
+                                      <p className="text-[10px] text-gray-500">
+                                          Requisitos típicos: Chrome de escritorio reciente, espacio libre en disco, modelo descargable desde Chrome. Documentación:{' '}
+                                          <a className="text-sky-400 underline hover:text-white" href="https://developer.chrome.com/docs/ai/built-in" target="_blank" rel="noopener noreferrer">Built-in AI (Chrome)</a>
+                                          {' · '}
+                                          <a className="text-sky-400 underline hover:text-white" href="https://developer.chrome.com/docs/ai/summarizer-api" target="_blank" rel="noopener noreferrer">Summarizer API</a>
+                                      </p>
+                                      <div className="flex flex-wrap gap-2">
+                                          <button type="button" onClick={fillChromeAiFromScene} className="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 font-bold text-[11px] border border-white/10">Cargar escena actual (Historia)</button>
+                                          <button type="button" disabled={chromeAiBusy} onClick={runChromeLocalSummarize} className="px-3 py-2 rounded-xl bg-violet-700 hover:bg-violet-600 disabled:opacity-50 font-bold text-[11px] border border-violet-500/40">Resumir con Gemini Nano (local)</button>
+                                      </div>
+                                      <textarea
+                                          className="w-full min-h-[100px] bg-black/50 border border-white/15 rounded-lg p-2 text-white font-mono text-[11px] outline-none focus:border-violet-500"
+                                          placeholder="Pega aquí un texto en alemán (guion, artículo…) o usa “Cargar escena”."
+                                          value={chromeAiText}
+                                          onChange={(e) => setChromeAiText(e.target.value)}
+                                      />
+                                      {chromeAiLine ? <p className="text-[10px] text-amber-200/90">{chromeAiLine}</p> : null}
+                                      {chromeAiOut ? (
+                                          <div className="bg-black/40 border border-violet-800/40 rounded-xl p-3 text-[11px] text-gray-200 whitespace-pre-wrap max-h-48 overflow-y-auto">{chromeAiOut}</div>
+                                      ) : null}
                                   </div>
                               )}
                           </div>
