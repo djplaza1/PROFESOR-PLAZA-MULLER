@@ -247,7 +247,8 @@
               difficultVocab: [], normalVocab: [], 
               difficultGrammar: [], 
               failedDiktatScenes: [],
-              activityLog: [40, 60, 45, 80, 55, 90, 75] 
+              activityLog: [40, 60, 45, 80, 55, 90, 75],
+              activityByDay: {}
           });
           const [vocabReviewIndex, setVocabReviewIndex] = useState(0);
           const [showVocabTranslation, setShowVocabTranslation] = useState(false);
@@ -283,6 +284,9 @@
           const [showGrammarPrompt, setShowGrammarPrompt] = useState(false);
           const [customGrammarInput, setCustomGrammarInput] = useState("");
           const [showHandwriting, setShowHandwriting] = useState(false); // NUEVO: Canvas escritura
+          const [showVocabMixModal, setShowVocabMixModal] = useState(false);
+          const [mixLessonSelection, setMixLessonSelection] = useState({});
+          const [mullerProgresoSnapshot, setMullerProgresoSnapshot] = useState(null);
 
           const isPlayingRef = useRef(false);
           const timeoutRef = useRef(null);
@@ -338,6 +342,42 @@
               }
               return days;
           };
+
+          const mergeActivityPoints = (extra) => {
+              const today = new Date().toISOString().slice(0, 10);
+              const dayMap = { ...(userStats.activityByDay || {}) };
+              dayMap[today] = (dayMap[today] || 0) + extra;
+              return dayMap;
+          };
+
+          const getWeeklyChartBars = () => {
+              const raw = [];
+              for (let i = 6; i >= 0; i--) {
+                  const d = new Date();
+                  d.setDate(d.getDate() - i);
+                  const key = d.toISOString().slice(0, 10);
+                  raw.push((userStats.activityByDay && userStats.activityByDay[key]) || 0);
+              }
+              const maxVal = Math.max(...raw, 1);
+              const normalized = raw.map((h) => Math.max(5, Math.round((h / maxVal) * 100)));
+              const hasReal = raw.some((x) => x > 0);
+              if (!hasReal && userStats.activityLog && userStats.activityLog.length >= 7) {
+                  return userStats.activityLog.slice(-7).map((v) => Math.max(5, Math.min(100, v)));
+              }
+              return normalized;
+          };
+
+          useEffect(() => {
+              if (activeTab !== 'progreso') return;
+              const refreshMuller = () => {
+                  try {
+                      if (typeof getAdvancedDashboard === 'function') setMullerProgresoSnapshot(getAdvancedDashboard());
+                  } catch (e) { setMullerProgresoSnapshot(null); }
+              };
+              refreshMuller();
+              window.addEventListener('advancedProgressUpdated', refreshMuller);
+              return () => window.removeEventListener('advancedProgressUpdated', refreshMuller);
+          }, [activeTab]);
 
           useEffect(() => {
               if (activeTab !== 'vocabulario') {
@@ -761,11 +801,11 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               const typedText = cleanText(diktatInput);
               if (originalText !== typedText) {
                   if (!isReviewing && !userStats.failedDiktatScenes.includes(sceneIndex)) {
-                      saveProgress({ failedDiktatScenes: [...userStats.failedDiktatScenes, sceneIndex], diktatAttempts: userStats.diktatAttempts + 1 });
+                      saveProgress({ failedDiktatScenes: [...userStats.failedDiktatScenes, sceneIndex], diktatAttempts: userStats.diktatAttempts + 1, activityByDay: mergeActivityPoints(6) });
                   }
                   deductHeart();
               } else {
-                  saveProgress({ coins: userStats.coins + 5, diktatCorrect: userStats.diktatCorrect + 1, diktatAttempts: userStats.diktatAttempts + 1 });
+                  saveProgress({ coins: userStats.coins + 5, diktatCorrect: userStats.diktatCorrect + 1, diktatAttempts: userStats.diktatAttempts + 1, activityByDay: mergeActivityPoints(25) });
               }
           };
 
@@ -813,7 +853,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               const finalScore = score > 100 ? 100 : score < 0 ? 0 : score;
               setGrammarPolizeiMsg(polizeiMsg); setPronunciationScore(finalScore); setPronunciationFeedback(feedbackArr);
               if (penalty || finalScore < 50) deductHeart();
-              else if (finalScore >= 90) saveProgress({ coins: userStats.coins + 5 });
+              else if (finalScore >= 90) saveProgress({ coins: userStats.coins + 5, activityByDay: mergeActivityPoints(12) });
           };
 
           const playVocabAudio = () => {
@@ -839,7 +879,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
             let newNorm = [...userStats.normalVocab];
             if (level === 'hard') { if (!newDiff.some(w => w.de === currentWord.de)) newDiff.push(currentWord); } 
             else if (level === 'normal') { if (!newNorm.some(w => w.de === currentWord.de)) newNorm.push(currentWord); }
-            saveProgress({ difficultVocab: newDiff, normalVocab: newNorm });
+            saveProgress({ difficultVocab: newDiff, normalVocab: newNorm, activityByDay: mergeActivityPoints(15) });
             if (vocabReviewIndex < currentVocabList.length - 1) { setVocabReviewIndex(prev => prev + 1); setShowVocabTranslation(false); } 
             else { alert("¡Has completado todas las tarjetas de esta lista!"); setActiveTab('guiones'); }
           };
@@ -860,8 +900,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
 
           const nextPracticeWord = () => {
               const list = practiceActive === 'diff' ? userStats.difficultVocab : (practiceActive === 'norm' ? userStats.normalVocab : userStats.difficultGrammar);
-              if (practiceIndex < list.length - 1) { setPracticeIndex(practiceIndex + 1); setPracticeShowTrans(false); } 
-              else { alert("¡Sesión terminada! +20 XP y 5 Coins"); saveProgress({ xp: userStats.xp + 20, coins: userStats.coins + 5 }); setPracticeActive(null); }
+              if (practiceIndex < list.length - 1) { setPracticeIndex(practiceIndex + 1); setPracticeShowTrans(false); saveProgress({ activityByDay: mergeActivityPoints(6) }); } 
+              else { alert("¡Sesión terminada! +20 XP y 5 Coins"); saveProgress({ xp: userStats.xp + 20, coins: userStats.coins + 5, activityByDay: mergeActivityPoints(30) }); setPracticeActive(null); }
           };
 
           const getArticleVisual = (word) => {
@@ -1166,6 +1206,42 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   </div>
               )}
 
+              {showVocabMixModal && (
+                  <div className="absolute inset-0 z-[60] bg-black/90 flex flex-col justify-center items-center p-4 md:p-8 animate-in zoom-in duration-300">
+                      <div className="bg-slate-900 border border-purple-600/50 p-4 md:p-6 rounded-2xl max-w-md w-full shadow-2xl max-h-[85vh] overflow-y-auto">
+                          <h2 className="text-lg md:text-xl font-black text-purple-200 mb-3 flex items-center gap-2"><Icon name="shuffle" className="w-5 h-5 md:w-6 md:h-6" /> Mezclar lecciones</h2>
+                          <p className="text-xs text-gray-400 mb-4">Marca las lecciones que quieres incluir y pulsa Mezclar.</p>
+                          <div className="flex flex-col gap-2 mb-4">
+                              {customVocabLessons.map((lesson) => (
+                                  <label key={lesson.id} className="flex items-center gap-3 bg-black/40 p-2 rounded-lg border border-gray-700 cursor-pointer hover:border-purple-500">
+                                      <input type="checkbox" className="accent-purple-500 w-4 h-4" checked={!!mixLessonSelection[lesson.id]} onChange={(e) => setMixLessonSelection((prev) => ({ ...prev, [lesson.id]: e.target.checked }))} />
+                                      <span className="text-sm text-white font-bold">{lesson.title}</span>
+                                      <span className="text-[10px] text-gray-500 ml-auto">{lesson.words.length} pal.</span>
+                                  </label>
+                              ))}
+                          </div>
+                          <div className="flex gap-2">
+                              <button onClick={() => setShowVocabMixModal(false)} className="flex-1 bg-gray-800 hover:bg-gray-700 py-2 rounded-xl font-bold text-sm">Cancelar</button>
+                              <button onClick={() => {
+                                  const selected = customVocabLessons.filter((l) => mixLessonSelection[l.id]);
+                                  if (selected.length === 0) { alert("Selecciona al menos una lección."); return; }
+                                  let words = [];
+                                  selected.forEach((lesson) => { words = words.concat(lesson.words); });
+                                  words.sort(() => Math.random() - 0.5);
+                                  const diffWords = words.filter((w) => w.diff === 1);
+                                  const final = [...words, ...diffWords];
+                                  setCurrentVocabList(final);
+                                  setActiveScriptTitle("Mezcla personalizada");
+                                  setVocabReviewIndex(0);
+                                  setShowVocabTranslation(false);
+                                  setShowVocabMixModal(false);
+                                  setActiveTab('vocabulario');
+                              }} className="flex-1 bg-purple-600 hover:bg-purple-500 py-2 rounded-xl font-bold text-sm">Mezclar e ir a Vocab</button>
+                          </div>
+                      </div>
+                  </div>
+              )}
+
               {/* CONTENIDO PRINCIPAL */}
               <div className="flex-1 overflow-y-auto relative flex flex-col hide-scrollbar">
                   
@@ -1313,17 +1389,30 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                           </div>
                           <div className="bg-gray-800/80 p-4 md:p-6 rounded-2xl border border-gray-700 shadow-xl mb-6 md:mb-8">
                               <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 flex items-center gap-2"><Icon name="trending-up" className="w-5 h-5 md:w-6 md:h-6 text-green-400" /> Actividad Semanal</h2>
+                              <p className="text-[10px] md:text-xs text-gray-500 mb-2">Basada en tus sesiones reales (vocab, diktat, práctica). Si un día está vacío, la barra es baja.</p>
                               <div className="flex items-end justify-between gap-1 md:gap-2 h-[120px] md:h-[200px] mt-4 pt-4 border-t border-gray-700 relative">
-                                  {userStats.activityLog && userStats.activityLog.map((val, i) => (
+                                  {getWeeklyChartBars().map((val, i) => (
                                       <div key={i} className="flex flex-col items-center flex-1 group h-full justify-end">
                                           <div className="w-full bg-blue-500 rounded-t-md transition-all duration-500 group-hover:bg-blue-400 relative shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{height: `${Math.max(val, 5)}%`}}>
-                                              <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] md:text-xs font-bold text-blue-200 opacity-0 group-hover:opacity-100 transition whitespace-nowrap">{val}XP</span>
+                                              <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] md:text-xs font-bold text-blue-200 opacity-0 group-hover:opacity-100 transition whitespace-nowrap">{val}%</span>
                                           </div>
                                           <span className="text-[8px] md:text-[10px] text-gray-400 mt-1 md:mt-2 font-mono uppercase tracking-tighter whitespace-nowrap hidden md:block">{getLast7Days()[i]}</span>
                                       </div>
                                   ))}
                               </div>
                           </div>
+                          {mullerProgresoSnapshot && (
+                              <div className="bg-gradient-to-r from-purple-950/80 to-indigo-950/80 p-4 md:p-6 rounded-2xl border border-purple-700/50 shadow-xl mb-6 md:mb-8">
+                                  <h2 className="text-base md:text-lg font-bold text-purple-200 mb-3 flex items-center gap-2"><Icon name="graduation-cap" className="w-5 h-5 md:w-6 md:h-6" /> Entrenamiento Müller (avanzado)</h2>
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3 text-xs md:text-sm">
+                                      <div className="bg-black/30 rounded-lg p-2 text-center border border-white/10"><span className="text-gray-400 block">Intentos</span><span className="font-black text-white text-lg">{mullerProgresoSnapshot.totalAttempts}</span></div>
+                                      <div className="bg-black/30 rounded-lg p-2 text-center border border-white/10"><span className="text-gray-400 block">Precisión</span><span className="font-black text-emerald-300 text-lg">{mullerProgresoSnapshot.accuracy}%</span></div>
+                                      <div className="bg-black/30 rounded-lg p-2 text-center border border-white/10"><span className="text-gray-400 block">Hoy</span><span className="font-black text-cyan-300 text-lg">{mullerProgresoSnapshot.todayAttempts}/{mullerProgresoSnapshot.dailyGoal}</span></div>
+                                      <div className="bg-black/30 rounded-lg p-2 text-center border border-white/10"><span className="text-gray-400 block">Racha</span><span className="font-black text-orange-300 text-lg">{mullerProgresoSnapshot.streakDays} d</span></div>
+                                  </div>
+                                  <p className="text-[10px] text-gray-500 mt-3">Abre el botón morado flotante para practicar artículos, verbos y preposiciones.</p>
+                              </div>
+                          )}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
                               <div className="bg-gray-900 p-4 md:p-6 rounded-2xl border border-red-900/50 flex flex-col relative group">
                                   <h2 className="text-base md:text-lg font-bold mb-3 md:mb-4 flex items-center gap-2 text-red-500"><Icon name="target" className="w-5 h-5 md:w-6 md:h-6" /> Vocab. Difícil</h2>
@@ -1429,26 +1518,12 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           </div>
                                       ))}
                                   </div>
-                                  {/* Botón de práctica avanzada (mezcla seleccionada) */}
-                                  <button onClick={() => { 
-                                      if (customVocabLessons.length === 0) alert("No hay lecciones guardadas.");
-                                      else {
-                                          // Abrir modal de selección de lecciones (componente separado)
-                                          const selected = prompt("Selecciona los números de lección separados por comas:\n" + customVocabLessons.map((l,i) => `${i+1}. ${l.title}`).join('\n'));
-                                          if (selected) {
-                                              const indices = selected.split(',').map(s => parseInt(s.trim())-1).filter(i => i>=0 && i<customVocabLessons.length);
-                                              let words = [];
-                                              indices.forEach(idx => words.push(...customVocabLessons[idx].words));
-                                              words.sort(() => Math.random() - 0.5);
-                                              const diffWords = words.filter(w => w.diff === 1);
-                                              const final = [...words, ...diffWords];
-                                              setCurrentVocabList(final);
-                                              setActiveScriptTitle("Mezcla personalizada");
-                                              setVocabReviewIndex(0);
-                                              setShowVocabTranslation(false);
-                                              setActiveTab('vocabulario');
-                                          }
-                                      }
+                                  <button onClick={() => {
+                                      if (customVocabLessons.length === 0) { alert("No hay lecciones guardadas."); return; }
+                                      const init = {};
+                                      customVocabLessons.forEach((l) => { init[l.id] = true; });
+                                      setMixLessonSelection(init);
+                                      setShowVocabMixModal(true);
                                   }} className="mt-3 bg-purple-600 hover:bg-purple-500 text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2">
                                       <Icon name="shuffle" className="w-4 h-4" /> Practicar mezcla seleccionada
                                   </button>
