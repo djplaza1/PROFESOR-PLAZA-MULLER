@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Entrenador Definitivo - Müller</title>
+    <meta name="theme-color" content="#581c87" />
+    <meta name="description" content="Entrenador alemán TELC Müller: historia, vocabulario, B1/B2, progreso." />
+    <link rel="manifest" href="manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -150,64 +153,34 @@
             "nennen": "Prät: nannte | Perf: hat genannt"
         };
 
-        const B1_DATABASE = {
-            vocabulario: [
-                { b1: "Das ist billig.", b2: "Das ist günstig.", es: "Eso es barato / a buen precio.", trick: "'Günstig' suena mucho mejor y más positivo que 'billig' (que a veces significa de mala calidad)." },
-                { b1: "Ich habe viel Arbeit.", b2: "Ich bin sehr beschäftigt.", es: "Estoy muy ocupado.", trick: "Usar adjetivos en lugar de 'tener cosas'." },
-                { b1: "Das ist schlecht.", b2: "Das ist schlimm.", es: "Eso es grave / malo.", trick: "'Schlimm' se usa para situaciones, 'schlecht' para calidad o comida." },
-                { b1: "Ich treffe meine Freunde.", b2: "Ich verabrede mich mit meinen Freunden.", es: "Me cito con mis amigos.", trick: "'sich verabreden' implica planear un encuentro, nivel B1 puro." },
-                { b1: "Ich mache die Tür zu.", b2: "Ich schließe die Tür.", es: "Cierro la puerta.", trick: "Evita verbos con 'machen', usa el verbo específico (schließen)." }
-            ],
-            verbos: [
-                { b1: "Ich interessiere mich für Kunst.", b2: "Ich habe Interesse an Kunst.", es: "Tengo interés en el arte.", trick: "Cambiar verbo reflexivo por sustantivo (Interesse an + Dat)." },
-                { b1: "Ich freue mich über das Geschenk.", b2: "Ich bin froh über das Geschenk.", es: "Me alegro / estoy contento por el regalo.", trick: "Variar entre alegrarse (verbo) y estar contento (adjetivo)." },
-                { b1: "Ich nehme an dem Kurs teil.", b2: "Ich mache bei dem Kurs mit.", es: "Participo en el curso.", trick: "Ambos son B1, pero 'teilnehmen an' es más formal que 'mitmachen bei'." }
-            ],
-            preposiciones: [
-                { b1: "Ich träume von einem Haus (Dat).", b2: "Ich denke an das Haus (Akk).", es: "Sueño con / Pienso en la casa.", trick: "Memorizar que 'träumen' va con von(Dativ) y 'denken' con an(Akkusativ)." },
-                { b1: "Er ärgert sich über den Chef (Akk).", b2: "Er ist wütend auf den Chef (Akk).", es: "Él se enfada con / está furioso con el jefe.", trick: "Conocer los adjetivos con preposición." }
-            ],
-            conectores: [
-                { b1: "Ich bin krank. Deshalb komme ich nicht.", b2: "Ich komme nicht, weil ich krank bin.", es: "No voy porque estoy enfermo.", trick: "Dominar el cambio entre conector de posición 1 (deshalb) y subordinante (weil)." },
-                { b1: "Es regnet, trotzdem gehe ich spazieren.", b2: "Obwohl es regnet, gehe ich spazieren.", es: "Aunque llueve, voy a pasear.", trick: "Trotzdem (Hauptsatz) vs Obwohl (Nebensatz)." }
-            ],
-            redemittel: [
-                { b1: "Wie geht's?", b2: "Wie läuft's bei dir?", es: "¿Cómo te va?", trick: "Alemán de la calle (Alltagsdeutsch)." },
-                { b1: "Ich glaube ja.", b2: "Davon gehe ich aus.", es: "Parto de esa base (Supongo que sí).", trick: "Muy profesional para el B1." },
-                { b1: "Das ist mir egal.", b2: "Das macht mir nichts aus.", es: "No me importa / No me molesta.", trick: "Más educado que 'egal'." }
-            ]
-        };
+                const BX_DB_EMPTY = { vocabulario: [], verbos: [], preposiciones: [], conectores: [], redemittel: [] };
+        function normalizeBxPayload(data) {
+            if (!data || typeof data !== 'object') return { b1: { ...BX_DB_EMPTY }, b2: { ...BX_DB_EMPTY } };
+            const b1 = data.b1 || data.B1;
+            const b2 = data.b2 || data.B2;
+            return {
+                b1: b1 ? { ...BX_DB_EMPTY, ...b1 } : { ...BX_DB_EMPTY },
+                b2: b2 ? { ...BX_DB_EMPTY, ...b2 } : { ...BX_DB_EMPTY }
+            };
+        }
+        const BX_DB_FALLBACK = normalizeBxPayload({
+            b1: {
+                vocabulario: [{ b1: "Daten werden geladen …", b2: "b1-b2-database.json fehlt oder Netzwerkfehler.", es: "", trick: "Coloca b1-b2-database.json junto a index.html en el servidor." }]
+            },
+            b2: {
+                vocabulario: [{ b1: "Daten werden geladen …", b2: "Mismo JSON: claves b1 y b2.", es: "", trick: "Amplía arrays en el JSON sin tocar index.html." }]
+            }
+        });
 
-        const B2_DATABASE = {
-            vocabulario: [
-                { b1: "Das ist ein großes Problem.", b2: "Das ist eine große Herausforderung.", es: "Eso es un gran desafío.", trick: "Evita 'Problem', usa 'Herausforderung' (desafío/reto) en entornos formales." },
-                { b1: "Ich mache das nicht.", b2: "Ich weigere mich, das zu tun.", es: "Me niego a hacer eso.", trick: "Usar 'sich weigern' (negarse) demuestra dominio." },
-                { b1: "Das ist sehr wichtig.", b2: "Das ist von großer Bedeutung.", es: "Eso es de gran importancia.", trick: "Usa construcciones con sustantivos: 'von großer Bedeutung'." },
-                { b1: "Er hat mich angelogen.", b2: "Er hat mich getäuscht.", es: "Él me ha engañado.", trick: "'Täuschen' es mucho más elegante que 'anlügen'." },
-                { b1: "Wir müssen das ändern.", b2: "Wir müssen entsprechende Maßnahmen ergreifen.", es: "Debemos tomar las medidas correspondientes.", trick: "Típico del B2/C1. 'Maßnahmen ergreifen' = Tomar medidas." }
-            ],
-            verbos: [
-                { b1: "Ich entscheide das.", b2: "Ich treffe eine Entscheidung.", es: "Tomo una decisión.", trick: "Nomen-Verb-Verbindung. Usar sustantivo + verbo vacío (treffen, stehen)." },
-                { b1: "Ich beantworte die E-Mail.", b2: "Ich nehme Stellung zu der E-Mail.", es: "Tomo posición / Respondo a la E-mail.", trick: "'Stellung nehmen' se usa muchísimo en B2 escrito." },
-                { b1: "Ich frage ihn.", b2: "Ich stelle ihm eine Frage.", es: "Le hago una pregunta.", trick: "Otra típica Nomen-Verb-Verbindung." },
-                { b1: "Das Problem kann gelöst werden.", b2: "Das Problem ist lösbar.", es: "El problema es resoluble.", trick: "Sustituto de Passiv. Cambiar 'können + Passiv' por el sufijo '-bar'." }
-            ],
-            preposiciones: [
-                { b1: "Wegen dem Wetter (Dat).", b2: "Wegen des schlechten Wetters (Gen).", es: "A causa del mal tiempo.", trick: "En B2, 'wegen', 'trotz' y 'während' rigen Genitivo sí o sí." },
-                { b1: "Ich spreche über das Thema.", b2: "Ich beziehe mich auf das Thema.", es: "Me refiero al tema.", trick: "'sich beziehen auf (+Akk)' es clave para cartas formales." },
-                { b1: "Ich bin gegen diesen Plan.", b2: "Ich protestiere gegen diesen Plan.", es: "Protesto contra este plan.", trick: "Ambos usan 'gegen', pero 'protestieren' eleva el nivel." }
-            ],
-            conectores: [
-                { b1: "Weil es stark regnet, bleibe ich hier.", b2: "Aufgrund des starken Regens bleibe ich hier.", es: "Debido a la fuerte lluvia me quedo aquí.", trick: "Nominalstil: Cambiar conector verbal 'weil' por preposición 'aufgrund + Genitiv'." },
-                { b1: "Ich spreche Englisch und Deutsch.", b2: "Ich spreche sowohl Englisch als auch Deutsch.", es: "Hablo tanto inglés como alemán.", trick: "sowohl... als auch... (Conector doble)." },
-                { b1: "Es ist nicht billig, aber gut.", b2: "Es ist zwar nicht billig, aber dafür sehr gut.", es: "Es verdad que no es barato, pero a cambio es transformado muy bueno.", trick: "zwar... aber (si bien... pero)." }
-            ],
-            redemittel: [
-                { b1: "Das nervt mich.", b2: "Das geht mir auf die Nerven.", es: "Eso me saca de quicio.", trick: "Expresión idiomática súper natural." },
-                { b1: "Ich denke, dass...", b2: "Ich bin der Auffassung, dass...", es: "Soy de la opinión de que...", trick: "Para la parte oral del B2, usa 'Auffassung' o 'Meinung'." },
-                { b1: "Das ist mir egal.", b2: "Das spielt für mich keine Rolle.", es: "Eso no juega ningún papel para mí.", trick: "Perfecto para discusiones." }
-            ]
-        };
+        function tryBxSession() {
+            try {
+                const raw = sessionStorage.getItem('muller_b1b2_json_v1');
+                if (!raw) return null;
+                return normalizeBxPayload(JSON.parse(raw));
+            } catch (e) {
+                return null;
+            }
+        }
 
         const GRAMMAR_PATTERNS = [
             { regex: /(interessier[en|t|e]+\s+(?:(?:mich|dich|sich|uns|euch|sehr|wirklich)\s+)*für)/gi, tooltip: "sich interessieren für + Akk", base: "sich interessieren für" },
@@ -287,6 +260,7 @@
           const [bxCategory, setBxCategory] = useState('mix'); 
           const [bxIndex, setBxIndex] = useState(0);
           const [bxCurrentList, setBxCurrentList] = useState([]);
+          const [bxRemoteDatabases, setBxRemoteDatabases] = useState(() => tryBxSession());
           const [practiceActive, setPracticeActive] = useState(null);
           const [practiceIndex, setPracticeIndex] = useState(0);
           const [practiceShowTrans, setPracticeShowTrans] = useState(false);
@@ -419,15 +393,33 @@
           }, [guionData, activeTab]);
 
           useEffect(() => {
-              const dbToUse = activeTab === 'b1meister' ? B1_DATABASE : B2_DATABASE;
+              let cancelled = false;
+              fetch('./b1-b2-database.json', { cache: 'no-cache' })
+                  .then((r) => { if (!r.ok) throw new Error('bx'); return r.json(); })
+                  .then((data) => {
+                      if (cancelled) return;
+                      const n = normalizeBxPayload(data);
+                      setBxRemoteDatabases(n);
+                      try { sessionStorage.setItem('muller_b1b2_json_v1', JSON.stringify(data)); } catch (e) {}
+                  })
+                  .catch(() => {
+                      if (cancelled) return;
+                      setBxRemoteDatabases((prev) => prev || BX_DB_FALLBACK);
+                  });
+              return () => { cancelled = true; };
+          }, []);
+
+          useEffect(() => {
+              const pack = bxRemoteDatabases || BX_DB_FALLBACK;
+              const dbToUse = activeTab === 'b1meister' ? pack.b1 : pack.b2;
               if (bxCategory === 'mix') {
                   let mixed = [];
-                  Object.values(dbToUse).forEach(arr => mixed = mixed.concat(arr));
+                  Object.values(dbToUse).forEach((arr) => { mixed = mixed.concat(arr); });
                   mixed.sort(() => Math.random() - 0.5);
                   setBxCurrentList(mixed);
               } else { setBxCurrentList(dbToUse[bxCategory] || []); }
               setBxIndex(0);
-          }, [bxCategory, activeTab]);
+          }, [bxCategory, activeTab, bxRemoteDatabases]);
 
           useEffect(() => {
             const handleVoicesChanged = () => setVoicesLoaded(true);
@@ -1368,6 +1360,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       {activeTab === 'b1meister' ? 'B1 Fundamentos' : 'B2 Meisterklasse'}
                                   </h1>
                                   <p className="text-gray-300 text-xs md:text-sm mt-1">{activeTab === 'b1meister' ? 'Domina las bases absolutas.' : 'Estructuras avanzadas de nativos.'}</p>
+                                  <p className="text-[10px] text-gray-500 mt-1">Tarjetas desde <code className="text-amber-200/90">b1-b2-database.json</code> (editable sin tocar el HTML).</p>
                               </div>
                               <div className="flex gap-1 md:gap-2 flex-wrap bg-black/40 p-1 md:p-2 rounded-xl border border-white/10">
                                   <button onClick={()=>setBxCategory('vocabulario')} className={`px-2 md:px-3 py-1 md:py-2 rounded-lg text-[10px] md:text-xs font-bold transition ${bxCategory === 'vocabulario' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}>Vocabulario</button>
@@ -3279,6 +3272,13 @@ setTimeout(() => {
         }
     }, 500);
 })();
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('./sw.js').catch(function () {});
+            });
+        }
     </script>
 </body>
 </html>
