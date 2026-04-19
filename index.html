@@ -29,8 +29,8 @@
     <!-- OCR manuscrito / impreso en el navegador: gratis, sin API key (Tesseract + datos de idioma de) -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Lucide Icons (versión fija: API estable para data-lucide + createIcons) -->
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 
     <style>
         html {
@@ -57,7 +57,11 @@
             filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
             stroke: currentColor;
             color: inherit;
+            fill: none;
         }
+        .lucide-wrapper svg[fill="none"], i[data-lucide] svg[fill="none"] { fill: none; }
+        .lucide-wrapper svg.fill-current, i[data-lucide].fill-current svg,
+        .lucide-wrapper .fill-current svg { fill: currentColor; stroke: none; }
         button.muller-icon-nav .lucide-wrapper,
         button.muller-icon-nav i[data-lucide] { color: #fff; }
         /* Mic “mantén pulsado” en Shadowing: anillo claro + trazo más grueso para que el icono no se pierda sobre el verde */
@@ -174,13 +178,44 @@
             min-height: 100vh;
             min-height: 100dvh;
         }
+        /* Tema claro: el scroll principal tiene fondo claro pero muchos bloques siguen con text-white → forzamos tinta oscura salvo botones/badges con fondo de color */
+        .muller-theme-light .muller-app-main {
+            color: #0f172a;
+        }
+        .muller-theme-light .muller-app-main .text-white {
+            color: #0f172a !important;
+        }
+        /* Botones y chips con fondo sólido o gradiente: mantener texto blanco */
+        .muller-theme-light .muller-app-main .text-white[class*="bg-"]:not([class*="bg-black/"]):not([class*="bg-white/"]):not([class~="bg-transparent"]),
+        .muller-theme-light .muller-app-main [class*="from-"][class*="to-"].text-white,
+        .muller-theme-light .muller-app-main a.text-white[class*="bg-"]:not([class*="bg-black/"]) {
+            color: #ffffff !important;
+        }
+        .muller-theme-light .muller-app-main .text-gray-300,
+        .muller-theme-light .muller-app-main .text-gray-400 {
+            color: #475569 !important;
+        }
+        .muller-theme-light .muller-app-main .text-gray-500 {
+            color: #64748b !important;
+        }
+        .muller-theme-light .muller-app-main .border-white\/10,
+        .muller-theme-light .muller-app-main .border-white\/20 {
+            border-color: rgba(15, 23, 42, 0.12) !important;
+        }
+        .muller-theme-light .muller-app-main [class*="bg-black/30"],
+        .muller-theme-light .muller-app-main [class*="bg-black/35"],
+        .muller-theme-light .muller-app-main [class*="bg-black/40"],
+        .muller-theme-light .muller-app-main [class*="bg-black/45"],
+        .muller-theme-light .muller-app-main [class*="bg-black/50"] {
+            background-color: rgba(241, 245, 249, 0.96) !important;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef, useCallback, useMemo } = React;
+        const { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } = React;
 
         // --- COMPONENTE AISLANTE DE ICONOS (Lucide + contenedor “premium” opcional) ---
         const Icon = ({ name, className, nav = false }) => {
@@ -1048,7 +1083,15 @@
           const noiseSourceRef = useRef(null);
           const noiseGainRef = useRef(null);
 
-          useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [exerciseHelpId, showMullerHub, tourStep]);
+          /* Tras cada commit React los <i data-lucide> se restauran; hay que volver a pintar SVG en todo el documento */
+          useLayoutEffect(() => {
+              const t = requestAnimationFrame(() => {
+                  try {
+                      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+                  } catch (e) {}
+              });
+              return () => cancelAnimationFrame(t);
+          });
 
           useEffect(() => {
               if (!showMullerHub) return;
@@ -2997,7 +3040,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               )}
 
               {/* CONTENIDO PRINCIPAL */}
-              <div className="flex-1 overflow-y-auto relative flex flex-col hide-scrollbar pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+              <div className={`muller-app-main flex-1 overflow-y-auto relative flex flex-col hide-scrollbar pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] ${uiTheme === 'light' ? 'text-slate-900' : ''}`}>
                   
                   {activeTab === 'telc' && !practiceActive && (
                       <div className="p-4 md:p-8 max-w-3xl mx-auto w-full animate-in fade-in duration-500 overflow-y-auto pb-24">
