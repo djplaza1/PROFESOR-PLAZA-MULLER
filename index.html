@@ -89,6 +89,46 @@
             cursor: crosshair;
             background: transparent;
         }
+        /* Temas UI: se aplican en el contenedor raíz de la app */
+        .muller-theme-light {
+            --muller-surface: #f1f5f9;
+            --muller-ink: #0f172a;
+            --muller-muted: #475569;
+        }
+        .muller-theme-light .muller-theme-bg {
+            background-color: var(--muller-surface) !important;
+            color: var(--muller-ink);
+        }
+        .muller-theme-hc {
+            --muller-hc-bg: #000000;
+            --muller-hc-fg: #ffff00;
+            --muller-hc-border: #ffffff;
+        }
+        .muller-theme-hc .muller-theme-bg,
+        .muller-theme-hc.bg-gray-900,
+        .muller-theme-hc.bg-slate-900,
+        .muller-theme-hc.bg-zinc-900 {
+            background-color: var(--muller-hc-bg) !important;
+            color: var(--muller-hc-fg) !important;
+            border-color: var(--muller-hc-border) !important;
+        }
+        .muller-theme-hc .text-white { color: var(--muller-hc-fg) !important; }
+        .muller-theme-hc .text-gray-400 { color: #e5e5e5 !important; }
+        .muller-pwa-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 120;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(90deg, #0f172a, #1e3a5f);
+            border-top: 1px solid rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
@@ -213,6 +253,179 @@
         const PREP_DAT = ["aus", "bei", "mit", "nach", "seit", "von", "zu", "ab"];
         const PREP_AKK = ["durch", "für", "gegen", "ohne", "um"];
         const PREP_WECHSEL = ["in", "an", "auf", "neben", "hinter", "über", "unter", "vor", "zwischen"];
+
+        const MULLER_BX_USER_OVERLAY_KEY = 'muller_bx_user_overlay_v1';
+
+        function tryBxUserOverlay() {
+            try {
+                const raw = localStorage.getItem(MULLER_BX_USER_OVERLAY_KEY);
+                if (!raw) return normalizeBxPayload({});
+                return normalizeBxPayload(JSON.parse(raw));
+            } catch (e) {
+                return normalizeBxPayload({});
+            }
+        }
+
+        function mergeBxLevel(base, extra) {
+            const out = {};
+            Object.keys(BX_DB_EMPTY).forEach((k) => {
+                out[k] = [...(base[k] || []), ...(extra[k] || [])];
+            });
+            return out;
+        }
+
+        function mergeBxDatabases(remoteNorm, overlayNorm) {
+            const r = normalizeBxPayload(remoteNorm || {});
+            const o = normalizeBxPayload(overlayNorm || {});
+            return {
+                b1: mergeBxLevel(r.b1, o.b1),
+                b2: mergeBxLevel(r.b2, o.b2)
+            };
+        }
+
+        function mullerFindUserBxCategory(overlayNorm, level, uid) {
+            if (!uid || !overlayNorm || !overlayNorm[level]) return null;
+            const lv = overlayNorm[level];
+            for (const cat of Object.keys(BX_DB_EMPTY)) {
+                const arr = lv[cat];
+                if (!Array.isArray(arr)) continue;
+                if (arr.some((x) => x && x._mullerUid === uid)) return cat;
+            }
+            return null;
+        }
+
+        function mullerBxItemKey(item) {
+            return (item.b1 || '') + '\u0000' + (item.b2 || '') + '\u0000' + (item.es || '');
+        }
+
+        /** Conectores típicos al inicio de frase (no incluimos und/oder/aber para reducir falsos positivos). */
+        const MULLER_BX_CONN_START = ['weil', 'dass', 'obwohl', 'wenn', 'als', 'damit', 'ob', 'bevor', 'nachdem', 'deshalb', 'deswegen', 'darum', 'trotzdem', 'dann', 'danach', 'außerdem', 'denn', 'sondern', 'falls', 'sobald', 'solange', 'während', 'zuerst', 'anschließend', 'schließlich', 'zunächst', 'inzwischen', 'allerdings', 'jedoch', 'hingegen', 'folglich', 'trotz', 'außer', 'indem'];
+
+        function mullerClassifyBibliotecaLine(german, meta) {
+            if (!german || typeof german !== 'string') return 'vocabulario';
+            const g = german.replace(/\s+/g, ' ').trim();
+            const lower = g.toLowerCase();
+            if (meta && meta.isRedemittel) return 'redemittel';
+
+            const firstTok = lower.split(/[\s,.;:]+/).filter(Boolean)[0] || '';
+            if (MULLER_BX_CONN_START.includes(firstTok)) return 'conectores';
+
+            const connMulti = ['zuerst', 'danach', 'später', 'schließlich', 'zunächst', 'anschließend', 'inzwischen', 'deswegen', 'trotzdem', 'allerdings', 'hingegen', 'folglich', 'außerdem', 'jedoch', 'dafür', 'dagegen', 'dabei', 'sonst'];
+            if (connMulti.some((c) => lower.startsWith(c + ' '))) return 'conectores';
+
+            if (/^(können|könnte|könnten|dürfte|dürfen|entschuldigung|vielen dank|danke|herzlichen|guten tag|guten morgen|guten abend|bis bald|auf wiedersehen|wie bitte|kein problem|ich möchte|ich hätte gerne|ich würde gerne|lass uns|wir könnten|ich bin der meinung)/i.test(lower) && g.length < 140) return 'redemittel';
+
+            if (/^(sich\s+[a-zäöüß]+\s+(an|auf|für|von|über|mit|zu)\b)/i.test(g)) return 'verbos';
+            if (/\b(freuen|erinnern|halten|denken|sorgen|interessieren|vorbereiten|kümmern|verlassen|verzichten|bewerben|verabreden|entscheiden|einigen|bemühen|verstehen|bedanken)\s+(mich|dich|sich|uns|euch)?\s*(an|auf|für|von|über|mit|zu|in)\b/i.test(lower)) return 'verbos';
+
+            const words = g.split(/\s+/).filter(Boolean);
+            if (meta && meta.isPair && words.length <= 5) return 'vocabulario';
+
+            if (words.length <= 3 && /^[a-zäöüß]+(en|eln|ern)$/i.test(words[0])) return 'verbos';
+
+            if (/^(an|auf|in|mit|für|zu|von|über|unter|vor|nach|aus|bei|gegen|ohne|um|anstatt|trotz|während)\s+(dem|der|den|das|die|ein|eine|mich|dir|mir|sich|ihm|ihr|uns|euch)/i.test(g)) return 'preposiciones';
+
+            if (/\b(an|auf|in|mit|für|zu|von|über|nach|vor|aus|bei)\s+(dem|der|den|das|die|ein|eine|mich|dich|sich)\b/i.test(lower)) {
+                if (/^(ich|du|er|sie|es|wir|ihr|man|sie)\s+/i.test(g)) return 'preposiciones';
+                if (words.length <= 8) return 'preposiciones';
+            }
+
+            if (/^(ich|du|er|sie|es|wir|ihr|man)\s+.+\b(an|auf|mit|für|zu|von|über|in|nach|vor|aus|bei)\s+(dem|der|den|das|die|ein|eine|mich|dich|sich)\b/i.test(g)) return 'preposiciones';
+
+            return 'vocabulario';
+        }
+
+        function mullerExtractBibliotecaSegments(raw) {
+            const out = [];
+            if (!raw || typeof raw !== 'string') return out;
+            const lines = raw.split(/\n/);
+            for (let line of lines) {
+                line = line.trim();
+                if (!line || line.startsWith('#')) continue;
+
+                const speakerMatch = line.match(/^([^:]+):\s*(.+)$/);
+                if (speakerMatch) {
+                    let content = speakerMatch[2];
+                    const isRedemittel = /\[R\]|\bNützlich\b/i.test(content);
+                    content = content.replace(/\[R\]/g, '').replace(/\bNützlich\.?\s*/gi, '').trim();
+
+                    let vocabInner = null;
+                    const vocabMatch = content.match(/\[(.*?)\]/);
+                    if (vocabMatch) {
+                        vocabInner = vocabMatch[1];
+                        content = content.replace(vocabMatch[0], '').trim();
+                    }
+
+                    let translation = '';
+                    const transMatch = content.match(/\(([^)]+)\)/);
+                    if (transMatch) {
+                        translation = transMatch[1].trim();
+                        content = content.replace(transMatch[0], '').trim();
+                    }
+
+                    const germanText = content.replace(/[🔴🔵🟢•]/g, '').replace(/\s+/g, ' ').trim();
+                    if (germanText) out.push({ german: germanText, es: translation, isRedemittel });
+
+                    if (vocabInner) {
+                        vocabInner.split(',').forEach((piece) => {
+                            const parts = piece.split('-');
+                            if (parts.length >= 2) {
+                                const de = parts[0].trim().replace(/[🔴🔵🟢•]/g, '');
+                                const es = parts.slice(1).join('-').trim();
+                                if (de) out.push({ german: de, es: es, isRedemittel: false, isPair: true });
+                            }
+                        });
+                    }
+                    continue;
+                }
+
+                const pairMatch = line.match(/^(.+?)\s*[-–—]\s*(.+)$/);
+                if (pairMatch && !line.includes(':')) {
+                    const de = pairMatch[1].replace(/^[•\-\d.)\]]+\s*/, '').trim();
+                    const es = pairMatch[2].trim();
+                    const looksDe = /[äöüßÄÖÜ]/.test(de) || /^(der|die|das|ein|eine|ich|du|sich|und|nicht)\b/i.test(de);
+                    if (de && es && looksDe) {
+                        out.push({ german: de, es: es, isRedemittel: false, isPair: true });
+                        continue;
+                    }
+                }
+
+                const plain = line.replace(/^[•\-\d.)\]]+\s*/, '').trim();
+                if (plain.length >= 2) out.push({ german: plain, es: '', isRedemittel: false });
+            }
+            return out;
+        }
+
+        function mullerBibliotecaTextToBxBuckets(text) {
+            const buckets = { vocabulario: [], verbos: [], preposiciones: [], conectores: [], redemittel: [] };
+            const segs = mullerExtractBibliotecaSegments(text);
+            const seen = new Set();
+            for (const seg of segs) {
+                const cat = mullerClassifyBibliotecaLine(seg.german, seg);
+                const es = seg.es && seg.es.length ? seg.es : '(añade traducción en la tarjeta)';
+                const item = {
+                    b1: seg.german,
+                    b2: seg.german,
+                    es: es,
+                    trick: 'Biblioteca · ' + cat + ' · heurística local (sin IA)'
+                };
+                const k = mullerBxItemKey(item) + '|' + cat;
+                if (seen.has(k)) continue;
+                seen.add(k);
+                buckets[cat].push(item);
+            }
+            return {
+                buckets,
+                counts: {
+                    vocabulario: buckets.vocabulario.length,
+                    verbos: buckets.verbos.length,
+                    preposiciones: buckets.preposiciones.length,
+                    conectores: buckets.conectores.length,
+                    redemittel: buckets.redemittel.length,
+                    total: segs.length
+                }
+            };
+        }
 
         const WRITING_COPY_DRILLS = [
             "Der Termin findet am Dienstag statt.",
@@ -373,8 +586,130 @@
             const dueDate = new Date(todayStr + 'T12:00:00');
             dueDate.setDate(dueDate.getDate() + interval);
             const due = dueDate.toISOString().slice(0, 10);
-            return { ...map, [key]: { interval, repetitions, easeFactor, due, lastRated: todayStr } };
+            const prevVC = prev && typeof prev.viewCount === 'number' ? prev.viewCount : 0;
+            const ratedCount = (prev && typeof prev.ratedCount === 'number' ? prev.ratedCount : 0) + 1;
+            return { ...map, [key]: { interval, repetitions, easeFactor, due, lastRated: todayStr, viewCount: Math.max(prevVC, 1), ratedCount, lastViewed: todayStr } };
         }
+        function mullerIncrementSrsView(map, word) {
+            const key = mullerVocabSrsKey(word);
+            const prev = map[key] || {};
+            const viewCount = (typeof prev.viewCount === 'number' ? prev.viewCount : 0) + 1;
+            const todayStr = new Date().toISOString().slice(0, 10);
+            return { ...map, [key]: { ...prev, viewCount, lastViewed: todayStr } };
+        }
+
+        /** Racha “honesta”: el día cuenta solo si hay actividad mínima (umbrales fijos en código). */
+        const MULLER_STREAK_QUAL_KEY = 'muller_streak_qualifying_days_v1';
+        const MULLER_STREAK_TODAY_KEY = 'muller_streak_today_stats_v1';
+        const MULLER_STREAK_MIN_VOCAB_RATINGS = 8;
+        const MULLER_STREAK_MIN_ACTIVITY_POINTS = 45;
+        const MULLER_STREAK_MIN_ACTIVE_SEC = 420;
+        const MULLER_ONBOARDING_KEY = 'muller_onboarding_done_v1';
+        const MULLER_THEME_KEY = 'muller_ui_theme_v1';
+        const MULLER_MAIN_GOAL_KEY = 'muller_main_daily_goal_v1';
+        const MULLER_GOAL_CLAIM_KEY = 'muller_main_goal_claim_date_v1';
+        const MULLER_OCR_HIST_KEY = 'muller_ocr_history_v1';
+        const MULLER_TTS_RATE_KEY = 'muller_tts_rate_preset_v1';
+
+        function mullerGetStreakTodayStats() {
+            const today = new Date().toISOString().slice(0, 10);
+            try {
+                const raw = localStorage.getItem(MULLER_STREAK_TODAY_KEY);
+                if (!raw) return { date: today, vocabRated: 0, points: 0, activeSec: 0 };
+                const o = JSON.parse(raw);
+                if (o.date !== today) return { date: today, vocabRated: 0, points: 0, activeSec: 0 };
+                return o;
+            } catch (e) {
+                return { date: today, vocabRated: 0, points: 0, activeSec: 0 };
+            }
+        }
+        function mullerSaveStreakTodayStats(o) {
+            try { localStorage.setItem(MULLER_STREAK_TODAY_KEY, JSON.stringify(o)); } catch (e) {}
+        }
+        function mullerQualifyingMap() {
+            try { return JSON.parse(localStorage.getItem(MULLER_STREAK_QUAL_KEY) || '{}'); } catch (e) { return {}; }
+        }
+        function mullerSetQualifyingMap(m) {
+            try { localStorage.setItem(MULLER_STREAK_QUAL_KEY, JSON.stringify(m)); } catch (e) {}
+        }
+        function mullerUpdateQualifyingForStats(stats) {
+            const today = new Date().toISOString().slice(0, 10);
+            if (stats.date !== today) return;
+            const ok = stats.vocabRated >= MULLER_STREAK_MIN_VOCAB_RATINGS
+                || stats.points >= MULLER_STREAK_MIN_ACTIVITY_POINTS
+                || stats.activeSec >= MULLER_STREAK_MIN_ACTIVE_SEC;
+            const m = mullerQualifyingMap();
+            if (ok) m[today] = true;
+            else delete m[today];
+            mullerSetQualifyingMap(m);
+        }
+        function mullerComputeHonestStreakDays() {
+            const qual = mullerQualifyingMap();
+            const today = new Date().toISOString().slice(0, 10);
+            let streak = 0;
+            const d = new Date();
+            if (!qual[today]) d.setDate(d.getDate() - 1);
+            for (let guard = 0; guard < 400; guard++) {
+                const key = d.toISOString().slice(0, 10);
+                if (qual[key]) {
+                    streak++;
+                    d.setDate(d.getDate() - 1);
+                } else break;
+            }
+            return streak;
+        }
+        function mullerBumpVocabStreakRating() {
+            let st = mullerGetStreakTodayStats();
+            const today = new Date().toISOString().slice(0, 10);
+            if (st.date !== today) st = { date: today, vocabRated: 0, points: 0, activeSec: 0 };
+            st.vocabRated += 1;
+            mullerSaveStreakTodayStats(st);
+            mullerUpdateQualifyingForStats(st);
+        }
+        function mullerGetMainDailyGoalCards() {
+            try {
+                const n = parseInt(localStorage.getItem(MULLER_MAIN_GOAL_KEY) || '15', 10);
+                return Math.max(3, Math.min(120, n || 15));
+            } catch (e) { return 15; }
+        }
+        function mullerPushOcrHistory(entry) {
+            try {
+                const raw = localStorage.getItem(MULLER_OCR_HIST_KEY);
+                const arr = raw ? JSON.parse(raw) : [];
+                arr.unshift({
+                    ...entry,
+                    at: new Date().toISOString(),
+                    id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+                });
+                while (arr.length > 15) arr.pop();
+                localStorage.setItem(MULLER_OCR_HIST_KEY, JSON.stringify(arr));
+                return arr;
+            } catch (e) {
+                return [];
+            }
+        }
+
+        /** Simulacro oral B1 — plantillas ampliadas (solo front). */
+        const MULLER_ORAL_B1_QUESTIONS = [
+            { de: 'Was halten Sie von Kunst in der modernen Gesellschaft?', es: '¿Qué opina del arte en la sociedad moderna?', model: 'Ich finde, dass Kunst wichtig ist, weil sie die Kultur bereichert.' },
+            { de: 'Wie wichtig ist Ihnen Umweltschutz im Alltag?', es: '¿Qué importancia tiene para usted la protección del medio ambiente?', model: 'Für mich ist Umweltschutz sehr wichtig, deshalb trenne ich Müll.' },
+            { de: 'Was denken Sie über soziale Medien?', es: '¿Qué piensa de las redes sociales?', model: 'Soziale Medien haben Vorteile, aber man sollte vorsichtig sein.' },
+            { de: 'Beschreiben Sie Ihren typischen Arbeitstag.', es: 'Describa su jornada laboral típica.', model: 'Normalerweise stehe ich früh auf und fahre mit dem Bus zur Arbeit.' },
+            { de: 'Wie verbringen Sie Ihre Freizeit?', es: '¿Cómo pasa su tiempo libre?', model: 'In meiner Freizeit treffe ich Freunde oder lese ich Bücher.' },
+            { de: 'Warum lernen Sie Deutsch?', es: '¿Por qué estudia alemán?', model: 'Ich lerne Deutsch, weil ich im Ausland arbeiten möchte.' },
+            { de: 'Was sind Ihre Pläne für die nächsten Jahre?', es: '¿Cuáles son sus planes para los próximos años?', model: 'Ich möchte eine Weiterbildung machen und später eine Familie gründen.' },
+            { de: 'Wie sieht Ihr Traumurlaub aus?', es: '¿Cómo sería sus vacaciones ideales?', model: 'Am liebsten fahre ich ans Meer und entspanne am Strand.' },
+            { de: 'Welche Rolle spielt die Familie in Ihrem Leben?', es: '¿Qué papel tiene la familia en su vida?', model: 'Meine Familie unterstützt mich, und wir treffen uns oft am Wochenende.' },
+            { de: 'Was würden Sie an Ihrer Stadt ändern?', es: '¿Qué cambiaría en su ciudad?', model: 'Ich würde mehr Grünflächen schaffen und den Verkehr reduzieren.' },
+            { de: 'Wie gehen Sie mit Stress um?', es: '¿Cómo gestiona el estrés?', model: 'Bei Stress gehe ich spazieren oder höre Musik.' },
+            { de: 'Welche Erfahrungen haben Sie mit anderen Kulturen gemacht?', es: '¿Qué experiencias ha tenido con otras culturas?', model: 'Ich habe gelernt, offen und respektvoll zu kommunizieren.' },
+            { de: 'Was bedeutet für Sie ein gutes Zusammenleben in der Gesellschaft?', es: '¿Qué significa para usted una buena convivencia?', model: 'Toleranz und gegenseitiger Respekt sind mir sehr wichtig.' },
+            { de: 'Erzählen Sie von einem wichtigen Erlebnis in Ihrem Leben.', es: 'Cuente una experiencia importante en su vida.', model: 'Ein wichtiges Erlebnis war mein Studium im Ausland.' },
+            { de: 'Wie informieren Sie sich über aktuelle Nachrichten?', es: '¿Cómo se informa de las noticias?', model: 'Ich lese online Zeitung und schaue abends die Nachrichten.' },
+            { de: 'Was erwarten Sie von einem guten Chef bzw. einer guten Chefin?', es: '¿Qué espera de un buen jefe o jefa?', model: 'Ich erwarte klare Kommunikation und faire Behandlung.' },
+            { de: 'Diskutieren Sie kurz: Bildung vs. Berufserfahrung.', es: 'Debate breve: formación vs. experiencia laboral.', model: 'Beides ist wichtig, aber Erfahrung hilft im Alltag oft schneller.' },
+            { de: 'Wie stehen Sie zu Homeoffice?', es: '¿Qué opina del teletrabajo?', model: 'Homeoffice ist flexibel, aber man braucht Disziplin.' }
+        ];
         function mullerSortVocabBySrs(words, map) {
             const todayStr = new Date().toISOString().slice(0, 10);
             const today = new Date(todayStr + 'T12:00:00');
@@ -413,7 +748,8 @@
             nav_b1: { title: 'B1 Fundamentos', what: 'Banco de frases modelo (JSON) por categorías: vocabulario, verbos, preposiciones, conectores, Redemittel y modo mix.', tips: ['Alterna MIX con categorías débiles.', 'Escucha la frase varias veces antes de leer la traducción.', 'Anota en Escritura las que quieras fijar.'] },
             nav_b2: { title: 'B2 Meisterklasse', what: 'Misma estructura que B1 pero con estructuras más altas; útil para subir registro y conectores complejos.', tips: ['Lee en voz alta la versión “alta” para automatizar.', 'Compara con la línea básica si el JSON la trae.', 'Lleva un cuaderno de frases copiadas a mano.'] },
             nav_progreso: { title: 'Progreso', what: 'Resumen de racha, mazos difícil/normal, gramática, gráfico semanal y exportación PDF/Anki.', tips: ['Exporta PDF antes de examen para revisar en papel.', 'Los mazos se alimentan desde Vocab y gramática guardada en Historia.', 'SRS de vocabulario tiene su propio contador en la pantalla de ayuda.'] },
-            nav_biblioteca: { title: 'Biblioteca', what: 'Guardas guiones pegados desde la IA y listas de vocabulario personalizadas; puedes mezclar lecciones para practicar.', tips: ['Revisa el formato del prompt de IA antes de pegar.', 'Las lecciones de vocab se practican con el botón Practicar.', 'Borra lo que ya no uses para no mezclar temas viejos.'] },
+            nav_biblioteca: { title: 'Biblioteca', what: 'Guardas guiones pegados desde la IA y listas de vocabulario personalizadas; puedes enviar un texto pegado a las subpestañas B1/B2 (vocabulario, verbos, etc.) y mezclar lecciones para practicar.', tips: ['Revisa el formato del prompt de IA antes de pegar.', '“Distribuir texto → B1/B2” clasifica con reglas locales; revisa en las pestañas B1/B2.', 'Las lecciones de vocab se practican con el botón Practicar.', 'Borra lo que ya no uses para no mezclar temas viejos.'] },
+            nav_telc: { title: 'Día del examen TELC', what: 'Checklist estática: qué llevar, tiempos orientativos y consejos. No sustituye la convocatoria oficial.', tips: ['Imprime o exporta la lista la noche anterior.', 'Llega con margen para el registro.', 'Hidrátate y duerme bien: el examen es resistencia.'] },
             nav_ia: { title: 'IA Story Builder', what: 'Genera un guion nuevo con nivel y tema; útil cuando quieres vocabulario fresco sin pegar texto manual.', tips: ['Indica bien el nivel (B1/B2) y el tema.', 'Tras generar, guarda y estudia en Historia.', 'Combina con vocab propio en el campo de palabras si existe.'] },
             historia_base: { title: 'Historia — vista general', what: 'Escuchas y lees escenas; el vocabulario resaltado enlaza con las tarjetas. Abajo tienes play, escenas y velocidad.', tips: ['Primero escucha, luego muestra traducción.', 'Sube o baja la velocidad según el nivel del día.', 'PDF del guion sirve para repaso offline.'] },
             historia_podcast: { title: 'Modo Podcast', what: 'Reproduce el guion completo como audiolibro (voz del sistema). Útil para inmersión pasiva o repaso en movimiento.', tips: ['Actívalo cuando no vayas a pulsar escena a escena.', 'Ajusta voces en el Centro Müller (icono panel).', 'Puedes combinar con ruido de fondo si quieres simular ambiente.'] },
@@ -447,6 +783,7 @@
             progreso_dashboard: { title: 'Progreso — panel', what: 'Ves racha, monedas, mazos y exportaciones; el bloque morado resume entrenamiento avanzado si lo usas.', tips: ['Haz PDF antes de vacaciones para no perder la foto.', 'Revisa mazos difícil cada pocos días.', 'Combina con backup JSON flotante para copia total.'] },
             guiones_import: { title: 'Biblioteca — guiones', what: 'Pegas texto de la IA con título y lo guardas; al cargarlo se vuelve tu Historia activa.', tips: ['Comprueba títulos para encontrar lecciones rápido.', 'Borra versiones viejas para no confundirte.', 'El prompt sugerido está arriba: cópialo tal cual a ChatGPT/Gemini.'] },
             guiones_vocab_custom: { title: 'Biblioteca — vocabulario propio', what: 'Pegas listas “alemán — español” y guardas lecciones; luego Practicar o mezcla.', tips: ['Una línea por palabra facilita el parseo.', 'Mezcla varias lecciones para simular examen amplio.', 'Exporta a Anki desde Progreso si usas mazos allí.'] },
+            guiones_bx_distrib: { title: 'Biblioteca → B1 / B2 (subpestañas)', what: 'Desde un texto pegado se extraen frases y se clasifican en vocabulario, verbos, preposiciones, conectores y Redemittel; se guardan en tu navegador y se mezclan con b1-b2-database.json.', tips: ['Usa el mismo formato que el guion (Nombre: …) o listas palabra - traducción.', 'En B1/B2, las tarjetas “Tu biblioteca” permiten eliminar o mover de categoría si la heurística se equivocó.', '“Borrar mis aportaciones” solo quita lo añadido desde Biblioteca, no el JSON del repo ni las tarjetas del archivo base.'] },
             guiones_mix: { title: 'Mezclar lecciones de vocabulario', what: 'Seleccionas varias lecciones guardadas y generas una sesión única en la pestaña Vocab.', tips: ['Marca al menos dos lecciones si quieres variedad.', 'Las tarjetas difíciles se suelen repetir al final.', 'Úsalo antes de un examen para repaso amplio.'] },
             storybuilder: { title: 'IA Story Builder', what: 'Pides a la app/IA integrada un guion según nivel y tema; luego lo estudias como cualquier Historia.', tips: ['Sé concreto en el tema (trabajo, medio ambiente…).', 'Revisa que el vocabulario coincida con tus metas.', 'Guarda siempre en Biblioteca para no perderlo.'] },
             practice_mazos: { title: 'Entrenamiento rápido (mazos)', what: 'Repasas tarjetas guardadas como difícil, normal o gramática: audio, revelar traducción, siguiente.', tips: ['No mires revelar hasta haber intentado recordar.', 'Haz lotes cortos varias veces al día.', 'Cuando vacíe un mazo, vuelve a Historia para añadir nuevas frases.'] },
@@ -507,6 +844,11 @@
           const [bxIndex, setBxIndex] = useState(0);
           const [bxCurrentList, setBxCurrentList] = useState([]);
           const [bxRemoteDatabases, setBxRemoteDatabases] = useState(() => tryBxSession());
+          const [bxUserOverlay, setBxUserOverlay] = useState(() => tryBxUserOverlay());
+          const [bxImportText, setBxImportText] = useState('');
+          const [bxImportSummary, setBxImportSummary] = useState('');
+          const [bxMoveTargetCat, setBxMoveTargetCat] = useState('verbos');
+          const bxEffectiveDatabases = useMemo(() => mergeBxDatabases(bxRemoteDatabases || BX_DB_FALLBACK, bxUserOverlay), [bxRemoteDatabases, bxUserOverlay]);
           const [practiceActive, setPracticeActive] = useState(null);
           const [practiceIndex, setPracticeIndex] = useState(0);
           const [practiceShowTrans, setPracticeShowTrans] = useState(false);
@@ -552,11 +894,27 @@
           const [writingDictReveal, setWritingDictReveal] = useState(false);
           const [writingCanvasKey, setWritingCanvasKey] = useState(0);
           const [writingVocabIdx, setWritingVocabIdx] = useState(0);
+          const [ocrHistoryList, setOcrHistoryList] = useState(() => {
+              try { return JSON.parse(localStorage.getItem(MULLER_OCR_HIST_KEY) || '[]'); } catch (e) { return []; }
+          });
           const [ttsPrefsEpoch, setTtsPrefsEpoch] = useState(0);
           const [ttsDeUri, setTtsDeUri] = useState(() => { try { return localStorage.getItem('muller_tts_de') || ''; } catch (e) { return ''; } });
           const [ttsEsUri, setTtsEsUri] = useState(() => { try { return localStorage.getItem('muller_tts_es') || ''; } catch (e) { return ''; } });
           const [showMullerHub, setShowMullerHub] = useState(false);
           const [mullerHubTab, setMullerHubTab] = useState('voices');
+          const [uiTheme, setUiTheme] = useState(() => { try { return localStorage.getItem(MULLER_THEME_KEY) || 'dark'; } catch (e) { return 'dark'; } });
+          const [showOnboarding, setShowOnboarding] = useState(() => { try { return !localStorage.getItem(MULLER_ONBOARDING_KEY); } catch (e) { return true; } });
+          const [onboardingStep, setOnboardingStep] = useState(1);
+          const [onboardingNever, setOnboardingNever] = useState(false);
+          const [historiaAudioOnly, setHistoriaAudioOnly] = useState(false);
+          const [vocabDueFilterOnly, setVocabDueFilterOnly] = useState(false);
+          const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+          const [mainDailyGoal, setMainDailyGoal] = useState(() => mullerGetMainDailyGoalCards());
+          const [oralQIdx, setOralQIdx] = useState(0);
+          const [oralSecs, setOralSecs] = useState(90);
+          const [oralDeadline, setOralDeadline] = useState(null);
+          const [oralClock, setOralClock] = useState(0);
+          const [pwaDeferredPrompt, setPwaDeferredPrompt] = useState(null);
           const [tourStep, setTourStep] = useState(0);
           const [dailyChallenges, setDailyChallenges] = useState(() => {
               try {
@@ -571,6 +929,15 @@
               if (!currentVocabList.length) return 0;
               return mullerCountVocabSrsDue(currentVocabList, vocabSrsMap);
           }, [currentVocabList, vocabSrsMap]);
+          const vocabDisplayList = useMemo(() => {
+              if (!vocabDueFilterOnly) return currentVocabList;
+              const todayStr = new Date().toISOString().slice(0, 10);
+              return currentVocabList.filter((w) => {
+                  const rec = vocabSrsMap[mullerVocabSrsKey(w)];
+                  if (!rec || !rec.due) return true;
+                  return rec.due <= todayStr;
+              });
+          }, [currentVocabList, vocabDueFilterOnly, vocabSrsMap]);
 
           const [exerciseHelpId, setExerciseHelpId] = useState(null);
           const historiaExerciseHelpId = useMemo(() => {
@@ -618,6 +985,7 @@
               );
           };
 
+          const bxCatTabRef = useRef(null);
           const isPlayingRef = useRef(false);
           const timeoutRef = useRef(null);
           const recognitionRef = useRef(null);
@@ -659,7 +1027,78 @@
               if(scripts) setSavedScripts(JSON.parse(scripts));
               const savedCustomVocab = localStorage.getItem('mullerCustomVocab');
               if(savedCustomVocab) setCustomVocabLessons(JSON.parse(savedCustomVocab));
+              setUserStats((prev) => ({ ...prev, streakDays: mullerComputeHonestStreakDays() }));
           }, []);
+
+          useEffect(() => {
+              const id = setInterval(() => {
+                  if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+                  let st = mullerGetStreakTodayStats();
+                  const today = new Date().toISOString().slice(0, 10);
+                  if (st.date !== today) st = { date: today, vocabRated: 0, points: 0, activeSec: 0 };
+                  st.activeSec = (st.activeSec || 0) + 60;
+                  mullerSaveStreakTodayStats(st);
+                  mullerUpdateQualifyingForStats(st);
+                  setUserStats((prev) => ({ ...prev, streakDays: mullerComputeHonestStreakDays() }));
+              }, 60000);
+              return () => clearInterval(id);
+          }, []);
+
+          useEffect(() => {
+              const onKey = (e) => {
+                  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
+                  if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                      e.preventDefault();
+                      setShowShortcutsModal(true);
+                  }
+                  if (e.key === 'h' || e.key === 'H') {
+                      if (!e.ctrlKey && !e.metaKey) { setActiveTab('historia'); setMode('dialogue'); }
+                  }
+                  if (e.key === 'v' || e.key === 'V') {
+                      if (!e.ctrlKey && !e.metaKey) setActiveTab('vocabulario');
+                  }
+                  if (e.key === 'p' || e.key === 'P') {
+                      if (!e.ctrlKey && !e.metaKey) setActiveTab('progreso');
+                  }
+                  if (e.key === 'm' || e.key === 'M') {
+                      if (!e.ctrlKey && !e.metaKey) { setShowMullerHub(true); setMullerHubTab('voices'); }
+                  }
+                  if (e.key === 'Escape') setShowShortcutsModal(false);
+              };
+              window.addEventListener('keydown', onKey);
+              return () => window.removeEventListener('keydown', onKey);
+          }, []);
+
+          useEffect(() => {
+              const onBip = (e) => {
+                  e.preventDefault();
+                  setPwaDeferredPrompt(e);
+              };
+              window.addEventListener('beforeinstallprompt', onBip);
+              return () => window.removeEventListener('beforeinstallprompt', onBip);
+          }, []);
+
+          useEffect(() => {
+              if (mode !== 'interview' || !oralDeadline) return;
+              const id = setInterval(() => setOralClock((c) => c + 1), 1000);
+              return () => clearInterval(id);
+          }, [mode, oralDeadline, oralQIdx]);
+
+          const vocabViewKey = vocabDisplayList[vocabReviewIndex] ? mullerVocabSrsKey(vocabDisplayList[vocabReviewIndex]) : '';
+          useEffect(() => {
+              if (activeTab !== 'vocabulario' || !vocabViewKey) return;
+              const w = vocabDisplayList[vocabReviewIndex];
+              if (!w) return;
+              try {
+                  const map = mullerIncrementSrsView(mullerGetVocabSrsMap(), w);
+                  mullerSetVocabSrsMap(map);
+                  setVocabSrsEpoch((x) => x + 1);
+              } catch (err) {}
+          }, [vocabReviewIndex, activeTab, vocabViewKey]);
+
+          useEffect(() => {
+              if (vocabReviewIndex >= vocabDisplayList.length) setVocabReviewIndex(0);
+          }, [vocabDisplayList.length, vocabReviewIndex]);
 
           useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
@@ -676,7 +1115,24 @@
           }, [sceneIndex, activeTab]);
 
           const saveProgress = (newStatsUpdates) => {
-              const mergedStats = { ...userStats, ...newStatsUpdates, lastPlayedDate: new Date().toISOString().split('T')[0] };
+              const today = new Date().toISOString().split('T')[0];
+              let st = mullerGetStreakTodayStats();
+              if (st.date !== today) st = { date: today, vocabRated: 0, points: 0, activeSec: 0 };
+              const mergedStats = { ...userStats, ...newStatsUpdates, lastPlayedDate: today };
+              const dayMap = mergedStats.activityByDay || {};
+              st.points = Math.max(st.points || 0, dayMap[today] || 0);
+              mullerSaveStreakTodayStats(st);
+              mullerUpdateQualifyingForStats(st);
+              mergedStats.streakDays = mullerComputeHonestStreakDays();
+              const goalCards = mullerGetMainDailyGoalCards();
+              if (st.vocabRated >= goalCards) {
+                  try {
+                      if (localStorage.getItem(MULLER_GOAL_CLAIM_KEY) !== today) {
+                          localStorage.setItem(MULLER_GOAL_CLAIM_KEY, today);
+                          mergedStats.coins = (mergedStats.coins || 0) + 10;
+                      }
+                  } catch (e) {}
+              }
               setUserStats(mergedStats);
               localStorage.setItem('mullerStats', JSON.stringify(mergedStats));
           };
@@ -769,16 +1225,32 @@
           }, []);
 
           useEffect(() => {
-              const pack = bxRemoteDatabases || BX_DB_FALLBACK;
+              const pack = bxEffectiveDatabases;
               const dbToUse = activeTab === 'b1meister' ? pack.b1 : pack.b2;
+              let newList;
               if (bxCategory === 'mix') {
-                  let mixed = [];
-                  Object.values(dbToUse).forEach((arr) => { mixed = mixed.concat(arr); });
-                  mixed.sort(() => Math.random() - 0.5);
-                  setBxCurrentList(mixed);
-              } else { setBxCurrentList(dbToUse[bxCategory] || []); }
-              setBxIndex(0);
-          }, [bxCategory, activeTab, bxRemoteDatabases]);
+                  newList = [];
+                  Object.values(dbToUse).forEach((arr) => { newList = newList.concat(arr); });
+                  newList.sort(() => Math.random() - 0.5);
+              } else {
+                  newList = dbToUse[bxCategory] || [];
+              }
+              setBxCurrentList(newList);
+              const catTabChanged = !bxCatTabRef.current || bxCatTabRef.current.c !== bxCategory || bxCatTabRef.current.t !== activeTab;
+              bxCatTabRef.current = { c: bxCategory, t: activeTab };
+              if (catTabChanged) setBxIndex(0);
+              else setBxIndex((i) => (newList.length === 0 ? 0 : Math.min(i, newList.length - 1)));
+          }, [bxCategory, activeTab, bxEffectiveDatabases]);
+
+          useEffect(() => {
+              const item = bxCurrentList[bxIndex];
+              if (!item || !item._mullerUser) return;
+              const level = activeTab === 'b1meister' ? 'b1' : 'b2';
+              const src = bxCategory === 'mix' ? (item._mullerCategory || mullerFindUserBxCategory(bxUserOverlay, level, item._mullerUid)) : bxCategory;
+              if (!src) return;
+              const others = Object.keys(BX_DB_EMPTY).filter((c) => c !== src);
+              setBxMoveTargetCat((prev) => (others.includes(prev) ? prev : others[0] || 'vocabulario'));
+          }, [bxIndex, bxCategory, bxCurrentList, bxUserOverlay, activeTab]);
 
           useEffect(() => {
             const handleVoicesChanged = () => setVoicesLoaded(true);
@@ -1039,6 +1511,15 @@
         const newSaved = [...savedScripts, scriptObj].sort((a,b)=>a.title.localeCompare(b.title));
         setSavedScripts(newSaved);
         localStorage.setItem('mullerScripts', JSON.stringify(newSaved));
+        try {
+            if (typeof caches !== 'undefined') {
+                const meta = { lastScriptTitle: newScriptTitle, lastSceneCount: newGuion.length, savedAt: new Date().toISOString() };
+                caches.open('muller-offline-user-v1').then((cache) => cache.put(
+                    new Request(new URL('./.muller-offline-meta.json', window.location.href).toString()),
+                    new Response(JSON.stringify(meta), { headers: { 'Content-Type': 'application/json' } })
+                )).catch(function () {});
+            }
+        } catch (e) {}
         setGuionData(newGuion); setActiveScriptTitle(newScriptTitle); setIsDefaultScript(false); 
         setSceneIndex(0); setMode('dialogue'); stopAudio(); resetModes(); setIsReviewing(false);
         setNewScriptTitle(""); setActiveTab('historia');
@@ -1046,6 +1527,91 @@
         alert("Error al procesar. Asegúrate de usar el formato: Nombre: Texto Alemán. (Traducción) [vocab-trad]"); 
     }
 };
+
+          const handleBxDistribToLevels = (target) => {
+              const text = (bxImportText || '').trim() || (scriptInput || '').trim();
+              if (!text) { alert('Pega texto en el cuadro de “Distribuir a B1/B2” o en el guion de arriba.'); return; }
+              const { buckets, counts } = mullerBibliotecaTextToBxBuckets(text);
+              if (counts.total === 0) { alert('No se detectaron frases. Usa formato Nombre: Alemán. (Traducción) o listas “alemán - español” por línea.'); return; }
+              setBxUserOverlay((prev) => {
+                  const base = normalizeBxPayload(prev);
+                  const levels = target === 'both' ? ['b1', 'b2'] : [target];
+                  levels.forEach((lv) => {
+                      Object.keys(BX_DB_EMPTY).forEach((cat) => {
+                          const add = buckets[cat] || [];
+                          add.forEach((it) => {
+                              const ky = mullerBxItemKey(it);
+                              const exists = (base[lv][cat] || []).some((x) => mullerBxItemKey(x) === ky);
+                              if (exists) return;
+                              base[lv][cat].push({
+                                  ...it,
+                                  _mullerUser: true,
+                                  _mullerUid: 'bx_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 11),
+                                  _mullerCategory: cat
+                              });
+                          });
+                      });
+                  });
+                  try { localStorage.setItem(MULLER_BX_USER_OVERLAY_KEY, JSON.stringify(base)); } catch (e) {}
+                  return base;
+              });
+              const label = target === 'both' ? 'B1 y B2' : target.toUpperCase();
+              setBxImportSummary(`Añadido a ${label}: vocab ${counts.vocabulario}, verbos ${counts.verbos}, prep. ${counts.preposiciones}, conectores ${counts.conectores}, Redemittel ${counts.redemittel} · segmentos: ${counts.total}`);
+          };
+
+          const clearBxUserOverlay = () => {
+              if (!window.confirm('¿Borrar todas las frases que añadiste desde Biblioteca a las pestañas B1/B2? (No borra b1-b2-database.json en el servidor.)')) return;
+              const empty = normalizeBxPayload({});
+              setBxUserOverlay(empty);
+              try { localStorage.removeItem(MULLER_BX_USER_OVERLAY_KEY); } catch (e) {}
+              setBxImportSummary('');
+          };
+
+          const handleBxUserCardDelete = () => {
+              const item = bxCurrentList[bxIndex];
+              if (!item || !item._mullerUser || !item._mullerUid) return;
+              const level = activeTab === 'b1meister' ? 'b1' : 'b2';
+              let srcCat = bxCategory === 'mix' ? (item._mullerCategory || mullerFindUserBxCategory(bxUserOverlay, level, item._mullerUid)) : bxCategory;
+              if (!srcCat) {
+                  alert('No se encontró la categoría de esta tarjeta.');
+                  return;
+              }
+              if (!window.confirm('¿Eliminar esta tarjeta solo de tu biblioteca local?')) return;
+              setBxUserOverlay((prev) => {
+                  const base = JSON.parse(JSON.stringify(normalizeBxPayload(prev)));
+                  base[level][srcCat] = (base[level][srcCat] || []).filter((x) => x._mullerUid !== item._mullerUid);
+                  try { localStorage.setItem(MULLER_BX_USER_OVERLAY_KEY, JSON.stringify(base)); } catch (e) {}
+                  return base;
+              });
+          };
+
+          const handleBxUserCardMove = () => {
+              const item = bxCurrentList[bxIndex];
+              if (!item || !item._mullerUser || !item._mullerUid) return;
+              const level = activeTab === 'b1meister' ? 'b1' : 'b2';
+              let srcCat = bxCategory === 'mix' ? (item._mullerCategory || mullerFindUserBxCategory(bxUserOverlay, level, item._mullerUid)) : bxCategory;
+              if (!srcCat) {
+                  alert('No se encontró la categoría de origen.');
+                  return;
+              }
+              const toCat = bxMoveTargetCat;
+              if (srcCat === toCat) {
+                  alert('Elige otra categoría distinta.');
+                  return;
+              }
+              setBxUserOverlay((prev) => {
+                  const base = JSON.parse(JSON.stringify(normalizeBxPayload(prev)));
+                  const fromArr = base[level][srcCat] || [];
+                  const fi = fromArr.findIndex((x) => x._mullerUid === item._mullerUid);
+                  if (fi === -1) return prev;
+                  const moved = { ...fromArr[fi], _mullerCategory: toCat };
+                  fromArr.splice(fi, 1);
+                  if (!base[level][toCat]) base[level][toCat] = [];
+                  base[level][toCat].push(moved);
+                  try { localStorage.setItem(MULLER_BX_USER_OVERLAY_KEY, JSON.stringify(base)); } catch (e) {}
+                  return base;
+              });
+          };
 
           const loadSavedScript = (script) => {
               setGuionData(JSON.parse(script.data)); setActiveScriptTitle(script.title); setIsDefaultScript(false);
@@ -1290,9 +1856,9 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           };
 
           const playVocabAudio = () => {
-              if(currentVocabList.length === 0) return;
+              if(vocabDisplayList.length === 0) return;
               window.speechSynthesis.cancel();
-              const currentVocab = currentVocabList[vocabReviewIndex];
+              const currentVocab = vocabDisplayList[vocabReviewIndex];
               const cleanDeAudio = currentVocab.de.replace(/^[0-9]+[.\-):\]]*\s*/g, '').replace(/^[a-zA-ZäöüßÄÖÜ]{1,10}\s*[.:]\s*/g, '').replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{2B50}]|\u{FE0F}/gu, '').trim();
               const cleanEsAudio = currentVocab.es.replace(/^[0-9]+[.\-):\]]*\s*/g, '').replace(/^[a-zA-ZñÑáéíóúÁÉÍÓÚ]{1,10}\s*[.:]\s*/g, '').replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{2B50}]|\u{FE0F}/gu, '').trim();
               const utterDe = new SpeechSynthesisUtterance(cleanDeAudio);
@@ -1307,18 +1873,20 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           };
 
           const handleVocabDifficulty = (level) => {
-            const currentWord = currentVocabList[vocabReviewIndex];
+            const currentWord = vocabDisplayList[vocabReviewIndex];
+            if (!currentWord) return;
             let newDiff = [...userStats.difficultVocab];
             let newNorm = [...userStats.normalVocab];
             if (level === 'hard') { if (!newDiff.some(w => w.de === currentWord.de)) newDiff.push(currentWord); } 
             else if (level === 'normal') { if (!newNorm.some(w => w.de === currentWord.de)) newNorm.push(currentWord); }
+            mullerBumpVocabStreakRating();
             saveProgress({ difficultVocab: newDiff, normalVocab: newNorm, activityByDay: mergeActivityPoints(15) });
             try {
                 const nextMap = mullerApplyVocabSrsRating(mullerGetVocabSrsMap(), currentWord, level);
                 mullerSetVocabSrsMap(nextMap);
                 setVocabSrsEpoch((e) => e + 1);
             } catch (e) {}
-            if (vocabReviewIndex < currentVocabList.length - 1) { setVocabReviewIndex(prev => prev + 1); setShowVocabTranslation(false); } 
+            if (vocabReviewIndex < vocabDisplayList.length - 1) { setVocabReviewIndex(prev => prev + 1); setShowVocabTranslation(false); } 
             else { alert("¡Has completado todas las tarjetas de esta lista!"); setActiveTab('guiones'); }
           };
 
@@ -1516,8 +2084,21 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
             printWindow.document.close();
           };
 
-          // COLORES DE FONDO SUAVIZADOS (Corrección)
+          // COLORES DE FONDO SUAVIZADOS (Corrección) + temas UI
           const getBgColor = () => {
+              if (uiTheme === 'light') {
+                  if (activeTab === 'progreso') return 'bg-indigo-100';
+                  if (activeTab === 'guiones') return 'bg-slate-100';
+                  if (activeTab === 'vocabulario') return 'bg-amber-50';
+                  if (activeTab === 'b1meister' || activeTab === 'b2ausblick') return 'bg-slate-100';
+                  if (activeTab === 'storybuilder') return 'bg-indigo-100';
+                  if (activeTab === 'shadowing') return 'bg-teal-50';
+                  if (activeTab === 'escritura') return 'bg-stone-100';
+                  if (activeTab === 'telc') return 'bg-slate-100';
+                  return 'bg-slate-50';
+              }
+              if (uiTheme === 'hc') return 'bg-black';
+              if (activeTab === 'telc') return 'bg-slate-950';
               if (activeTab === 'progreso') return 'bg-indigo-950';
               if (activeTab === 'guiones') return 'bg-slate-900';
               if (activeTab === 'vocabulario') return 'bg-amber-950/70'; // Suavizado
@@ -1533,12 +2114,13 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               if (speaker?.includes('Weber') || speaker === 'Professor') return 'bg-emerald-950';
               return 'bg-gray-900'; 
           };
+          const themeShellClass = uiTheme === 'light' ? 'muller-theme-light' : uiTheme === 'hc' ? 'muller-theme-hc' : '';
 
           const currentPracticeList = practiceActive === 'diff' ? userStats.difficultVocab : (practiceActive === 'norm' ? userStats.normalVocab : userStats.difficultGrammar);
           const currentPracticeItem = currentPracticeList ? currentPracticeList[practiceIndex] : null;
 
           /** Lienzo para lápiz óptico / dedo: pointer capture, sin scroll al trazar. */
-          const TabletWritingCanvas = ({ padKey, grid, strokeW, compareTarget }) => {
+          const TabletWritingCanvas = ({ padKey, grid, strokeW, compareTarget, onOcrCompared }) => {
               const wrapRef = useRef(null);
               const canvasRef = useRef(null);
               const ctxRef = useRef(null);
@@ -1674,17 +2256,26 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       worker = null;
                       const t = (text || '').replace(/\s+\n/g, '\n').trim();
                       setOcrText(t);
+                      let computedPct = null;
                       if (compareTarget && t) {
                           const a = normalizeGermanSpeechText(compareTarget);
                           const b = normalizeGermanSpeechText(t);
                           if (a.length && b.length) {
                               const dist = levenshteinDistance(a, b);
                               const maxL = Math.max(a.length, b.length, 1);
-                              setOcrComparePct(Math.min(100, Math.max(0, Math.round((100 * (maxL - dist)) / maxL))));
+                              computedPct = Math.min(100, Math.max(0, Math.round((100 * (maxL - dist)) / maxL)));
+                              setOcrComparePct(computedPct);
                           } else setOcrComparePct(null);
                       } else setOcrComparePct(null);
                       if (!t) setOcrHint('No se detectó texto. Escribe más grande o con más contraste.');
                       else setOcrHint('');
+                      if (typeof onOcrCompared === 'function' && (computedPct != null || t)) {
+                          onOcrCompared({
+                              pct: computedPct,
+                              textSnippet: (t || '').slice(0, 120),
+                              targetSnippet: typeof compareTarget === 'string' ? compareTarget.slice(0, 120) : ''
+                          });
+                      }
                   } catch (err) {
                       if (worker) try { await worker.terminate(); } catch (e) {}
                       setOcrErr(err?.message || 'Error en OCR');
@@ -1829,6 +2420,12 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               saveProgress({ coins: userStats.coins + 5, activityByDay: mergeActivityPoints(12) });
           };
 
+          const finishOnboarding = () => {
+              try { localStorage.setItem(MULLER_ONBOARDING_KEY, '1'); } catch (e) {}
+              setShowOnboarding(false);
+              setOnboardingStep(1);
+          };
+
           const sortedDeVoices = useMemo(() => {
               try {
                   return window.speechSynthesis.getVoices()
@@ -1844,8 +2441,13 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               } catch (e) { return []; }
           }, [voicesLoaded, showMullerHub, ttsPrefsEpoch]);
 
+          const oralLeftSec = (mode === 'interview' && oralDeadline)
+              ? Math.max(0, Math.ceil((oralDeadline - Date.now()) / 1000))
+              : null;
+          void oralClock;
+
           return (
-            <div className={`flex flex-col min-h-screen md:h-screen md:max-h-[850px] w-full text-white font-sans md:rounded-xl overflow-hidden shadow-2xl relative transition-colors duration-500 ${getBgColor()}`}>
+            <div className={`flex flex-col min-h-screen md:h-screen md:max-h-[850px] w-full font-sans md:rounded-xl overflow-hidden shadow-2xl relative transition-colors duration-500 muller-theme-bg ${themeShellClass} ${uiTheme === 'light' ? 'text-slate-900' : 'text-white'} ${getBgColor()}`}>
               
               {/* SUPERIOR NAV BAR */}
               <div className="w-full bg-gradient-to-b from-zinc-900/95 via-black/90 to-black/95 backdrop-blur-xl border-b border-white/[0.07] shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-2 md:p-3 flex flex-col md:flex-row gap-2 md:gap-3 justify-between items-center z-20">
@@ -1866,6 +2468,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       <ExerciseHelpBtn helpId="nav_progreso" compact />
                       <button onClick={()=>{setActiveTab('guiones'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'guiones' ? 'bg-purple-600 text-white shadow-[0_0_18px_rgba(147,51,234,0.4)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="file-text" className="w-3 h-3 md:w-4 md:h-4" /> Biblioteca</button>
                       <ExerciseHelpBtn helpId="nav_biblioteca" compact />
+                      <button onClick={()=>{setActiveTab('telc'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'telc' ? 'bg-orange-700 text-white shadow-[0_0_16px_rgba(194,65,12,0.45)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="clipboard-check" className="w-3 h-3 md:w-4 md:h-4" /> TELC</button>
+                      <ExerciseHelpBtn helpId="nav_telc" compact />
                       <button onClick={()=>{setActiveTab('storybuilder'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'storybuilder' ? 'bg-fuchsia-600 text-white shadow-[0_0_18px_rgba(192,38,211,0.4)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="sparkles" className="w-3 h-3 md:w-4 md:h-4" /> IA</button>
                       <ExerciseHelpBtn helpId="nav_ia" compact />
                   </div>
@@ -1898,9 +2502,19 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                           <span className="flex items-center gap-1 font-black text-red-500 text-xs md:text-sm"><Icon name="heart" className="w-3 h-3 md:w-4 md:h-4 fill-current" /> {userStats.hearts}</span>
                           <span className="flex items-center gap-1 font-black text-yellow-400 text-xs md:text-sm"><Icon name="coins" className="w-3 h-3 md:w-4 md:h-4 fill-current" /> {userStats.coins}</span>
                       </div>
-                      <button onClick={()=>{setPodcastMode(!podcastMode); setBlindMode(false); setDiktatMode(false); setPuzzleMode(false);}} className={`flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs font-bold transition border border-white/20 whitespace-nowrap ${podcastMode ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.8)]' : 'bg-black/50 text-gray-300 hover:bg-white/10'}`} title="Auto-Play Podcast">
+                      <button onClick={()=>{setPodcastMode(!podcastMode); setBlindMode(false); setDiktatMode(false); setPuzzleMode(false); setHistoriaAudioOnly(false);}} className={`flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs font-bold transition border border-white/20 whitespace-nowrap ${podcastMode ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.8)]' : 'bg-black/50 text-gray-300 hover:bg-white/10'}`} title="Auto-Play Podcast">
                            <Icon name="car" className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden sm:inline">Podcast</span>
                       </button>
+                      {activeTab === 'historia' && (
+                          <>
+                          <button type="button" onClick={() => { setHistoriaAudioOnly(!historiaAudioOnly); if (!historiaAudioOnly) setPodcastMode(false); }} className={`flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs font-bold transition border border-white/20 whitespace-nowrap ${historiaAudioOnly ? 'bg-violet-600 text-white' : 'bg-black/50 text-gray-300 hover:bg-white/10'}`} title="UI mínima: solo audio y controles grandes (manos libres)">
+                              <Icon name="headphones" className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden sm:inline">Solo audio</span>
+                          </button>
+                          <button type="button" onClick={() => { setActiveTab('historia'); setMode('interview'); setOralQIdx(0); setOralDeadline(Date.now() + oralSecs * 1000); setOralClock(0); stopAudio(); setPodcastMode(false); setHistoriaAudioOnly(false); }} className="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs font-bold transition border border-emerald-500/40 bg-emerald-950/50 text-emerald-200 hover:bg-emerald-900/70 whitespace-nowrap" title="Simulacro oral B1 con temporizador por respuesta">
+                              <Icon name="mic" className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden sm:inline">Oral B1</span>
+                          </button>
+                          </>
+                      )}
                   </div>
               </div>
 
@@ -1923,6 +2537,51 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       <h1 className="text-3xl md:text-5xl font-black text-white mb-4 text-center">¡Te has quedado sin vidas!</h1>
                       <div className="flex gap-4">
                           <button onClick={buyHearts} className="bg-yellow-500 hover:bg-yellow-400 text-black px-6 md:px-8 py-3 md:py-4 rounded-xl font-black text-base md:text-xl shadow-xl flex items-center gap-2"><Icon name="coins" className="w-5 h-5 md:w-6 md:h-6" /> Comprar 5 ❤️ (50 Coins)</button>
+                      </div>
+                  </div>
+              )}
+
+              {showOnboarding && onboardingStep >= 1 && onboardingStep <= 5 && (() => {
+                  const obSteps = [
+                      { t: 'Bienvenida', d: 'Müller funciona en el navegador: Historia (audio), Vocab con SRS, Escritura con OCR local, B1/B2 y Progreso. Todo gratis en este dispositivo.' },
+                      { t: 'Pestañas', d: 'Arriba cambias de actividad. El botón morado abre entrenamiento avanzado (artículos, verbos, prep.). El panel azul es el Centro Müller (voces, plan, ayuda).' },
+                      { t: 'Temas y accesibilidad', d: 'En Centro Müller → Voces puedes elegir tema Oscuro / Claro / Alto contraste y presets de velocidad TTS (Lenta / Normal / Examen).' },
+                      { t: 'Objetivos y racha', d: 'En Vocab configuras objetivo diario de tarjetas; la racha solo sube si hay actividad mínima real (umbrales fijos en el informe del Centro).' },
+                      { t: 'Copia de seguridad', d: 'Los botones flotantes a la derecha exportan/importan. Puedes hacer backup total o solo SRS / mazos desde el menú pequeño. Sin cuenta en la nube obligatoria.' },
+                  ];
+                  const ob = obSteps[onboardingStep - 1];
+                  return (
+                  <div className="fixed inset-0 z-[128] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => finishOnboarding()} role="presentation">
+                      <div className="bg-slate-900 border border-sky-500/50 rounded-2xl p-6 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                          <p className="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-2">Onboarding · paso {onboardingStep}/5</p>
+                          <h3 className="text-xl font-black text-white mb-2">{ob.t}</h3>
+                          <p className="text-sm text-gray-400 mb-4 leading-relaxed">{ob.d}</p>
+                          <label className="flex items-center gap-2 text-xs text-gray-500 mb-4 cursor-pointer">
+                              <input type="checkbox" className="accent-sky-500" checked={onboardingNever} onChange={(e) => setOnboardingNever(e.target.checked)} />
+                              No volver a mostrar (se guarda en este navegador)
+                          </label>
+                          <div className="flex justify-between gap-2">
+                              <button type="button" className="text-xs text-gray-500" onClick={() => finishOnboarding()}>Saltar</button>
+                              <button type="button" className="px-4 py-2 rounded-lg bg-sky-600 font-bold text-sm" onClick={() => (onboardingStep < 5 ? setOnboardingStep(onboardingStep + 1) : finishOnboarding())}>{onboardingStep < 5 ? 'Siguiente' : 'Empezar'}</button>
+                          </div>
+                      </div>
+                  </div>
+                  );
+              })()}
+
+              {showShortcutsModal && (
+                  <div className="fixed inset-0 z-[129] bg-black/80 flex items-center justify-center p-4" onClick={() => setShowShortcutsModal(false)} role="presentation">
+                      <div className="bg-slate-900 border border-white/15 rounded-2xl p-5 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
+                          <h3 className="text-lg font-black text-white mb-3">Atajos de teclado</h3>
+                          <ul className="text-sm text-gray-400 space-y-2">
+                              <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">?</kbd> — esta ayuda</li>
+                              <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">H</kbd> — Historia</li>
+                              <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">V</kbd> — Vocabulario</li>
+                              <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">P</kbd> — Progreso</li>
+                              <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">M</kbd> — Centro Müller</li>
+                              <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">Esc</kbd> — cerrar modales</li>
+                          </ul>
+                          <button type="button" className="mt-4 w-full py-2 rounded-xl bg-slate-700 font-bold text-sm" onClick={() => setShowShortcutsModal(false)}>Cerrar</button>
                       </div>
                   </div>
               )}
@@ -2026,7 +2685,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                                   const u = new SpeechSynthesisUtterance('Guten Tag, ich übe Deutsch mit Professor Müller.');
                                                   u.lang = 'de-DE';
                                                   window.__mullerApplyPreferredDeVoice(u);
-                                                  u.rate = 0.92;
+                                                  u.rate = parseFloat(localStorage.getItem(MULLER_TTS_RATE_KEY) || '0.92') || 0.92;
                                                   window.speechSynthesis.cancel();
                                                   window.speechSynthesis.speak(u);
                                               }}
@@ -2069,6 +2728,33 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                               ▶ Probar voz español
                                           </button>
                                       </div>
+                                      <div className="border-t border-white/10 pt-4 mt-4 space-y-2">
+                                          <p className="text-[10px] font-bold text-violet-300 uppercase tracking-wider">Velocidad TTS (preset)</p>
+                                          <div className="flex flex-wrap gap-2">
+                                              {[
+                                                  { id: 'slow', label: 'Lenta', rate: '0.78' },
+                                                  { id: 'normal', label: 'Normal', rate: '0.92' },
+                                                  { id: 'exam', label: 'Examen', rate: '1.0' },
+                                              ].map((p) => (
+                                                  <button key={p.id} type="button" className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${(typeof window !== 'undefined' && (localStorage.getItem(MULLER_TTS_RATE_KEY) || '0.92') === p.rate) ? 'bg-violet-600 border-violet-400 text-white' : 'bg-slate-800 border-white/10 text-gray-400'}`} onClick={() => { try { localStorage.setItem(MULLER_TTS_RATE_KEY, p.rate); } catch (e) {} setTtsPrefsEpoch((x) => x + 1); }}>
+                                                      {p.label} ({p.rate})
+                                                  </button>
+                                              ))}
+                                          </div>
+                                          <p className="text-[10px] text-gray-500">Historias, simulacro oral y pruebas de voz usan esta base (ajusta el slider de escena si hace falta).</p>
+                                      </div>
+                                      <div className="border-t border-white/10 pt-4 mt-2 space-y-2">
+                                          <p className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider">Tema visual</p>
+                                          <div className="flex flex-wrap gap-2">
+                                              {[
+                                                  { id: 'dark', label: 'Oscuro' },
+                                                  { id: 'light', label: 'Claro' },
+                                                  { id: 'hc', label: 'Alto contraste' },
+                                              ].map((t) => (
+                                                  <button key={t.id} type="button" onClick={() => { setUiTheme(t.id); try { localStorage.setItem(MULLER_THEME_KEY, t.id); } catch (e) {} }} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${uiTheme === t.id ? 'bg-cyan-600 border-cyan-300 text-white' : 'bg-slate-800 border-white/10 text-gray-400'}`}>{t.label}</button>
+                                              ))}
+                                          </div>
+                                      </div>
                                   </div>
                               )}
                               {mullerHubTab === 'today' && (
@@ -2092,7 +2778,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                               )}
                               {mullerHubTab === 'report' && (
                                   <div className="space-y-2 text-xs text-gray-300">
-                                      <p><span className="text-white font-bold">Racha:</span> {userStats.streakDays} días</p>
+                                      <p><span className="text-white font-bold">Racha (honesta):</span> {userStats.streakDays} días</p>
+                                      <p className="text-[10px] text-gray-500 leading-snug">Cuenta solo si en el día hubo actividad mínima: ≥{MULLER_STREAK_MIN_VOCAB_RATINGS} tarjetas de vocab calificadas, o ≥{MULLER_STREAK_MIN_ACTIVITY_POINTS} puntos de actividad, o ≥{Math.round(MULLER_STREAK_MIN_ACTIVE_SEC / 60)} min con la app abierta (timer).</p>
                                       <p><span className="text-white font-bold">Monedas:</span> {userStats.coins}</p>
                                       <p><span className="text-emerald-300 font-bold">SRS vocabulario:</span> {Object.keys(vocabSrsMap).length} tarjetas con calendario (este dispositivo)</p>
                                       <p><span className="text-white font-bold">Intentos pronunciación:</span> {userStats.pronunciationAttempts || 0}</p>
@@ -2102,6 +2789,15 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                               )}
                               {mullerHubTab === 'tips' && (
                                   <div className="space-y-3 text-xs text-gray-300">
+                                      <p className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">Atajos de teclado (fuera de campos de texto)</p>
+                                      <ul className="list-disc list-inside space-y-1 text-[11px]">
+                                          <li><kbd className="px-1 rounded bg-black/50 border border-white/20">?</kbd> o <kbd className="px-1 rounded bg-black/50 border border-white/20">Shift+/</kbd> — ayuda de atajos</li>
+                                          <li><kbd className="px-1 rounded bg-black/50 border border-white/20">H</kbd> — pestaña Historia</li>
+                                          <li><kbd className="px-1 rounded bg-black/50 border border-white/20">V</kbd> — Vocab</li>
+                                          <li><kbd className="px-1 rounded bg-black/50 border border-white/20">P</kbd> — Progreso</li>
+                                          <li><kbd className="px-1 rounded bg-black/50 border border-white/20">M</kbd> — Centro Müller</li>
+                                          <li><kbd className="px-1 rounded bg-black/50 border border-white/20">Esc</kbd> — cierra paneles / ayuda</li>
+                                      </ul>
                                       <p>Usa <strong className="text-white">Chrome o Edge</strong> para más voces y mejor reconocimiento de voz.</p>
                                       <p><strong className="text-white">GitHub Pages</strong> requiere HTTPS; el micrófono funciona al permitir permisos.</p>
                                       <p>Si la lista sale vacía, pulsa <strong className="text-white">Recargar lista de voces</strong> en la pestaña Voces o recarga la página.</p>
@@ -2162,6 +2858,68 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               {/* CONTENIDO PRINCIPAL */}
               <div className="flex-1 overflow-y-auto relative flex flex-col hide-scrollbar">
                   
+                  {activeTab === 'telc' && !practiceActive && (
+                      <div className="p-4 md:p-8 max-w-3xl mx-auto w-full animate-in fade-in duration-500 overflow-y-auto pb-24">
+                          <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
+                              <h1 className="text-2xl md:text-4xl font-black text-orange-300 flex items-center gap-2"><Icon name="clipboard-check" className="w-8 h-8 md:w-10 md:h-10" /> Pre-examen TELC (checklist)</h1>
+                              <ExerciseHelpBtn helpId="nav_telc" />
+                          </div>
+                          <p className="text-sm text-gray-400 mb-6 leading-relaxed">Orientación general (B1/B2). Los tiempos exactos dependen del centro examinador — confirma siempre tu convocatoria.</p>
+                          <div className="space-y-6 text-sm text-gray-300">
+                              <section className="bg-black/35 border border-orange-900/40 rounded-2xl p-4 md:p-6">
+                                  <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><Icon name="briefcase" className="w-5 h-5" /> Qué llevar</h2>
+                                  <ul className="list-disc list-inside space-y-1.5">
+                                      <li>Documento de identidad válido (mismo que al registrarte).</li>
+                                      <li>Confirmación / hoja de inscripción al examen (si el centro la envió).</li>
+                                      <li>Lápiz negro o azul y goma (si el centro permite escritura a mano).</li>
+                                      <li>Reloj analógico silencioso si te ayuda (sin smartwatch en sala).</li>
+                                      <li>Llegada con margen: localiza baños y aula el día anterior si puedes.</li>
+                                  </ul>
+                              </section>
+                              <section className="bg-black/35 border border-orange-900/40 rounded-2xl p-4 md:p-6">
+                                  <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><Icon name="clock" className="w-5 h-5" /> Tiempos orientativos</h2>
+                                  <ul className="list-disc list-inside space-y-1.5">
+                                      <li>Lectura: bloque con varias tareas seguidas — gestiona el reloj desde el primer minuto.</li>
+                                      <li>Escritura: planifica 5 minutos de borrador mental antes de escribir en limpio.</li>
+                                      <li>Oral: suele haber preparación corta antes de la interacción; usa notas solo si el formato lo permite.</li>
+                                      <li>Escucha: una sola emisión en muchos centros — lee las preguntas antes de sonar el audio.</li>
+                                  </ul>
+                              </section>
+                              <section className="bg-black/35 border border-orange-900/40 rounded-2xl p-4 md:p-6">
+                                  <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><Icon name="lightbulb" className="w-5 h-5" /> Consejos</h2>
+                                  <ul className="list-disc list-inside space-y-1.5">
+                                      <li>Duerme al menos 7 h la noche anterior; el cansancio penaliza la escucha.</li>
+                                      <li>Si no entiendes una instrucción, pide repetición corta en alemán (formulación educada).</li>
+                                      <li>En producción escrita, prioriza coherencia y conectores sobre vocabulario raro.</li>
+                                  </ul>
+                              </section>
+                          </div>
+                          <div className="flex flex-wrap gap-3 mt-8">
+                              <button type="button" onClick={() => {
+                                  const lines = [
+                                      'Checklist TELC — Müller',
+                                      'Qué llevar: DNI/documento, confirmación, lápices, llegada temprana.',
+                                      'Tiempos: gestionar lectura; planificar escritura; oral con preparación; escucha única.',
+                                      'Consejos: descanso, pedir aclaraciones, coherencia en la redacción.'
+                                  ];
+                                  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+                                  const a = document.createElement('a');
+                                  a.href = URL.createObjectURL(blob);
+                                  a.download = `telc_checklist_${new Date().toISOString().slice(0, 10)}.txt`;
+                                  a.click();
+                                  URL.revokeObjectURL(a.href);
+                              }} className="px-4 py-2 rounded-xl bg-orange-700 hover:bg-orange-600 font-bold text-sm border border-orange-500/40">Exportar checklist (.txt)</button>
+                              <button type="button" onClick={() => {
+                                  const w = window.open('', '_blank');
+                                  if (!w) return;
+                                  w.document.write(`<html><head><title>TELC Checklist</title></head><body style="font-family:sans-serif;padding:24px;"><h1>Checklist TELC</h1><p>Usa la vista previa de impresión (Ctrl+P) para guardar PDF.</p><ul><li>Documento</li><li>Confirmación</li><li>Material de escritura</li></ul></body></html>`);
+                                  w.document.close();
+                                  w.print();
+                              }} className="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 font-bold text-sm border border-white/10">Imprimir / PDF (navegador)</button>
+                          </div>
+                      </div>
+                  )}
+
                   {/* STORY BUILDER (sin cambios) */}
                   {activeTab === 'storybuilder' && (
                       <div className="p-4 md:p-8 max-w-3xl mx-auto w-full animate-in fade-in duration-500 flex flex-col justify-center h-full">
@@ -2170,6 +2928,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                               <ExerciseHelpBtn helpId="storybuilder" />
                           </div>
                           <p className="text-fuchsia-200 mb-6 md:mb-8 text-base md:text-lg">Crea historias a medida generadas por IA utilizando el nivel y vocabulario exacto que quieres repasar.</p>
+                          <p className="text-[11px] text-fuchsia-400/80 mb-4 max-w-xl leading-relaxed border border-fuchsia-800/40 rounded-xl p-3 bg-black/20">Nota: la IA integrada aquí es simulada en el navegador (sin coste). Si conectas un proveedor de IA externo, sería opcional y con <strong className="text-fuchsia-200">clave aportada por ti</strong> — no hay IA de pago centralizada en esta app.</p>
                           {!isGeneratingStory ? (
                               <div className="bg-fuchsia-900/40 p-4 md:p-8 rounded-2xl md:rounded-3xl border-2 border-fuchsia-500/50 shadow-2xl flex flex-col gap-4 md:gap-6">
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -2260,7 +3019,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       {activeTab === 'b1meister' ? 'B1 Fundamentos' : 'B2 Meisterklasse'}
                                   </h1>
                                   <p className="text-gray-300 text-xs md:text-sm mt-1">{activeTab === 'b1meister' ? 'Domina las bases absolutas.' : 'Estructuras avanzadas de nativos.'}</p>
-                                  <p className="text-[10px] text-gray-500 mt-1">Tarjetas desde <code className="text-amber-200/90">b1-b2-database.json</code> (editable sin tocar el HTML).</p>
+                                  <p className="text-[10px] text-gray-500 mt-1">Tarjetas desde <code className="text-amber-200/90">b1-b2-database.json</code> más lo que añadas desde <strong className="text-gray-400">Biblioteca → Distribuir texto → B1/B2</strong> (local).</p>
                               </div>
                               <div className="flex flex-wrap items-center gap-2 justify-end">
                                   <div className="flex gap-1 md:gap-2 flex-wrap bg-black/40 p-1 md:p-2 rounded-xl border border-white/10">
@@ -2290,6 +3049,26 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                               <Icon name="brain" className="w-5 h-5 md:w-6 md:h-6 text-amber-400 flex-shrink-0 mt-0.5 md:mt-1" />
                                               <p className="text-xs md:text-sm text-gray-200 leading-relaxed"><strong className="text-amber-400 uppercase tracking-wide">La Lógica del Profesor:</strong> <br/> {bxCurrentList[bxIndex]?.trick}</p>
                                           </div>
+                                          {bxCurrentList[bxIndex]?._mullerUser ? (
+                                              <div className="mt-4 md:mt-5 flex flex-col sm:flex-row flex-wrap gap-2 md:gap-3 items-stretch sm:items-center border-t border-white/10 pt-4">
+                                                  <span className="text-[10px] font-bold text-emerald-400/90 uppercase tracking-wider">Tu biblioteca</span>
+                                                  <button type="button" onClick={handleBxUserCardDelete} className="text-xs md:text-sm bg-red-900/70 hover:bg-red-800 text-red-100 px-3 py-2 rounded-xl font-bold border border-red-700/50">Eliminar tarjeta</button>
+                                                  <div className="flex flex-wrap items-center gap-2">
+                                                      <span className="text-[10px] text-gray-500">Mover a</span>
+                                                      <select value={bxMoveTargetCat} onChange={(e) => setBxMoveTargetCat(e.target.value)} className="bg-black/60 border border-gray-600 text-white text-xs md:text-sm rounded-lg px-2 py-1.5 outline-none focus:border-emerald-500">
+                                                          {Object.keys(BX_DB_EMPTY).filter((c) => {
+                                                              const it = bxCurrentList[bxIndex];
+                                                              const level = activeTab === 'b1meister' ? 'b1' : 'b2';
+                                                              const src = bxCategory === 'mix' ? (it._mullerCategory || mullerFindUserBxCategory(bxUserOverlay, level, it._mullerUid)) : bxCategory;
+                                                              return c !== src;
+                                                          }).map((c) => (
+                                                              <option key={c} value={c}>{c === 'vocabulario' ? 'Vocabulario' : c === 'verbos' ? 'Verbos' : c === 'preposiciones' ? 'Prep.' : c === 'conectores' ? 'Conectores' : 'Redemittel'}</option>
+                                                          ))}
+                                                      </select>
+                                                      <button type="button" onClick={handleBxUserCardMove} className="text-xs md:text-sm bg-emerald-900/70 hover:bg-emerald-800 text-emerald-100 px-3 py-2 rounded-xl font-bold border border-emerald-600/50">Mover aquí</button>
+                                                  </div>
+                                              </div>
+                                          ) : null}
                                       </div>
                                       <div className="flex gap-3 md:gap-4 mt-6 md:mt-8 w-full max-w-sm justify-between">
                                           <button onClick={() => setBxIndex(i => i > 0 ? i - 1 : bxCurrentList.length - 1)} className="bg-gray-800 hover:bg-gray-700 text-white p-3 md:p-4 rounded-full transition"><Icon name="skip-back" className="w-5 h-5 md:w-6 md:h-6" /></button>
@@ -2411,6 +3190,24 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                               <input type="text" placeholder="Ej: Lektion 17: Die Reise..." className="w-full bg-black/50 border border-gray-600 p-2 md:p-3 rounded-lg text-white mb-3 md:mb-4 outline-none focus:border-purple-500 text-sm md:text-base" value={newScriptTitle} onChange={(e) => setNewScriptTitle(e.target.value)} />
                               <textarea className="w-full flex-1 min-h-[120px] md:min-h-[150px] bg-black/50 border border-gray-600 p-3 md:p-4 rounded-lg text-white font-mono text-xs md:text-sm mb-3 md:mb-4 outline-none focus:border-purple-500 resize-none" placeholder="Pega aquí el resultado de la IA..." value={scriptInput} onChange={(e) => setScriptInput(e.target.value)} />
                               <button onClick={handleSaveScript} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 md:py-4 rounded-xl flex justify-center items-center gap-2 shadow-lg text-sm md:text-base"><Icon name="save" className="w-4 h-4 md:w-5 md:h-5" /> Guardar y Estudiar</button>
+
+                              <div className="mt-6 md:mt-8 border-t border-gray-600/80 pt-5 md:pt-6">
+                                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                      <h2 className="text-lg md:text-xl font-bold flex items-center gap-2 text-emerald-300"><Icon name="layout-grid" className="w-5 h-5 md:w-6 md:h-6" /> Distribuir texto → B1 / B2</h2>
+                                      <ExerciseHelpBtn helpId="guiones_bx_distrib" compact />
+                                  </div>
+                                  <p className="text-[11px] md:text-xs text-gray-400 mb-3 leading-relaxed">Pega un guion (<code className="text-gray-300">Nombre:</code> …), listas <code className="text-gray-300">alemán - español</code> o líneas sueltas. La app recoge frases y palabras y las reparte en <strong className="text-gray-200">vocabulario, verbos, preposiciones, conectores y Redemittel</strong> con reglas locales (sin IA de pago). Si el cuadro de abajo está vacío, se usa el texto del guion de arriba. Todo se guarda en este navegador y se suma a <code className="text-gray-300">b1-b2-database.json</code>.</p>
+                                  <textarea className="w-full min-h-[100px] md:min-h-[120px] bg-black/50 border border-emerald-800/60 p-3 rounded-lg text-white font-mono text-xs md:text-sm mb-3 outline-none focus:border-emerald-500 resize-none" placeholder="Pega aquí o déjalo vacío para usar el cuadro del guion de arriba…" value={bxImportText} onChange={(e) => setBxImportText(e.target.value)} />
+                                  <div className="flex flex-wrap gap-2 mb-3">
+                                      <button type="button" onClick={() => handleBxDistribToLevels('b1')} className="flex-1 min-w-[120px] bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs md:text-sm">→ Solo B1</button>
+                                      <button type="button" onClick={() => handleBxDistribToLevels('b2')} className="flex-1 min-w-[120px] bg-sky-700 hover:bg-sky-600 text-white font-bold py-2.5 rounded-xl text-xs md:text-sm">→ Solo B2</button>
+                                      <button type="button" onClick={() => handleBxDistribToLevels('both')} className="flex-1 min-w-[140px] bg-gradient-to-r from-emerald-600 to-sky-600 hover:opacity-95 text-white font-bold py-2.5 rounded-xl text-xs md:text-sm">→ B1 y B2</button>
+                                  </div>
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                      <button type="button" onClick={clearBxUserOverlay} className="text-xs md:text-sm text-red-400 hover:text-red-300 underline">Borrar mis aportaciones B1/B2</button>
+                                      {bxImportSummary ? <p className="text-[10px] md:text-xs text-emerald-200/90 flex-1 text-right">{bxImportSummary}</p> : null}
+                                  </div>
+                              </div>
                           </div>
                           <div className="w-full md:w-1/3 flex flex-col gap-4 max-h-[600px] md:max-h-full">
                               <div className="bg-gray-900 p-4 md:p-5 rounded-2xl border border-gray-800 flex flex-col shrink-0 h-1/3 min-h-[180px] md:min-h-[200px]">
@@ -2438,7 +3235,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           <input type="text" placeholder="Título (Ej: Lektion 12)" className="w-2/3 bg-black/50 border border-amber-800 p-1.5 md:p-2 rounded-lg text-white text-xs md:text-sm outline-none focus:border-amber-500" value={vocabTitleInput} onChange={(e) => setVocabTitleInput(e.target.value)} />
                                           <button onClick={handleSaveCustomVocab} className="w-1/3 bg-amber-600 hover:bg-amber-500 text-white py-1.5 md:py-2 rounded-lg font-bold text-xs transition shadow-lg flex justify-center items-center gap-1"><Icon name="save" className="w-3 h-3 md:w-4 md:h-4" /> Guardar</button>
                                       </div>
-                                      <textarea className="w-full h-12 md:h-14 bg-black/50 border border-amber-800 p-2 rounded-lg text-white font-mono text-[10px] md:text-xs outline-none focus:border-amber-500 resize-none" placeholder="Pega aquí tu lista...&#10;der Apfel - la manzana" value={vocabTextInput} onChange={(e) => setVocabTextInput(e.target.value)} />
+                                      <p className="text-[10px] text-amber-700/90 mb-1">Paquetes de ejemplo en el repo: <code className="text-amber-200">vocab-packs/reise-mini.json</code> — abre el archivo, copia las líneas <code className="text-amber-200">de/es</code> o pega una lista: <code className="text-amber-200">der Bahnhof - la estación</code> por línea.</p>
+                                  <textarea className="w-full h-12 md:h-14 bg-black/50 border border-amber-800 p-2 rounded-lg text-white font-mono text-[10px] md:text-xs outline-none focus:border-amber-500 resize-none" placeholder="Pega aquí tu lista...&#10;der Apfel - la manzana" value={vocabTextInput} onChange={(e) => setVocabTextInput(e.target.value)} />
                                   </div>
                                   <div className="flex-1 overflow-y-auto space-y-2 pr-2 hide-scrollbar">
                                       {customVocabLessons.length === 0 ? <p className="text-gray-500 text-xs italic">Tus lecciones guardadas aparecerán aquí.</p> : null}
@@ -2472,17 +3270,30 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   {/* VOCABULARIO (con botón de escritura a mano) */}
                   {activeTab === 'vocabulario' && !practiceActive && (
                       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 animate-in fade-in relative">
-                          <div className="absolute top-3 right-3 md:top-6 md:right-8 z-10"><ExerciseHelpBtn helpId="vocab_active_recall" /></div>
+                          <div className="absolute top-3 right-3 md:top-6 md:right-8 z-10 flex flex-col items-end gap-2"><ExerciseHelpBtn helpId="vocab_active_recall" />
+                              <label className="flex items-center gap-2 text-[10px] font-bold text-amber-900/80 bg-white/20 px-2 py-1 rounded-lg border border-amber-900/20 cursor-pointer"><input type="checkbox" className="accent-amber-600" checked={vocabDueFilterOnly} onChange={(e) => { setVocabDueFilterOnly(e.target.checked); setVocabReviewIndex(0); }} /> Solo vencidas / nuevas hoy</label>
+                          </div>
                           <h1 className="absolute top-4 md:top-8 text-lg md:text-2xl font-black text-amber-900/40 uppercase tracking-widest hidden md:block">Active Recall - {activeScriptTitle}</h1>
                           {vocabSrsDueCount > 0 ? (
                               <p className="absolute top-12 md:top-[4.25rem] left-1/2 -translate-x-1/2 max-w-lg text-center text-[10px] md:text-xs text-amber-900/70 font-bold px-3 hidden md:block">SRS: {vocabSrsDueCount} tarjetas prioritarias en esta lista (nuevas o tocadas hoy)</p>
                           ) : null}
-                          {currentVocabList.length === 0 ? (
-                              <div className="text-center text-amber-900/60 font-bold text-base md:text-2xl">Este guion no tiene vocabulario configurado.</div>
+                          <div className="w-full max-w-md mb-4 mt-10 md:mt-6 px-3">
+                              <p className="text-[10px] font-bold text-amber-900/60 uppercase mb-1">Objetivo diario (tarjetas calificadas)</p>
+                              <div className="flex items-center gap-2">
+                                  <input type="range" min="3" max="60" step="1" value={mainDailyGoal} onChange={(e) => { const n = parseInt(e.target.value, 10); setMainDailyGoal(n); try { localStorage.setItem(MULLER_MAIN_GOAL_KEY, String(n)); } catch (err) {} }} className="flex-1 accent-amber-600" />
+                                  <span className="text-xs font-mono font-bold text-amber-950 w-8">{mainDailyGoal}</span>
+                              </div>
+                              <div className="h-2 rounded-full bg-black/20 mt-2 overflow-hidden border border-amber-900/20">
+                                  <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${Math.min(100, (mullerGetStreakTodayStats().vocabRated / Math.max(1, mainDailyGoal)) * 100)}%` }} />
+                              </div>
+                              <p className="text-[9px] text-amber-900/50 mt-1">Hoy: {mullerGetStreakTodayStats().vocabRated || 0}/{mainDailyGoal} · al completar el objetivo +10 monedas (una vez al día)</p>
+                          </div>
+                          {vocabDisplayList.length === 0 ? (
+                              <div className="text-center text-amber-900/60 font-bold text-base md:text-2xl">{vocabDueFilterOnly ? 'No hay tarjetas vencidas en esta lista.' : 'Este guion no tiene vocabulario configurado.'}</div>
                           ) : (
                               <div className="max-w-2xl w-full flex flex-col items-center gap-6 md:gap-10">
                                   <button onClick={playVocabAudio} className="bg-white/20 hover:bg-white/30 text-amber-950 p-3 md:p-4 rounded-full transition shadow-lg mb-2 md:mb-4"><Icon name="volume-2" className="w-8 h-8 md:w-10 md:h-10" /></button>
-                                  <h1 className="text-4xl md:text-8xl font-black text-slate-900 text-center drop-shadow-md flex items-center justify-center flex-wrap gap-1">{getArticleVisual(currentVocabList[vocabReviewIndex].de)}{currentVocabList[vocabReviewIndex].de}</h1>
+                                  <h1 className="text-4xl md:text-8xl font-black text-slate-900 text-center drop-shadow-md flex items-center justify-center flex-wrap gap-1">{getArticleVisual(vocabDisplayList[vocabReviewIndex].de)}{vocabDisplayList[vocabReviewIndex].de}</h1>
                                   {!showVocabTranslation ? (
                                       <div className="flex gap-4">
                                           <button onClick={() => setShowVocabTranslation(true)} className="mt-6 md:mt-8 bg-slate-900 hover:bg-slate-800 text-white px-8 md:px-10 py-3 md:py-5 rounded-2xl font-bold text-2xl md:text-3xl shadow-[0_10px_20px_rgba(0,0,0,0.3)] transition transform hover:scale-105 border-b-4 border-slate-700">Revelar 👀</button>
@@ -2490,7 +3301,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       </div>
                                   ) : (
                                       <div className="flex flex-col items-center gap-6 md:gap-8 w-full animate-in slide-in-from-bottom-8">
-                                          <h2 className="text-2xl md:text-5xl font-bold text-slate-800 text-center bg-white/60 px-4 md:px-10 py-3 md:py-6 rounded-2xl md:rounded-3xl shadow-inner border border-white/40 w-full">{currentVocabList[vocabReviewIndex].es}</h2>
+                                          <h2 className="text-2xl md:text-5xl font-bold text-slate-800 text-center bg-white/60 px-4 md:px-10 py-3 md:py-6 rounded-2xl md:rounded-3xl shadow-inner border border-white/40 w-full">{vocabDisplayList[vocabReviewIndex].es}</h2>
                                           <div className="flex flex-col md:flex-row gap-3 md:gap-4 w-full">
                                               <button onClick={() => handleVocabDifficulty('easy')} className="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 md:py-4 rounded-xl font-bold text-base md:text-lg shadow-lg transition">Fácil (Descartar)</button>
                                               <button onClick={() => handleVocabDifficulty('normal')} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 md:py-4 rounded-xl font-bold text-base md:text-lg shadow-lg transition">Normal</button>
@@ -2499,13 +3310,19 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           <p className="text-[10px] md:text-xs text-slate-800/80 text-center max-w-md leading-snug">Cada opción actualiza el calendario SRS (intervalos tipo Anki/SM-2): más espacio si fue fácil, repaso antes si fue difícil.</p>
                                       </div>
                                   )}
-                                  <p className="text-amber-900/60 font-bold mt-4 md:mt-8 bg-white/20 px-4 md:px-6 py-1.5 md:py-2 rounded-full border border-amber-900/20 text-xs md:text-sm">Palabra {vocabReviewIndex + 1} de {currentVocabList.length}</p>
+                                  <p className="text-amber-900/60 font-bold mt-4 md:mt-8 bg-white/20 px-4 md:px-6 py-1.5 md:py-2 rounded-full border border-amber-900/20 text-xs md:text-sm">Palabra {vocabReviewIndex + 1} de {vocabDisplayList.length}</p>
                                   {(() => {
-                                      const w = currentVocabList[vocabReviewIndex];
+                                      const w = vocabDisplayList[vocabReviewIndex];
                                       if (!w) return null;
                                       const s = vocabSrsMap[mullerVocabSrsKey(w)];
-                                      if (!s || !s.due) return null;
-                                      return <p className="text-[10px] text-amber-900/55 -mt-2">Programado: próximo repaso {s.due} · intervalo {s.interval} d · facilidad {typeof s.easeFactor === 'number' ? s.easeFactor.toFixed(2) : '—'}</p>;
+                                      const vc = s && typeof s.viewCount === 'number' ? s.viewCount : 0;
+                                      const rc = s && typeof s.ratedCount === 'number' ? s.ratedCount : 0;
+                                      return (
+                                          <div className="text-[10px] text-amber-900/70 -mt-2 text-center max-w-lg space-y-0.5">
+                                              {s && s.due ? <p>Próximo repaso: <strong className="text-amber-950">{s.due}</strong> · intervalo {s.interval} d · EF {typeof s.easeFactor === 'number' ? s.easeFactor.toFixed(2) : '—'}</p> : <p className="text-amber-900/50">Sin calificar aún en SRS</p>}
+                                              <p>Vistas: <strong>{vc}</strong> · Calificaciones: <strong>{rc}</strong></p>
+                                          </div>
+                                      );
                                   })()}
                               </div>
                           )}
@@ -2648,6 +3465,21 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                               ))}
                           </div>
 
+                          {ocrHistoryList.length > 0 && (
+                              <div className="mb-4 rounded-xl border border-indigo-500/35 bg-indigo-950/20 p-3">
+                                  <p className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider mb-2">Historial OCR (últimas {ocrHistoryList.length})</p>
+                                  <ul className="space-y-1.5 text-[10px] text-gray-400 max-h-36 overflow-y-auto pr-1">
+                                      {ocrHistoryList.map((h) => (
+                                          <li key={h.id || h.at} className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/5 pb-1.5">
+                                              <span className="text-gray-500 shrink-0">{h.at ? new Date(h.at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                                              <span className="text-emerald-300 font-mono font-bold">{h.pct != null ? `${h.pct}%` : 'sin %'}</span>
+                                              <span className="w-full text-gray-500 truncate italic">{(h.textSnippet || '').slice(0, 70)}{(h.textSnippet || '').length > 70 ? '…' : ''}</span>
+                                          </li>
+                                      ))}
+                                  </ul>
+                              </div>
+                          )}
+
                           {writingMode === 'free' && (
                               <div className="mb-4 rounded-xl bg-black/35 border border-rose-500/25 p-3 md:p-4">
                                   <p className="text-rose-200/90 text-sm font-bold mb-1">Página en blanco</p>
@@ -2760,7 +3592,16 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                               ))}
                           </div>
 
-                          <TabletWritingCanvas padKey={writingCanvasKey} grid={writingGrid} strokeW={writingStroke} compareTarget={writingCompareTarget} />
+                          <TabletWritingCanvas
+                              padKey={writingCanvasKey}
+                              grid={writingGrid}
+                              strokeW={writingStroke}
+                              compareTarget={writingCompareTarget}
+                              onOcrCompared={(payload) => {
+                                  const arr = mullerPushOcrHistory(payload);
+                                  setOcrHistoryList(arr);
+                              }}
+                          />
                       </div>
                   )}
 
@@ -2802,13 +3643,28 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                         )}
 
                         {mode === 'interview' ? (
+                            (() => {
+                                const q = MULLER_ORAL_B1_QUESTIONS[oralQIdx % MULLER_ORAL_B1_QUESTIONS.length];
+                                const modelDe = q.model || '';
+                                return (
                             <div className="max-w-4xl w-full flex flex-col items-center justify-center animate-in zoom-in duration-500 p-4">
-                                <div className="bg-emerald-900 text-emerald-200 border border-emerald-500 px-3 md:px-6 py-1 md:py-2 rounded-full font-bold flex items-center gap-2 mb-4 md:mb-8 text-xs md:text-sm"><Icon name="message-square" className="w-4 h-4 md:w-5 md:h-5" /> Mündliche Prüfung Teil 2</div>
-                                <h2 className="text-base md:text-3xl text-gray-300 font-bold mb-3 md:mb-4 uppercase tracking-widest text-center">Herr Weber fragt:</h2>
-                                <h1 className="text-xl md:text-6xl font-medium text-white text-center italic mb-6 md:mb-12 border-l-4 md:border-l-8 border-emerald-500 pl-3 md:pl-8 py-2 md:py-4 bg-emerald-950/30 text-sm md:text-base">"Sagen Sie mal, was denken Sie über Kunst?"</h1>
+                                <div className="bg-emerald-900 text-emerald-200 border border-emerald-500 px-3 md:px-6 py-1 md:py-2 rounded-full font-bold flex items-center gap-2 mb-4 md:mb-6 text-xs md:text-sm"><Icon name="message-square" className="w-4 h-4 md:w-5 md:h-5" /> Mündliche Prüfung Teil 2 · {oralQIdx + 1}/{MULLER_ORAL_B1_QUESTIONS.length}</div>
+                                <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+                                    <span className="text-[10px] font-bold text-gray-500 uppercase">Tiempo por respuesta</span>
+                                    {[60, 90, 120].map((s) => (
+                                        <button key={s} type="button" onClick={() => { setOralSecs(s); setOralDeadline(Date.now() + s * 1000); setOralClock(0); }} className={`px-2 py-1 rounded-lg text-xs font-bold border ${oralSecs === s ? 'bg-emerald-700 border-emerald-400 text-white' : 'bg-black/40 border-white/15 text-gray-400'}`}>{s}s</button>
+                                    ))}
+                                </div>
+                                <div className={`w-full max-w-xl mb-4 rounded-2xl border px-4 py-3 text-center font-bold text-2xl md:text-4xl tabular-nums ${oralLeftSec !== null && oralLeftSec <= 15 ? 'border-amber-500 bg-amber-950/40 text-amber-200' : 'border-emerald-600/50 bg-black/30 text-emerald-200'}`}>
+                                    {oralLeftSec !== null ? `${Math.floor(oralLeftSec / 60)}:${String(oralLeftSec % 60).padStart(2, '0')}` : '—'}
+                                </div>
+                                <h2 className="text-base md:text-2xl text-gray-300 font-bold mb-2 uppercase tracking-widest text-center">Prüfer/in fragt:</h2>
+                                <h1 className="text-lg md:text-3xl font-medium text-white text-center mb-2 px-2 leading-snug border-l-4 border-emerald-500 pl-3 bg-emerald-950/30 py-3 rounded-r-xl">"{q.de}"</h1>
+                                <p className="text-sm text-gray-500 italic mb-6 text-center max-w-2xl">({q.es})</p>
                                 <div className="flex flex-col items-center gap-3 md:gap-4 w-full bg-black/40 p-4 md:p-8 rounded-2xl border border-white/10 shadow-2xl">
-                                    <button onMouseDown={() => handleVoiceStart("Ich denke dass Kunst sehr wichtig ist")} onMouseUp={handleVoiceStop} onMouseLeave={handleVoiceStop} onTouchStart={(e) => { handleVoiceStart("Ich denke dass Kunst sehr wichtig ist"); }} onTouchEnd={(e) => { handleVoiceStop(); }} className={`rounded-full p-6 md:p-8 text-white transition transform hover:scale-110 shadow-xl select-none ${isListening ? 'bg-red-500 animate-pulse' : 'bg-emerald-600 hover:bg-emerald-500'}`}><Icon name="mic" className="w-12 h-12 md:w-16 md:h-16" /></button>
-                                    <p className="text-gray-400 font-bold mt-2 text-center text-xs md:text-sm">Mantén pulsado para responder</p>
+                                    <button type="button" onClick={() => { const u = new SpeechSynthesisUtterance(q.de); u.lang = 'de-DE'; window.__mullerApplyPreferredDeVoice(u); u.rate = parseFloat(localStorage.getItem(MULLER_TTS_RATE_KEY) || '0.92') || 0.92; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }} className="w-full max-w-md py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-sm border border-white/10 flex items-center justify-center gap-2"><Icon name="volume-2" className="w-5 h-5" /> Escuchar pregunta</button>
+                                    <button onMouseDown={() => handleVoiceStart(modelDe)} onMouseUp={handleVoiceStop} onMouseLeave={handleVoiceStop} onTouchStart={() => handleVoiceStart(modelDe)} onTouchEnd={handleVoiceStop} className={`rounded-full p-8 md:p-12 text-white transition transform hover:scale-105 shadow-xl select-none ${isListening ? 'bg-red-500 animate-pulse' : 'bg-emerald-600 hover:bg-emerald-500'}`}><Icon name="mic" className="w-14 h-14 md:w-20 md:h-20" /></button>
+                                    <p className="text-gray-400 font-bold mt-1 text-center text-xs md:text-sm">Mantén pulsado para responder (se compara con una frase modelo B1)</p>
                                     {spokenText && (
                                         <div className="text-center w-full mt-4 md:mt-6">
                                             <p className="text-yellow-300 font-medium text-base md:text-2xl mb-3 md:mb-4">"{spokenText}"</p>
@@ -2819,11 +3675,16 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                                     ))}
                                                 </div>
                                             )}
-                                            <button onClick={() => window.location.reload()} className="mt-3 md:mt-4 bg-white text-black px-6 md:px-8 py-2 md:py-4 rounded-xl font-black text-base md:text-xl hover:bg-gray-200 transition shadow-xl w-full md:w-auto">Terminar Examen</button>
+                                            <div className="flex flex-wrap gap-2 justify-center mt-4">
+                                                <button type="button" onClick={() => { setOralQIdx((i) => (i + 1) % MULLER_ORAL_B1_QUESTIONS.length); setSpokenText(''); setOralDeadline(Date.now() + oralSecs * 1000); setOralClock(0); }} className="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-sm">Siguiente pregunta</button>
+                                                <button type="button" onClick={() => { setMode('dialogue'); setOralDeadline(null); setSpokenText(''); saveProgress({ activityByDay: mergeActivityPoints(20) }); }} className="bg-white text-black px-4 py-2 rounded-xl font-black text-sm hover:bg-gray-200">Salir del simulacro</button>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
+                                );
+                            })()
                         ) : mode === 'roleplay_wait' ? (
                             <div className="max-w-4xl w-full flex flex-col items-center justify-center gap-4 md:gap-6 animate-in zoom-in duration-300 p-4">
                                 <div className="bg-red-600 text-white px-3 md:px-6 py-1 md:py-2 rounded-full font-bold flex items-center gap-2 text-xs md:text-sm"><Icon name="mic-off" className="w-4 h-4 md:w-5 md:h-5" /> {roleplayChar === 'Todos' ? "Modo Lectura" : "Tu turno (Roleplay)"}</div>
@@ -2909,6 +3770,23 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                         <button onClick={handleNext} className="bg-blue-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold mt-2 md:mt-4 flex items-center gap-2 w-full md:w-auto justify-center text-sm md:text-base">Siguiente ➔</button>
                                     </div>
                                 )}
+                            </div>
+                        ) : mode === 'dialogue' && historiaAudioOnly && !podcastMode && !puzzleMode && !diktatMode && !isReviewing ? (
+                            <div className="max-w-3xl w-full flex flex-col items-center justify-center flex-1 py-8 md:py-16 px-4 gap-8 md:gap-10 animate-in fade-in">
+                                <p className="text-violet-300 font-black text-xs uppercase tracking-[0.2em]">Solo audio · manos libres</p>
+                                <p className="text-3xl md:text-5xl font-black text-center text-white leading-tight">{guionData[getActualSceneIndex()]?.speaker || '—'}</p>
+                                <p className="text-gray-500 text-sm font-mono">Szene {sceneIndex + 1} / {guionData.length} · {activeScriptTitle}</p>
+                                <div className="flex items-center justify-center gap-6 md:gap-10 w-full">
+                                    <button type="button" onClick={handlePrev} className="p-5 md:p-6 rounded-full bg-gray-800 border border-white/10 hover:bg-gray-700 transition" disabled={podcastMode}><Icon name="skip-back" className="w-8 h-8 md:w-10 md:h-10" /></button>
+                                    <button type="button" onClick={togglePlay} className={`p-8 md:p-12 rounded-full shadow-[0_0_40px_rgba(37,99,235,0.45)] transition ${isPlaying ? 'bg-red-600' : 'bg-blue-600'}`}><Icon name={isPlaying ? 'square' : 'play'} className="w-12 h-12 md:w-16 md:h-16 fill-current" /></button>
+                                    <button type="button" onClick={handleNext} className="p-5 md:p-6 rounded-full bg-gray-800 border border-white/10 hover:bg-gray-700 transition" disabled={podcastMode}><Icon name="skip-forward" className="w-8 h-8 md:w-10 md:h-10" /></button>
+                                </div>
+                                <div className="flex items-center justify-center gap-2 md:gap-3 bg-black/50 px-4 py-2 rounded-xl border border-white/10 w-full max-w-sm">
+                                    <Icon name="sliders" className="w-4 h-4 text-gray-400" />
+                                    <input type="range" min="0.50" max="1.50" step="0.01" value={playbackRate} onChange={(e) => setPlaybackRate(parseFloat(e.target.value))} className="flex-1 accent-blue-500" />
+                                    <span className="text-white font-mono text-sm w-12 text-right">x{playbackRate.toFixed(2)}</span>
+                                </div>
+                                <button type="button" onClick={() => setHistoriaAudioOnly(false)} className="text-sm font-bold text-sky-300 hover:text-white underline underline-offset-4">Mostrar guion completo</button>
                             </div>
                         ) : mode === 'dialogue' && (
                             <div className="max-w-4xl w-full flex flex-col gap-3 md:gap-6 animate-in fade-in relative mt-4 md:mt-8 p-3 md:p-0">
@@ -3021,6 +3899,21 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       </div>
                   </div>
               )}
+
+              {pwaDeferredPrompt && (
+                  <div className="muller-pwa-banner">
+                      <span className="text-sm text-gray-100 pr-2">Instala Müller como aplicación (PWA) — acceso desde el escritorio y mejor uso sin red.</span>
+                      <div className="flex items-center gap-2 ml-auto">
+                          <button type="button" className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 font-bold text-sm text-white" onClick={async () => {
+                              try {
+                                  await pwaDeferredPrompt.prompt();
+                              } catch (e) {}
+                              setPwaDeferredPrompt(null);
+                          }}>Instalar</button>
+                          <button type="button" className="text-xs text-gray-400 hover:text-white underline" onClick={() => setPwaDeferredPrompt(null)}>Ahora no</button>
+                      </div>
+                  </div>
+              )}
             </div>
           );
         }
@@ -3068,6 +3961,20 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                 reader.onload = (e) => {
                     try {
                         const data = JSON.parse(e.target.result);
+                        if (data.type === 'muller_partial_v1' && data.part === 'srs') {
+                            localStorage.setItem('muller_vocab_srs_v1', JSON.stringify(data.muller_vocab_srs_v1 || {}));
+                            alert('✅ SRS importado. Recarga la página.');
+                            window.location.reload();
+                            return;
+                        }
+                        if (data.type === 'muller_partial_v1' && data.part === 'decks') {
+                            const cur = JSON.parse(localStorage.getItem('mullerStats') || '{}');
+                            const merged = { ...cur, difficultVocab: data.difficultVocab || cur.difficultVocab, normalVocab: data.normalVocab || cur.normalVocab, difficultGrammar: data.difficultGrammar || cur.difficultGrammar };
+                            localStorage.setItem('mullerStats', JSON.stringify(merged));
+                            alert('✅ Mazos importados. Recarga la página.');
+                            window.location.reload();
+                            return;
+                        }
                         if (data.allLocalStorage && typeof data.allLocalStorage === 'object') {
                             localStorage.clear();
                             Object.entries(data.allLocalStorage).forEach(([key, value]) => {
@@ -3089,6 +3996,44 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                     } catch(err) { alert('❌ Archivo inválido'); }
                 };
                 reader.readAsText(file);
+            };
+
+            const exportSrsOnly = () => {
+                try {
+                    const raw = localStorage.getItem('muller_vocab_srs_v1');
+                    const map = raw ? JSON.parse(raw) : {};
+                    const payload = { type: 'muller_partial_v1', part: 'srs', muller_vocab_srs_v1: map, exportDate: new Date().toISOString() };
+                    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `muller_srs_only_${new Date().toISOString().slice(0, 19)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    alert('✅ Exportado solo SRS (muller_vocab_srs_v1).');
+                } catch (err) { alert('❌ No se pudo exportar SRS'); }
+            };
+
+            const exportDecksOnly = () => {
+                try {
+                    const stats = JSON.parse(localStorage.getItem('mullerStats') || '{}');
+                    const payload = {
+                        type: 'muller_partial_v1',
+                        part: 'decks',
+                        exportDate: new Date().toISOString(),
+                        difficultVocab: stats.difficultVocab || [],
+                        normalVocab: stats.normalVocab || [],
+                        difficultGrammar: stats.difficultGrammar || []
+                    };
+                    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `muller_mazos_${new Date().toISOString().slice(0, 19)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    alert('✅ Exportados mazos (difícil / normal / gramática).');
+                } catch (err) { alert('❌ No se pudo exportar mazos'); }
             };
 
             const showSyncHelp = () => {
@@ -3123,10 +4068,16 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                         <button onClick={exportData} className="bg-gradient-to-br from-sky-500 to-blue-800 hover:from-sky-400 hover:to-blue-700 text-white p-3 rounded-full float-icon-glow ring-2 ring-white/10" title="Exportar progreso">
                             <Icon name="download" className="w-6 h-6" />
                         </button>
-                        <label className="bg-gradient-to-br from-indigo-500 to-slate-900 hover:from-indigo-400 hover:to-slate-800 text-white p-3 rounded-full float-icon-glow ring-2 ring-white/10 cursor-pointer" title="Importar progreso">
+                        <label className="bg-gradient-to-br from-indigo-500 to-slate-900 hover:from-indigo-400 hover:to-slate-800 text-white p-3 rounded-full float-icon-glow ring-2 ring-white/10 cursor-pointer" title="Importar progreso (total o parcial SRS/mazos)">
                             <Icon name="upload" className="w-6 h-6" />
                             <input type="file" accept=".json" onChange={importData} className="hidden" />
                         </label>
+                        <button type="button" onClick={exportSrsOnly} className="bg-gradient-to-br from-emerald-600 to-slate-900 hover:from-emerald-500 hover:to-slate-800 text-white py-2 px-2 rounded-xl float-icon-glow ring-2 ring-white/10 text-[10px] font-bold leading-tight" title="Exportar solo datos SRS (muller_vocab_srs_v1)">
+                            SRS
+                        </button>
+                        <button type="button" onClick={exportDecksOnly} className="bg-gradient-to-br from-amber-600 to-slate-900 hover:from-amber-500 hover:to-slate-800 text-white py-2 px-2 rounded-xl float-icon-glow ring-2 ring-white/10 text-[10px] font-bold leading-tight" title="Exportar solo mazos (vocab difícil/normal y gramática)">
+                            Mazos
+                        </button>
                     </div>
                 </>
             );
