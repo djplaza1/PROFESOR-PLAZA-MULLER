@@ -39,6 +39,30 @@
             stroke-linejoin: round;
             vector-effect: non-scaling-stroke;
             filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+            stroke: currentColor;
+            color: inherit;
+        }
+        button.muller-icon-nav .lucide-wrapper,
+        button.muller-icon-nav i[data-lucide] { color: #fff; }
+        /* Mic “mantén pulsado” en Shadowing: anillo claro + trazo más grueso para que el icono no se pierda sobre el verde */
+        button.muller-mic-hold-btn {
+            position: relative;
+            background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22) 0%, transparent 52%),
+                linear-gradient(155deg, #0f766e 0%, #047857 55%, #065f46 100%);
+        }
+        button.muller-mic-hold-btn::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 9999px;
+            border: 2px solid rgba(255,255,255,0.45);
+            pointer-events: none;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+        }
+        button.muller-mic-hold-btn .lucide-wrapper svg,
+        button.muller-mic-hold-btn i[data-lucide] svg {
+            stroke-width: 2.5;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.65));
         }
         i[data-lucide] svg[fill="currentColor"],
         i[data-lucide].fill-current svg { filter: none; }
@@ -789,7 +813,8 @@
             practice_mazos: { title: 'Entrenamiento rápido (mazos)', what: 'Repasas tarjetas guardadas como difícil, normal o gramática: audio, revelar traducción, siguiente.', tips: ['No mires revelar hasta haber intentado recordar.', 'Haz lotes cortos varias veces al día.', 'Cuando vacíe un mazo, vuelve a Historia para añadir nuevas frases.'] },
             advanced_menu: { title: 'Entrenamiento avanzado (panel morado)', what: 'Práctica guiada de artículos, verbos con preposición, preposiciones puras, conectores y simulacro tipo examen con cronómetro.', tips: ['Empieza por la categoría con peor porcentaje en el dashboard.', 'El modo examen entrena gestión de tiempo, no solo aciertos.', 'Cierra sesiones cortas para fijar mejor.'] },
             advanced_exam: { title: 'Simulacro TELC (avanzado)', what: 'Cronómetro orientativo, pistas limitadas y mezcla de ítems según lo que elijas.', tips: ['Elige duración realista (20–30 min al principio).', 'Usa pistas solo cuando lleves bloqueado más de un minuto.', 'Al terminar, repasa solo los fallos en modo categoría.'] },
-            hub_centro: { title: 'Centro Müller', what: 'Voces del sistema, plan del día, resumen y atajos; complementa la barra inferior de sync.', tips: ['Configura voces antes de sesiones largas.', 'Pestaña “IA Chrome”: resumen local con Gemini Nano si tu Chrome lo permite.', 'Esc para cerrar el panel.', 'Repite el tour si te pierdes.'] },
+            nav_inicio: { title: 'Inicio', what: 'Pantalla principal con accesos rápidos y pendientes de repaso (SRS). Desde aquí saltas a Historia, vocab, shadowing, etc.', tips: ['Tecla I para volver al Inicio.', 'El número en Vocab indica tarjetas prioritarias del SRS.', 'Tras la bienvenida (banderas), eliges qué practicar.'] },
+            hub_centro: { title: 'Centro Müller', what: 'Voces del sistema, ayuda, IA Chrome local; el plan del día y el resumen rápido están en Progreso.', tips: ['Configura voces antes de sesiones largas.', 'Pestaña “IA Chrome”: resumen local con Gemini Nano si tu Chrome lo permite.', 'Esc para cerrar el panel.', 'Repite el tour si te pierdes.'] },
             hub_chrome_ai: { title: 'IA local (Chrome / Gemini Nano)', what: 'Usa la API Summarizer del navegador: el modelo se descarga en tu PC y el resumen se genera en local sin API key. Requiere Chrome de escritorio reciente y requisitos de hardware.', tips: ['Si no aparece la API, activa las funciones de IA en chrome://flags y reinicia.', 'Edge puede llevar APIs similares detrás de flags; Firefox/Safari no suelen soportarlo aún.', 'No sustituye un profesor: revisa los resúmenes.'] },
         };
 
@@ -799,7 +824,10 @@
 
         // --- COMPONENTE PRINCIPAL ---
         function App() {
-          const [activeTab, setActiveTab] = useState('historia'); 
+          const [activeTab, setActiveTab] = useState('inicio');
+          const [showSplash, setShowSplash] = useState(() => {
+              try { return !sessionStorage.getItem('muller_splash_session_v1'); } catch (e) { return true; }
+          }); 
           const [guionData, setGuionData] = useState(DEFAULT_GUION);
           const [activeScriptTitle, setActiveScriptTitle] = useState("Lektion 17: Kunst");
           const [isDefaultScript, setIsDefaultScript] = useState(true);
@@ -1050,11 +1078,23 @@
           }, []);
 
           useEffect(() => {
+              if (!showSplash) return undefined;
+              const t = window.setTimeout(() => {
+                  setShowSplash(false);
+                  try { sessionStorage.setItem('muller_splash_session_v1', '1'); } catch (e) {}
+              }, 5000);
+              return () => window.clearTimeout(t);
+          }, [showSplash]);
+
+          useEffect(() => {
               const onKey = (e) => {
                   if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
                   if (e.key === '?' || (e.shiftKey && e.key === '/')) {
                       e.preventDefault();
                       setShowShortcutsModal(true);
+                  }
+                  if (e.key === 'i' || e.key === 'I') {
+                      if (!e.ctrlKey && !e.metaKey) { setActiveTab('inicio'); stopAudio(); setPracticeActive(null); }
                   }
                   if (e.key === 'h' || e.key === 'H') {
                       if (!e.ctrlKey && !e.metaKey) { setActiveTab('historia'); setMode('dialogue'); }
@@ -2152,6 +2192,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           // COLORES DE FONDO SUAVIZADOS (Corrección) + temas UI
           const getBgColor = () => {
               if (uiTheme === 'light') {
+                  if (activeTab === 'inicio') return 'bg-slate-100';
                   if (activeTab === 'progreso') return 'bg-indigo-100';
                   if (activeTab === 'guiones') return 'bg-slate-100';
                   if (activeTab === 'vocabulario') return 'bg-amber-50';
@@ -2164,6 +2205,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               }
               if (uiTheme === 'hc') return 'bg-black';
               if (activeTab === 'telc') return 'bg-slate-950';
+              if (activeTab === 'inicio') return 'bg-slate-950';
               if (activeTab === 'progreso') return 'bg-indigo-950';
               if (activeTab === 'guiones') return 'bg-slate-900';
               if (activeTab === 'vocabulario') return 'bg-amber-950/70'; // Suavizado
@@ -2513,10 +2555,27 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
 
           return (
             <div className={`flex flex-col min-h-screen md:h-screen md:max-h-[850px] w-full font-sans md:rounded-xl overflow-hidden shadow-2xl relative transition-colors duration-500 muller-theme-bg ${themeShellClass} ${uiTheme === 'light' ? 'text-slate-900' : 'text-white'} ${getBgColor()}`}>
+
+              {showSplash && (
+                  <div className="fixed inset-0 z-[300] flex flex-col md:flex-row overflow-hidden" role="presentation">
+                      <div className="flex-1 min-h-[42vh] md:min-h-0 relative" style={{ background: 'linear-gradient(180deg, #000000 0%, #000000 32%, #DD0000 32%, #DD0000 66%, #FFCE00 66%, #FFCE00 100%)' }} aria-hidden="true" />
+                      <div className="flex-1 min-h-[42vh] md:min-h-0 relative border-t md:border-t-0 md:border-l border-white/20" style={{ background: 'linear-gradient(180deg, #AA151B 0%, #AA151B 22%, #F1BF00 22%, #F1BF00 78%, #AA151B 78%, #AA151B 100%)' }} aria-hidden="true" />
+                      <div className="absolute inset-0 flex items-center justify-center p-6 pointer-events-none">
+                          <div className="rounded-[2rem] bg-black/50 backdrop-blur-xl border border-white/25 px-10 py-12 md:px-14 md:py-16 shadow-[0_25px_80px_rgba(0,0,0,0.65)] text-center max-w-lg">
+                              <p className="text-[11px] md:text-xs uppercase tracking-[0.4em] text-white/75 mb-3 font-bold">Deutsch · Español</p>
+                              <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight mb-2 drop-shadow-lg" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>Müller</h1>
+                              <p className="text-base md:text-lg text-white/90 font-semibold">Entrenador TELC</p>
+                              <p className="text-xs text-white/55 mt-4">Banderas simbólicas · Alemania · España</p>
+                          </div>
+                      </div>
+                  </div>
+              )}
               
               {/* SUPERIOR NAV BAR */}
               <div className="w-full bg-gradient-to-b from-zinc-900/95 via-black/90 to-black/95 backdrop-blur-xl border-b border-white/[0.07] shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-2 md:p-3 flex flex-col md:flex-row gap-2 md:gap-3 justify-between items-center z-20">
                   <div className="flex gap-1 md:gap-2 bg-zinc-950/80 p-1 rounded-xl ring-1 ring-white/[0.06] w-full md:w-auto overflow-x-auto hide-scrollbar items-center">
+                      <button onClick={()=>{setActiveTab('inicio'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'inicio' ? 'bg-indigo-600 text-white shadow-[0_0_18px_rgba(79,70,229,0.45)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="layout-dashboard" className="w-3 h-3 md:w-4 md:h-4" /> Inicio</button>
+                      <ExerciseHelpBtn helpId="nav_inicio" compact />
                       <button onClick={()=>{setActiveTab('historia'); setMode('dialogue'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'historia' ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.35)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="play" className="w-3 h-3 md:w-4 md:h-4" /> Historia</button>
                       <ExerciseHelpBtn helpId="nav_historia" compact />
                       <button onClick={()=>{setActiveTab('shadowing'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-bold text-xs transition ${activeTab === 'shadowing' ? 'bg-teal-600 text-white shadow-[0_0_18px_rgba(13,148,136,0.45)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="audio-lines" className="w-3 h-3 md:w-4 md:h-4" /> Shadowing</button>
@@ -2640,6 +2699,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                           <h3 className="text-lg font-black text-white mb-3">Atajos de teclado</h3>
                           <ul className="text-sm text-gray-400 space-y-2">
                               <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">?</kbd> — esta ayuda</li>
+                              <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">I</kbd> — Inicio</li>
                               <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">H</kbd> — Historia</li>
                               <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">V</kbd> — Vocabulario</li>
                               <li><kbd className="px-1.5 py-0.5 rounded bg-black/50 border border-white/20 text-xs">P</kbd> — Progreso</li>
@@ -2698,8 +2758,6 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                               <div className="flex flex-wrap gap-1">
                                   {[
                                       { id: 'voices', label: 'Voces' },
-                                      { id: 'today', label: 'Hoy' },
-                                      { id: 'report', label: 'Resumen' },
                                       { id: 'tips', label: 'Ayuda' },
                                       { id: 'chromeai', label: 'IA Chrome' },
                                   ].map((t) => (
@@ -2823,41 +2881,12 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       </div>
                                   </div>
                               )}
-                              {mullerHubTab === 'today' && (
-                                  <div className="space-y-4">
-                                      <p className="text-gray-300 font-bold">Plan rápido (toca y vuelve cuando quieras)</p>
-                                      <div className="grid gap-2">
-                                          <button type="button" className="py-2 px-3 rounded-xl bg-blue-900/50 border border-blue-500/30 text-left text-xs" onClick={() => { setShowMullerHub(false); setActiveTab('historia'); setMode('dialogue'); }}>1. Historia — 3 escenas en voz alta o con podcast</button>
-                                          <button type="button" className="py-2 px-3 rounded-xl bg-teal-900/50 border border-teal-500/30 text-left text-xs" onClick={() => { setShowMullerHub(false); setActiveTab('shadowing'); }}>2. Shadowing — misma escena + pronunciación</button>
-                                          <button type="button" className="py-2 px-3 rounded-xl bg-amber-900/50 border border-amber-500/30 text-left text-xs" onClick={() => { setShowMullerHub(false); setActiveTab('vocabulario'); }}>3. Vocab — 5 tarjetas</button>
-                                          <button type="button" className="py-2 px-3 rounded-xl bg-purple-900/50 border border-purple-500/30 text-left text-xs" onClick={() => { setShowMullerHub(false); window.dispatchEvent(new Event('toggleAdvancedModal')); }}>4. Entrenamiento avanzado (morado) — artículos</button>
-                                          <button type="button" className="py-2 px-3 rounded-xl bg-rose-900/50 border border-rose-500/30 text-left text-xs" onClick={() => { setShowMullerHub(false); setActiveTab('escritura'); setWritingMode('dictation'); }}>5. Escritura — dictado + OCR</button>
-                                      </div>
-                                      <p className="text-[10px] text-gray-500 uppercase tracking-wider pt-2">Retos del día (+5 monedas cada uno, una vez al día)</p>
-                                      <div className="flex flex-wrap gap-2">
-                                          <button type="button" disabled={dailyChallenges.vocab} onClick={() => claimDailyStamp('vocab')} className={`text-xs font-bold px-2 py-1.5 rounded-lg ${dailyChallenges.vocab ? 'bg-gray-800 text-gray-500' : 'bg-amber-700 hover:bg-amber-600 text-white'}`}>{dailyChallenges.vocab ? '✓ Vocab' : 'He practicado vocab'}</button>
-                                          <button type="button" disabled={dailyChallenges.shadow} onClick={() => claimDailyStamp('shadow')} className={`text-xs font-bold px-2 py-1.5 rounded-lg ${dailyChallenges.shadow ? 'bg-gray-800 text-gray-500' : 'bg-teal-700 hover:bg-teal-600 text-white'}`}>{dailyChallenges.shadow ? '✓ Shadow' : 'He hecho shadowing'}</button>
-                                          <button type="button" disabled={dailyChallenges.write} onClick={() => claimDailyStamp('write')} className={`text-xs font-bold px-2 py-1.5 rounded-lg ${dailyChallenges.write ? 'bg-gray-800 text-gray-500' : 'bg-rose-700 hover:bg-rose-600 text-white'}`}>{dailyChallenges.write ? '✓ Escritura' : 'He escrito / OCR'}</button>
-                                      </div>
-                                      <button type="button" onClick={() => { setTourStep(1); setShowMullerHub(false); }} className="w-full py-2 rounded-xl bg-indigo-700 hover:bg-indigo-600 font-bold text-xs">Iniciar tour guiado (5 pasos)</button>
-                                  </div>
-                              )}
-                              {mullerHubTab === 'report' && (
-                                  <div className="space-y-2 text-xs text-gray-300">
-                                      <p><span className="text-white font-bold">Racha (honesta):</span> {userStats.streakDays} días</p>
-                                      <p className="text-[10px] text-gray-500 leading-snug">Cuenta solo si en el día hubo actividad mínima: ≥{MULLER_STREAK_MIN_VOCAB_RATINGS} tarjetas de vocab calificadas, o ≥{MULLER_STREAK_MIN_ACTIVITY_POINTS} puntos de actividad, o ≥{Math.round(MULLER_STREAK_MIN_ACTIVE_SEC / 60)} min con la app abierta (timer).</p>
-                                      <p><span className="text-white font-bold">Monedas:</span> {userStats.coins}</p>
-                                      <p><span className="text-emerald-300 font-bold">SRS vocabulario:</span> {Object.keys(vocabSrsMap).length} tarjetas con calendario (este dispositivo)</p>
-                                      <p><span className="text-white font-bold">Intentos pronunciación:</span> {userStats.pronunciationAttempts || 0}</p>
-                                      <p><span className="text-white font-bold">Diktat aciertos:</span> {userStats.diktatCorrect || 0} / intentos {userStats.diktatAttempts || 0}</p>
-                                      <p className="text-[10px] text-gray-500 pt-2">Exporta PDF desde Progreso para un informe imprimible.</p>
-                                  </div>
-                              )}
                               {mullerHubTab === 'tips' && (
                                   <div className="space-y-3 text-xs text-gray-300">
                                       <p className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">Atajos de teclado (fuera de campos de texto)</p>
                                       <ul className="list-disc list-inside space-y-1 text-[11px]">
                                           <li><kbd className="px-1 rounded bg-black/50 border border-white/20">?</kbd> o <kbd className="px-1 rounded bg-black/50 border border-white/20">Shift+/</kbd> — ayuda de atajos</li>
+                                          <li><kbd className="px-1 rounded bg-black/50 border border-white/20">I</kbd> — Inicio (panel principal)</li>
                                           <li><kbd className="px-1 rounded bg-black/50 border border-white/20">H</kbd> — pestaña Historia</li>
                                           <li><kbd className="px-1 rounded bg-black/50 border border-white/20">V</kbd> — Vocab</li>
                                           <li><kbd className="px-1 rounded bg-black/50 border border-white/20">P</kbd> — Progreso</li>
@@ -3071,7 +3100,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   {/* ENTRENAMIENTO DASHBOARD (sin cambios) */}
                   {practiceActive && currentPracticeItem && (
                       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 animate-in zoom-in">
-                         <button onClick={() => setPracticeActive(null)} className="absolute top-4 left-4 md:top-8 md:left-8 text-gray-400 hover:text-white flex items-center gap-2 font-bold text-sm md:text-base"><Icon name="skip-back" className="w-4 h-4 md:w-5 md:h-5" /> Volver</button>
+                         <button onClick={() => setPracticeActive(null)} className="absolute top-4 left-4 md:top-8 md:left-8 text-gray-400 hover:text-white flex items-center gap-2 font-bold text-sm md:text-base"><Icon name="chevron-left" className="w-4 h-4 md:w-5 md:h-5" /> Volver</button>
                          <div className="flex flex-wrap items-center justify-center gap-2 mb-6 md:mb-8">
                              <h2 className="text-2xl md:text-3xl font-black text-amber-500 uppercase tracking-widest"><Icon name="brain" className="w-6 h-6 md:w-8 md:h-8 inline mr-2" /> Entrenamiento Rápido</h2>
                              <ExerciseHelpBtn helpId="practice_mazos" />
@@ -3165,9 +3194,9 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           ) : null}
                                       </div>
                                       <div className="flex gap-3 md:gap-4 mt-6 md:mt-8 w-full max-w-sm justify-between">
-                                          <button onClick={() => setBxIndex(i => i > 0 ? i - 1 : bxCurrentList.length - 1)} className="bg-gray-800 hover:bg-gray-700 text-white p-3 md:p-4 rounded-full transition"><Icon name="skip-back" className="w-5 h-5 md:w-6 md:h-6" /></button>
+                                          <button type="button" onClick={() => setBxIndex(i => i > 0 ? i - 1 : bxCurrentList.length - 1)} className="muller-icon-nav bg-gray-800 hover:bg-gray-700 text-white p-3 md:p-4 rounded-full transition border border-white/15"><Icon name="chevron-left" className="w-5 h-5 md:w-6 md:h-6 text-white" /></button>
                                           <button onClick={() => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(bxCurrentList[bxIndex].b2); u.lang = 'de-DE'; window.__mullerApplyPreferredDeVoice(u); window.speechSynthesis.speak(u); }} className={`text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-bold shadow-lg flex items-center gap-2 flex-1 justify-center text-sm md:text-base ${activeTab === 'b1meister' ? 'bg-emerald-600 hover:bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]' : 'bg-sky-600 hover:bg-sky-500 shadow-[0_0_20px_rgba(14,165,233,0.5)]'}`}><Icon name="volume-2" className="w-5 h-5 md:w-6 md:h-6" /> Escuchar</button>
-                                          <button onClick={() => setBxIndex(i => i < bxCurrentList.length - 1 ? i + 1 : 0)} className="bg-gray-800 hover:bg-gray-700 text-white p-3 md:p-4 rounded-full transition"><Icon name="skip-forward" className="w-5 h-5 md:w-6 md:h-6" /></button>
+                                          <button type="button" onClick={() => setBxIndex(i => i < bxCurrentList.length - 1 ? i + 1 : 0)} className="muller-icon-nav bg-gray-800 hover:bg-gray-700 text-white p-3 md:p-4 rounded-full transition border border-white/15"><Icon name="chevron-right" className="w-5 h-5 md:w-6 md:h-6 text-white" /></button>
                                       </div>
                                       <p className="text-gray-500 font-bold mt-4 text-xs md:text-sm">Tarjeta {bxIndex + 1} / {bxCurrentList.length}</p>
                                   </>
@@ -3181,6 +3210,37 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   {/* PROGRESO (con botones de sincronización añadidos en barra) */}
                   {activeTab === 'progreso' && !practiceActive && (
                       <div className="p-4 md:p-8 max-w-5xl mx-auto w-full animate-in fade-in duration-500">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+                              <div className="rounded-2xl border border-sky-500/35 bg-gradient-to-br from-sky-950/70 to-slate-900/80 p-4 md:p-5 shadow-xl">
+                                  <h2 className="text-xs font-black text-sky-300 uppercase tracking-wider mb-3 flex items-center gap-2"><Icon name="calendar" className="w-4 h-4" /> Plan de hoy</h2>
+                                  <div className="grid gap-2">
+                                      <button type="button" className="py-2 px-3 rounded-xl bg-blue-900/40 border border-blue-500/25 text-left text-xs hover:bg-blue-900/60 transition" onClick={() => { setActiveTab('historia'); setMode('dialogue'); stopAudio(); setPracticeActive(null); }}>1. Historia — escenas en voz alta o podcast</button>
+                                      <button type="button" className="py-2 px-3 rounded-xl bg-teal-900/40 border border-teal-500/25 text-left text-xs hover:bg-teal-900/60 transition" onClick={() => { setActiveTab('shadowing'); stopAudio(); setPracticeActive(null); }}>2. Shadowing — misma escena + pronunciación</button>
+                                      <button type="button" className="py-2 px-3 rounded-xl bg-amber-900/40 border border-amber-500/25 text-left text-xs hover:bg-amber-900/60 transition" onClick={() => { setActiveTab('vocabulario'); stopAudio(); setPracticeActive(null); }}>3. Vocab — tarjetas</button>
+                                      <button type="button" className="py-2 px-3 rounded-xl bg-purple-900/40 border border-purple-500/25 text-left text-xs hover:bg-purple-900/60 transition" onClick={() => { window.dispatchEvent(new Event('toggleAdvancedModal')); }}>4. Entrenamiento avanzado (morado)</button>
+                                      <button type="button" className="py-2 px-3 rounded-xl bg-rose-900/40 border border-rose-500/25 text-left text-xs hover:bg-rose-900/60 transition" onClick={() => { setActiveTab('escritura'); setWritingMode('dictation'); stopAudio(); setPracticeActive(null); }}>5. Escritura — dictado + OCR</button>
+                                  </div>
+                                  <p className="text-[10px] text-gray-500 uppercase tracking-wider pt-3 mb-2">Retos del día (+5 monedas, una vez al día)</p>
+                                  <div className="flex flex-wrap gap-2">
+                                      <button type="button" disabled={dailyChallenges.vocab} onClick={() => claimDailyStamp('vocab')} className={`text-xs font-bold px-2 py-1.5 rounded-lg ${dailyChallenges.vocab ? 'bg-gray-800 text-gray-500' : 'bg-amber-700 hover:bg-amber-600 text-white'}`}>{dailyChallenges.vocab ? '✓ Vocab' : 'He practicado vocab'}</button>
+                                      <button type="button" disabled={dailyChallenges.shadow} onClick={() => claimDailyStamp('shadow')} className={`text-xs font-bold px-2 py-1.5 rounded-lg ${dailyChallenges.shadow ? 'bg-gray-800 text-gray-500' : 'bg-teal-700 hover:bg-teal-600 text-white'}`}>{dailyChallenges.shadow ? '✓ Shadow' : 'He hecho shadowing'}</button>
+                                      <button type="button" disabled={dailyChallenges.write} onClick={() => claimDailyStamp('write')} className={`text-xs font-bold px-2 py-1.5 rounded-lg ${dailyChallenges.write ? 'bg-gray-800 text-gray-500' : 'bg-rose-700 hover:bg-rose-600 text-white'}`}>{dailyChallenges.write ? '✓ Escritura' : 'He escrito / OCR'}</button>
+                                  </div>
+                                  <button type="button" onClick={() => setTourStep(1)} className="w-full mt-3 py-2 rounded-xl bg-indigo-800 hover:bg-indigo-700 font-bold text-xs border border-indigo-500/30">Iniciar tour guiado (5 pasos)</button>
+                              </div>
+                              <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-950/40 to-yellow-950/20 p-4 md:p-5 shadow-xl">
+                                  <h2 className="text-xs font-black text-amber-200 uppercase tracking-wider mb-3">Resumen rápido</h2>
+                                  <div className="space-y-2 text-xs text-gray-300">
+                                      <p><span className="text-white font-bold">Racha (honesta):</span> {userStats.streakDays} días</p>
+                                      <p className="text-[10px] text-gray-500 leading-snug">Cuenta solo si hubo actividad mínima: ≥{MULLER_STREAK_MIN_VOCAB_RATINGS} tarjetas de vocab calificadas, o ≥{MULLER_STREAK_MIN_ACTIVITY_POINTS} puntos, o ≥{Math.round(MULLER_STREAK_MIN_ACTIVE_SEC / 60)} min con la app (timer).</p>
+                                      <p><span className="text-white font-bold">Monedas:</span> {userStats.coins}</p>
+                                      <p><span className="text-emerald-300 font-bold">SRS vocabulario:</span> {Object.keys(vocabSrsMap).length} tarjetas (este dispositivo)</p>
+                                      <p><span className="text-white font-bold">Pronunciación:</span> {userStats.pronunciationAttempts || 0} intentos</p>
+                                      <p><span className="text-white font-bold">Diktat:</span> {userStats.diktatCorrect || 0} / {userStats.diktatAttempts || 0}</p>
+                                      <p className="text-[10px] text-gray-500 pt-1">Exporta PDF desde el botón de abajo.</p>
+                                  </div>
+                              </div>
+                          </div>
                           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
                               <div className="flex flex-wrap items-center gap-2">
                                   <h1 className="text-2xl md:text-4xl font-black flex items-center gap-2 md:gap-3 text-yellow-500"><Icon name="award" className="w-8 h-8 md:w-10 md:h-10" /> Dashboard Profesional B1</h1>
@@ -3484,8 +3544,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                                   <p className="text-xs font-bold text-teal-300 mb-1 flex items-center gap-2"><Icon name="mic" className="w-4 h-4" /> Comprobar pronunciación</p>
                                                   <p className="text-[10px] text-gray-500 mb-3">El navegador transcribe tu alemán y lo compara con el texto del guion (sin juzgar acento puro). Mantén pulsado el micrófono mientras lees la frase; suelta para ver el resultado. <span className="text-teal-400/90">En Shadowing no pierdes vidas.</span></p>
                                                   <div className="flex flex-col items-center gap-3">
-                                                      <button type="button" onMouseDown={() => scene?.text && handleVoiceStart(scene.text, { mode: 'shadow' })} onMouseUp={handleVoiceStop} onMouseLeave={handleVoiceStop} onTouchStart={() => scene?.text && handleVoiceStart(scene.text, { mode: 'shadow' })} onTouchEnd={handleVoiceStop} className={`rounded-full p-5 md:p-6 text-white transition shadow-xl select-none ${isListening ? 'bg-red-500 animate-pulse ring-2 ring-red-300/50' : 'bg-teal-600 hover:bg-teal-500 ring-2 ring-teal-400/20'}`} title="Mantén pulsado y lee en voz alta">
-                                                          <Icon name="mic" className="w-10 h-10 md:w-12 md:h-12" />
+                                                      <button type="button" aria-label="Mantén pulsado y lee en voz alta para comprobar pronunciación" onMouseDown={() => scene?.text && handleVoiceStart(scene.text, { mode: 'shadow' })} onMouseUp={handleVoiceStop} onMouseLeave={handleVoiceStop} onTouchStart={() => scene?.text && handleVoiceStart(scene.text, { mode: 'shadow' })} onTouchEnd={handleVoiceStop} className={`rounded-full p-5 md:p-6 text-white transition shadow-xl select-none ${isListening ? 'bg-red-500 animate-pulse ring-4 ring-red-400/35 shadow-[0_0_32px_rgba(239,68,68,0.55)] border-2 border-white/35' : 'muller-mic-hold-btn ring-4 ring-teal-300/35 shadow-[0_0_28px_rgba(20,184,166,0.45)]'}`} title="Mantén pulsado y lee en voz alta">
+                                                          <Icon name="mic" className="w-10 h-10 md:w-12 md:h-12 text-white relative z-[1]" />
                                                       </button>
                                                       <span className="text-[10px] text-gray-500">Mantén pulsado · suelta para evaluar</span>
                                                       {grammarPolizeiMsg && (
@@ -3515,8 +3575,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                                   </div>
                                               </div>
                                               <div className="flex gap-3 justify-center flex-wrap">
-                                                  <button type="button" disabled={si <= 0} onClick={() => setSceneIndex((s) => Math.max(0, s - 1))} className="px-5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold disabled:opacity-30 disabled:pointer-events-none">← Anterior</button>
-                                                  <button type="button" disabled={si >= guionData.length - 1} onClick={() => setSceneIndex((s) => Math.min(guionData.length - 1, s + 1))} className="px-5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold disabled:opacity-30 disabled:pointer-events-none">Siguiente →</button>
+                                                  <button type="button" disabled={si <= 0} onClick={() => setSceneIndex((s) => Math.max(0, s - 1))} className="muller-icon-nav inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold text-white disabled:opacity-30 disabled:pointer-events-none border border-white/10"><Icon name="chevron-left" className="w-5 h-5 text-white" /> Anterior</button>
+                                                  <button type="button" disabled={si >= guionData.length - 1} onClick={() => setSceneIndex((s) => Math.min(guionData.length - 1, s + 1))} className="muller-icon-nav inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold text-white disabled:opacity-30 disabled:pointer-events-none border border-white/10">Siguiente <Icon name="chevron-right" className="w-5 h-5 text-white" /></button>
                                               </div>
                                           </>
                                       );
@@ -3652,8 +3712,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           <p className="text-lg md:text-xl text-white leading-relaxed">{guionData[writingGuionWriteIdx]?.text}</p>
                                           {guionData[writingGuionWriteIdx]?.translation && <p className="text-xs text-gray-500 italic border-t border-white/10 pt-2">({guionData[writingGuionWriteIdx].translation})</p>}
                                           <div className="flex flex-wrap gap-2 pt-2">
-                                              <button type="button" disabled={writingGuionWriteIdx <= 0} onClick={() => { setWritingGuionWriteIdx((i) => Math.max(0, i - 1)); setWritingCanvasKey((k) => k + 1); }} className="px-3 py-1.5 rounded-lg bg-slate-800 font-bold text-xs disabled:opacity-30">← Anterior</button>
-                                              <button type="button" disabled={writingGuionWriteIdx >= guionData.length - 1} onClick={() => { setWritingGuionWriteIdx((i) => Math.min(guionData.length - 1, i + 1)); setWritingCanvasKey((k) => k + 1); }} className="px-3 py-1.5 rounded-lg bg-slate-800 font-bold text-xs disabled:opacity-30">Siguiente →</button>
+                                              <button type="button" disabled={writingGuionWriteIdx <= 0} onClick={() => { setWritingGuionWriteIdx((i) => Math.max(0, i - 1)); setWritingCanvasKey((k) => k + 1); }} className="muller-icon-nav inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold text-xs text-white border border-white/10 disabled:opacity-30"><Icon name="chevron-left" className="w-3.5 h-3.5 text-white shrink-0" /> Anterior</button>
+                                              <button type="button" disabled={writingGuionWriteIdx >= guionData.length - 1} onClick={() => { setWritingGuionWriteIdx((i) => Math.min(guionData.length - 1, i + 1)); setWritingCanvasKey((k) => k + 1); }} className="muller-icon-nav inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 font-bold text-xs text-white border border-white/10 disabled:opacity-30">Siguiente <Icon name="chevron-right" className="w-3.5 h-3.5 text-white shrink-0" /></button>
                                           </div>
                                       </>
                                   )}
@@ -3696,6 +3756,46 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                   setOcrHistoryList(arr);
                               }}
                           />
+                      </div>
+                  )}
+
+                  {activeTab === 'inicio' && !practiceActive && (
+                      <div className="flex-1 flex flex-col overflow-y-auto hide-scrollbar p-4 md:p-8 max-w-5xl mx-auto w-full animate-in fade-in duration-500">
+                          <div className="mb-6 md:mb-8">
+                              <h1 className="text-3xl md:text-5xl font-black text-white flex items-center gap-3 mb-2"><Icon name="layout-dashboard" className="w-10 h-10 md:w-14 md:h-14 text-indigo-400" /> Inicio</h1>
+                              <p className="text-gray-400 text-sm md:text-base max-w-2xl">Elige qué practicar. Tecla <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/15 font-mono text-xs">I</kbd> para volver aquí.</p>
+                          </div>
+                          {vocabSrsDueCount > 0 ? (
+                              <button type="button" onClick={() => { setActiveTab('vocabulario'); setVocabDueFilterOnly(true); stopAudio(); setPracticeActive(null); }} className="w-full mb-4 text-left rounded-2xl border border-amber-500/40 bg-amber-950/50 p-4 hover:bg-amber-900/55 transition shadow-[0_0_24px_rgba(245,158,11,0.12)]">
+                                  <p className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2"><Icon name="bell-ring" className="w-4 h-4" /> Pendientes de repaso (SRS)</p>
+                                  <p className="text-white font-black text-2xl mt-1">{vocabSrsDueCount} tarjetas</p>
+                                  <p className="text-[11px] text-gray-400 mt-1">Ir a Vocab con filtro de vencidas / prioridad</p>
+                              </button>
+                          ) : null}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                              {[
+                                  { id: 'historia', label: 'Historia', sub: 'Guion, audio, modos', icon: 'play', go: () => { setActiveTab('historia'); setMode('dialogue'); } },
+                                  { id: 'vocab', label: 'Vocabulario', sub: 'SRS y tarjetas', icon: 'book-open', go: () => setActiveTab('vocabulario') },
+                                  { id: 'shadow', label: 'Shadowing', sub: 'Pronunciación', icon: 'audio-lines', go: () => setActiveTab('shadowing') },
+                                  { id: 'escritura', label: 'Escritura', sub: 'OCR y dictado', icon: 'pen-line', go: () => setActiveTab('escritura') },
+                                  { id: 'b1', label: 'B1', sub: 'Frases modelo', icon: 'target', go: () => { setActiveTab('b1meister'); setBxCategory('mix'); } },
+                                  { id: 'b2', label: 'B2', sub: 'Registro alto', icon: 'layers', go: () => { setActiveTab('b2ausblick'); setBxCategory('mix'); } },
+                                  { id: 'progreso', label: 'Progreso', sub: 'Plan del día y estadísticas', icon: 'bar-chart', go: () => setActiveTab('progreso') },
+                                  { id: 'bib', label: 'Biblioteca', sub: 'Guiones y listas', icon: 'file-text', go: () => setActiveTab('guiones') },
+                              ].map((c) => (
+                                  <button key={c.id} type="button" onClick={() => { stopAudio(); setPracticeActive(null); c.go(); }} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-900/85 hover:bg-slate-800/95 p-4 text-left transition shadow-lg ring-1 ring-white/[0.04]">
+                                      <span className="rounded-xl bg-black/45 p-2.5 border border-white/10 shrink-0"><Icon name={c.icon} className="w-6 h-6 text-indigo-300" /></span>
+                                      <span className="min-w-0">
+                                          <span className="block font-black text-white text-lg leading-tight">{c.label}</span>
+                                          <span className="text-xs text-gray-500">{c.sub}</span>
+                                      </span>
+                                  </button>
+                              ))}
+                          </div>
+                          <div className="mt-8 flex flex-wrap gap-3">
+                              <button type="button" onClick={() => { setShowMullerHub(true); setMullerHubTab('voices'); }} className="px-4 py-2.5 rounded-xl bg-sky-700 hover:bg-sky-600 font-bold text-sm border border-sky-500/40 shadow-lg">Centro Müller (voces · temas · IA Chrome)</button>
+                              <button type="button" onClick={() => setTourStep(1)} className="px-4 py-2.5 rounded-xl bg-indigo-800 hover:bg-indigo-700 font-bold text-sm border border-indigo-500/40 shadow-lg">Tour guiado (5 pasos)</button>
+                          </div>
                       </div>
                   )}
 
@@ -3871,9 +3971,9 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                 <p className="text-3xl md:text-5xl font-black text-center text-white leading-tight">{guionData[getActualSceneIndex()]?.speaker || '—'}</p>
                                 <p className="text-gray-500 text-sm font-mono">Szene {sceneIndex + 1} / {guionData.length} · {activeScriptTitle}</p>
                                 <div className="flex items-center justify-center gap-6 md:gap-10 w-full">
-                                    <button type="button" onClick={handlePrev} className="p-5 md:p-6 rounded-full bg-gray-800 border border-white/10 hover:bg-gray-700 transition" disabled={podcastMode}><Icon name="skip-back" className="w-8 h-8 md:w-10 md:h-10" /></button>
-                                    <button type="button" onClick={togglePlay} className={`p-8 md:p-12 rounded-full shadow-[0_0_40px_rgba(37,99,235,0.45)] transition ${isPlaying ? 'bg-red-600' : 'bg-blue-600'}`}><Icon name={isPlaying ? 'square' : 'play'} className="w-12 h-12 md:w-16 md:h-16 fill-current" /></button>
-                                    <button type="button" onClick={handleNext} className="p-5 md:p-6 rounded-full bg-gray-800 border border-white/10 hover:bg-gray-700 transition" disabled={podcastMode}><Icon name="skip-forward" className="w-8 h-8 md:w-10 md:h-10" /></button>
+                                    <button type="button" onClick={handlePrev} className="muller-icon-nav p-5 md:p-6 rounded-full bg-gray-800 border border-white/10 hover:bg-gray-700 transition text-white" disabled={podcastMode}><Icon name="chevron-left" className="w-8 h-8 md:w-10 md:h-10 text-white" /></button>
+                                    <button type="button" onClick={togglePlay} className={`p-8 md:p-12 rounded-full shadow-[0_0_40px_rgba(37,99,235,0.45)] transition text-white ${isPlaying ? 'bg-red-600' : 'bg-blue-600'}`}><Icon name={isPlaying ? 'square' : 'play'} className="w-12 h-12 md:w-16 md:h-16 fill-current text-white" /></button>
+                                    <button type="button" onClick={handleNext} className="muller-icon-nav p-5 md:p-6 rounded-full bg-gray-800 border border-white/10 hover:bg-gray-700 transition text-white" disabled={podcastMode}><Icon name="chevron-right" className="w-8 h-8 md:w-10 md:h-10 text-white" /></button>
                                 </div>
                                 <div className="flex items-center justify-center gap-2 md:gap-3 bg-black/50 px-4 py-2 rounded-xl border border-white/10 w-full max-w-sm">
                                     <Icon name="sliders" className="w-4 h-4 text-gray-400" />
@@ -3979,11 +4079,11 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                         <span>Szene {isReviewing ? reviewIndexPointer + 1 : sceneIndex + 1} von {isReviewing ? userStats.failedDiktatScenes.length : guionData.length} {isReviewing && "(Repaso)"}</span>
                       </div>
                       <div className="flex items-center justify-center gap-4 md:gap-6 w-full sm:w-auto">
-                        <button onClick={handlePrev} className={`p-2 md:p-3 bg-gray-900 rounded-full transition text-white border border-gray-700 shadow-md ${isReviewing || podcastMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`} disabled={podcastMode}><Icon name="skip-back" className="w-4 h-4 md:w-6 md:h-6" /></button>
+                        <button onClick={handlePrev} className={`muller-icon-nav p-2 md:p-3 bg-gray-900 rounded-full transition text-white border border-gray-700 shadow-md ${isReviewing || podcastMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`} disabled={podcastMode}><Icon name="chevron-left" className="w-4 h-4 md:w-6 md:h-6 text-white" /></button>
                         <button onClick={togglePlay} className={`p-3 md:p-6 rounded-full flex items-center justify-center transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.5)] ${isPlaying ? 'bg-red-500 text-white' : 'bg-blue-600 text-white'}`}>
                             {isPlaying ? <Icon name="square" className="w-5 h-5 md:w-8 md:h-8 fill-current" /> : <Icon name="play" className="w-5 h-5 md:w-8 md:h-8 ml-0.5 md:ml-1 fill-current" />}
                         </button>
-                        <button onClick={handleNext} className={`p-2 md:p-3 bg-gray-900 rounded-full transition text-white border border-gray-700 shadow-md ${podcastMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`} disabled={podcastMode}><Icon name="skip-forward" className="w-4 h-4 md:w-6 md:h-6" /></button>
+                        <button onClick={handleNext} className={`muller-icon-nav p-2 md:p-3 bg-gray-900 rounded-full transition text-white border border-gray-700 shadow-md ${podcastMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`} disabled={podcastMode}><Icon name="chevron-right" className="w-4 h-4 md:w-6 md:h-6 text-white" /></button>
                       </div>
                       <button onClick={exportScriptPDF} className="hidden sm:flex bg-red-700 hover:bg-red-600 border border-red-500 px-3 md:px-4 py-1.5 md:py-2 rounded-xl text-white font-bold items-center gap-2 shadow-lg transition text-xs md:text-sm"><Icon name="file-down" className="w-3 h-3 md:w-4 md:h-4" /> PDF Guion</button>
                       <div className="flex items-center justify-center gap-2 md:gap-3 bg-black/50 px-2 md:px-4 py-1 md:py-2 rounded-xl border border-gray-800 w-full sm:w-auto">
