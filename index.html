@@ -2017,6 +2017,13 @@
                   return { vocab: false, shadow: false, write: false }; 
               }
           });
+          const [mainDailyGoal, setMainDailyGoal] = useState(() => mullerGetMainDailyGoalCards());
+const [oralQIdx, setOralQIdx] = useState(0);
+const [oralSecs, setOralSecs] = useState(90);
+const [oralDeadline, setOralDeadline] = useState(null);
+const [oralClock, setOralClock] = useState(0);
+const [pwaDeferredPrompt, setPwaDeferredPrompt] = useState(null);
+const [tourStep, setTourStep] = useState(0);
           const [vocabSrsEpoch, setVocabSrsEpoch] = useState(0);
           const vocabSrsMap = useMemo(() => mullerGetVocabSrsMap(), [vocabSrsEpoch]);
           const vocabSrsDueCount = useMemo(() => {
