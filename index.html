@@ -5192,12 +5192,23 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       <div className="rounded-xl border border-white/10 bg-black/25 p-4">
                                           <p className="text-xs font-bold uppercase tracking-widest text-emerald-300 mb-2">Preferencias de uso</p>
                                           <div className="flex flex-wrap gap-2">
-                                              <button type="button" onClick={() => setShowFloatingTools((v) => !v)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${showFloatingTools ? 'bg-cyan-700 border-cyan-400 text-white' : 'bg-slate-800 border-white/10 text-gray-300'}`}>Herramientas flotantes: {showFloatingTools ? 'ON' : 'OFF'}</button>
+                                              <button type="button" onClick={() => setShowFloatingTools((v) => !v)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${showFloatingTools ? 'bg-cyan-700 border-cyan-400 text-white' : 'bg-slate-800 border-white/10 text-gray-300'}`}>Herramientas rápidas (Ajustes): {showFloatingTools ? 'ON' : 'OFF'}</button>
                                               <button type="button" onClick={() => setReduceMotionUi((v) => !v)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${reduceMotionUi ? 'bg-emerald-700 border-emerald-400 text-white' : 'bg-slate-800 border-white/10 text-gray-300'}`}>Reducir animaciones: {reduceMotionUi ? 'ON' : 'OFF'}</button>
                                               <button type="button" onClick={() => setPodcastMode((v) => !v)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${podcastMode ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800 border-white/10 text-gray-300'}`}>Podcast: {podcastMode ? 'ON' : 'OFF'}</button>
                                               <button type="button" onClick={() => setHistoriaAudioOnly((v) => !v)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${historiaAudioOnly ? 'bg-violet-600 border-violet-400 text-white' : 'bg-slate-800 border-white/10 text-gray-300'}`}>Solo audio: {historiaAudioOnly ? 'ON' : 'OFF'}</button>
                                               <button type="button" onClick={() => { try { localStorage.setItem(MULLER_ONBOARDING_KEY, '1'); } catch (e) {} setShowOnboarding(false); setOnboardingNever(true); }} className="px-3 py-1.5 rounded-lg text-xs font-bold border border-white/15 bg-slate-800 text-gray-300">Desactivar onboarding</button>
                                               <button type="button" onClick={() => { setShowMullerHub(true); setMullerHubTab('voices'); setShowProfileSettingsModal(false); }} className="px-3 py-1.5 rounded-lg text-xs font-bold border border-sky-500/30 bg-sky-900/30 text-sky-200">Más ajustes de voces…</button>
+                                          </div>
+                                      </div>
+                                      <div className="rounded-xl border border-white/10 bg-black/25 p-4">
+                                          <p className="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-2">Respaldo y sincronización</p>
+                                          <div className="flex flex-wrap gap-2">
+                                              <button type="button" onClick={() => window.dispatchEvent(new Event('muller-export-full-backup'))} className="px-3 py-1.5 rounded-lg text-xs font-bold border border-sky-500/35 bg-sky-900/35 text-sky-200">Exportar backup total</button>
+                                              <button type="button" onClick={() => window.dispatchEvent(new Event('muller-open-backup-import'))} className="px-3 py-1.5 rounded-lg text-xs font-bold border border-indigo-500/35 bg-indigo-900/35 text-indigo-200">Importar backup</button>
+                                              <button type="button" onClick={() => window.dispatchEvent(new Event('muller-export-srs-only'))} className="px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/35 bg-emerald-900/35 text-emerald-200">Exportar solo SRS</button>
+                                              <button type="button" onClick={() => window.dispatchEvent(new Event('muller-export-decks-only'))} className="px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-500/35 bg-amber-900/35 text-amber-200">Exportar solo mazos</button>
+                                              <button type="button" onClick={() => window.dispatchEvent(new Event('muller-show-sync-help'))} className="px-3 py-1.5 rounded-lg text-xs font-bold border border-teal-500/35 bg-teal-900/35 text-teal-200">Guía de sincronización</button>
+                                              <button type="button" onClick={() => window.dispatchEvent(new Event('muller-request-mic'))} className="px-3 py-1.5 rounded-lg text-xs font-bold border border-green-500/35 bg-green-900/35 text-green-200">Permiso de micrófono</button>
                                           </div>
                                       </div>
                                   </div>
@@ -5243,7 +5254,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       { t: 'Pestañas', d: 'Arriba cambias de actividad. La pestaña Entrenamiento abre artículos, verbos y preposiciones con simulacro. El panel azul es el Centro Müller (voces, plan, ayuda).' },
                       { t: 'Temas y accesibilidad', d: 'En Centro Müller → Voces puedes elegir tema Oscuro / Claro / Alto contraste y presets de velocidad TTS (Lenta / Normal / Examen).' },
                       { t: 'Objetivos y racha', d: 'En Vocab configuras objetivo diario de tarjetas; la racha solo sube si hay actividad mínima real (umbrales fijos en el informe del Centro).' },
-                      { t: 'Copia de seguridad', d: 'Los botones flotantes a la derecha exportan/importan. Puedes hacer backup total o solo SRS / mazos desde el menú pequeño. Sin cuenta en la nube obligatoria.' },
+                      { t: 'Copia de seguridad', d: 'Ahora las acciones de exportar/importar están dentro de Perfil → Ajustes → Respaldo y sincronización. Ahí puedes hacer backup total o solo SRS / mazos, sin botones flotantes tapando la pantalla.' },
                   ];
                   const ob = obSteps[onboardingStep - 1];
                   return (
@@ -7645,10 +7656,6 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
         // ========== COMPONENTES FLOTANTES (Sincronización y Permiso Micrófono) ==========
         function FloatingButtons() {
             const [lastBackupIso, setLastBackupIso] = React.useState(() => localStorage.getItem('muller_last_backup_iso'));
-            const [showFloatingTools, setShowFloatingTools] = React.useState(() => {
-                try { return localStorage.getItem('muller_show_floating_tools') !== '0'; } catch (e) { return true; }
-            });
-            const backupAgeDays = lastBackupIso ? Math.floor((Date.now() - new Date(lastBackupIso).getTime()) / (1000 * 60 * 60 * 24)) : null;
 
             const requestMicPermission = async () => {
                 try {
@@ -7689,17 +7696,6 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                 window.addEventListener('muller-export-full-backup', onFull);
                 return () => window.removeEventListener('muller-export-full-backup', onFull);
             }, [exportData]);
-            React.useEffect(() => {
-                const onFloatingTools = (ev) => {
-                    if (ev && ev.detail && typeof ev.detail.enabled === 'boolean') {
-                        setShowFloatingTools(ev.detail.enabled);
-                        return;
-                    }
-                    try { setShowFloatingTools(localStorage.getItem('muller_show_floating_tools') !== '0'); } catch (e) {}
-                };
-                window.addEventListener('muller-floating-tools-updated', onFloatingTools);
-                return () => window.removeEventListener('muller-floating-tools-updated', onFloatingTools);
-            }, []);
 
             const importData = (event) => {
                 const file = event.target.files[0];
@@ -7795,40 +7791,32 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                 );
             };
 
+            React.useEffect(() => {
+                const onImport = () => {
+                    const el = document.getElementById('muller-backup-file-input');
+                    if (el) el.click();
+                };
+                const onSrs = () => exportSrsOnly();
+                const onDecks = () => exportDecksOnly();
+                const onHelp = () => showSyncHelp();
+                const onMic = () => requestMicPermission();
+                window.addEventListener('muller-open-backup-import', onImport);
+                window.addEventListener('muller-export-srs-only', onSrs);
+                window.addEventListener('muller-export-decks-only', onDecks);
+                window.addEventListener('muller-show-sync-help', onHelp);
+                window.addEventListener('muller-request-mic', onMic);
+                return () => {
+                    window.removeEventListener('muller-open-backup-import', onImport);
+                    window.removeEventListener('muller-export-srs-only', onSrs);
+                    window.removeEventListener('muller-export-decks-only', onDecks);
+                    window.removeEventListener('muller-show-sync-help', onHelp);
+                    window.removeEventListener('muller-request-mic', onMic);
+                };
+            }, [exportDecksOnly, exportSrsOnly]);
+
             return (
                 <>
-                    {showFloatingTools && <button onClick={requestMicPermission} className="fixed bottom-20 right-4 z-50 bg-gradient-to-br from-emerald-500 to-green-700 hover:from-emerald-400 hover:to-green-600 text-white p-3 rounded-full float-icon-glow ring-2 ring-white/10" title="Solicitar permiso de micrófono">
-                        <Icon name="mic" className="w-6 h-6" />
-                    </button>}
-                    <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('muller-open-profile-settings', { detail: { tab: 'ajustes' } }))} className="fixed bottom-20 left-4 z-50 bg-gradient-to-br from-fuchsia-600 to-indigo-800 hover:from-fuchsia-500 hover:to-indigo-700 text-white p-3 rounded-full float-icon-glow ring-2 ring-white/15" title="Ajustes premium (globales)">
-                        <Icon name="settings" className="w-6 h-6" />
-                    </button>
-                    {showFloatingTools && <div className="fixed bottom-36 right-4 z-50 flex flex-col gap-2">
-                        {backupAgeDays !== null && (
-                            <div className="bg-black/70 text-[10px] text-gray-200 px-2 py-1 rounded-lg border border-gray-700 text-center">
-                                Backup: hace {Math.max(0, backupAgeDays)} d
-                            </div>
-                        )}
-                        <div className="bg-black/70 text-[10px] text-gray-200 px-2 py-1 rounded-lg border border-gray-700 text-center">
-                            {mullerSupabaseConfigured() ? 'Sync: Supabase' : 'Sync: Local'} · SFX {typeof window.__mullerSfxEnabled === 'function' && window.__mullerSfxEnabled() ? 'ON' : 'OFF'}
-                        </div>
-                        <button onClick={showSyncHelp} className="bg-gradient-to-br from-teal-500 to-teal-900 hover:from-teal-400 hover:to-teal-800 text-white p-3 rounded-full float-icon-glow ring-2 ring-white/10" title="Guía sincronización total">
-                            <Icon name="info" className="w-6 h-6" />
-                        </button>
-                        <button onClick={exportData} className="bg-gradient-to-br from-sky-500 to-blue-800 hover:from-sky-400 hover:to-blue-700 text-white p-3 rounded-full float-icon-glow ring-2 ring-white/10" title="Exportar progreso">
-                            <Icon name="download" className="w-6 h-6" />
-                        </button>
-                        <label className="bg-gradient-to-br from-indigo-500 to-slate-900 hover:from-indigo-400 hover:to-slate-800 text-white p-3 rounded-full float-icon-glow ring-2 ring-white/10 cursor-pointer" title="Importar progreso (total o parcial SRS/mazos)">
-                            <Icon name="upload" className="w-6 h-6" />
-                            <input id="muller-backup-file-input" type="file" accept=".json" onChange={importData} className="hidden" />
-                        </label>
-                        <button type="button" onClick={exportSrsOnly} className="bg-gradient-to-br from-emerald-600 to-slate-900 hover:from-emerald-500 hover:to-slate-800 text-white py-2 px-2 rounded-xl float-icon-glow ring-2 ring-white/10 text-[10px] font-bold leading-tight" title="Exportar solo datos SRS (muller_vocab_srs_v1)">
-                            SRS
-                        </button>
-                        <button type="button" onClick={exportDecksOnly} className="bg-gradient-to-br from-amber-600 to-slate-900 hover:from-amber-500 hover:to-slate-800 text-white py-2 px-2 rounded-xl float-icon-glow ring-2 ring-white/10 text-[10px] font-bold leading-tight" title="Exportar solo mazos (vocab difícil/normal y gramática)">
-                            Mazos
-                        </button>
-                    </div>}
+                    <input id="muller-backup-file-input" type="file" accept=".json" onChange={importData} className="hidden" />
                 </>
             );
         }
