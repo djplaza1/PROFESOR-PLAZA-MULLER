@@ -1700,7 +1700,7 @@
           const [mullerHubTab, setMullerHubTab] = useState('voices');
 
           useEffect(() => {
-              const validTabs = new Set(['inicio', 'ruta', 'historia', 'shadowing', 'escritura', 'vocabulario', 'entrenamiento', 'bxbank', 'progreso', 'guiones', 'lexikon', 'telc', 'storybuilder', 'comunidad']);
+              const validTabs = new Set(['inicio', 'ruta', 'historia', 'shadowing', 'escritura', 'vocabulario', 'entrenamiento', 'bxbank', 'progreso', 'guiones', 'lexikon', 'telc', 'storybuilder', 'historiaspro', 'comunidad']);
               if (!validTabs.has(activeTab)) setActiveTab('inicio');
           }, [activeTab]);
 
@@ -1759,6 +1759,9 @@
           const [authMode, setAuthMode] = useState('login');
           const [supabaseUser, setSupabaseUser] = useState(null);
           const [supabaseProfile, setSupabaseProfile] = useState(null);
+          const cloudApplyingRef = useRef(false);
+          const cloudLoadedRef = useRef(false);
+          const cloudPushTimerRef = useRef(null);
           const [remoteLeagueRows, setRemoteLeagueRows] = useState(null);
           const [remoteProfiles, setRemoteProfiles] = useState(null);
           const [profileNameDraft, setProfileNameDraft] = useState('');
@@ -1772,6 +1775,17 @@
           const [adOpenedAt, setAdOpenedAt] = useState(0);
           const [rewardStatus, setRewardStatus] = useState(null);
           const [premiumStatus, setPremiumStatus] = useState(null);
+          const [cloudSyncState, setCloudSyncState] = useState('local');
+          const [cloudSyncLabel, setCloudSyncLabel] = useState('Local');
+          const [cloudSyncAt, setCloudSyncAt] = useState(null);
+          const [storiesProInputMode, setStoriesProInputMode] = useState('es');
+          const [storiesProOcrLang, setStoriesProOcrLang] = useState('es');
+          const [storiesProSourceText, setStoriesProSourceText] = useState('');
+          const [storiesProLevel, setStoriesProLevel] = useState('B1');
+          const [storiesProTone, setStoriesProTone] = useState('natural');
+          const [storiesProBusy, setStoriesProBusy] = useState(false);
+          const [storiesProErr, setStoriesProErr] = useState('');
+          const [storiesProResult, setStoriesProResult] = useState(null);
           const unifiedAuth = useMemo(() => {
               void authTick;
               if (mullerSupabaseConfigured() && supabaseUser) {
@@ -2007,6 +2021,57 @@
               setUserStats((prev) => ({ ...prev, streakDays: mullerComputeHonestStreakDays() }));
           }, []);
 
+          const buildCloudSnapshot = useCallback(() => {
+              return {
+                  userStats,
+                  savedScripts,
+                  customVocabLessons,
+                  prefs: {
+                      showFloatingTools,
+                      reduceMotionUi,
+                      uiTheme,
+                  },
+                  storiesProDraft: {
+                      inputMode: storiesProInputMode,
+                      sourceText: storiesProSourceText,
+                      level: storiesProLevel,
+                      tone: storiesProTone,
+                  }
+              };
+          }, [userStats, savedScripts, customVocabLessons, showFloatingTools, reduceMotionUi, uiTheme, storiesProInputMode, storiesProSourceText, storiesProLevel, storiesProTone]);
+
+          const applyCloudSnapshot = useCallback((payload) => {
+              if (!payload || typeof payload !== 'object') return;
+              cloudApplyingRef.current = true;
+              try {
+                  if (payload.userStats && typeof payload.userStats === 'object') {
+                      setUserStats(payload.userStats);
+                      try { localStorage.setItem('mullerStats', JSON.stringify(payload.userStats)); } catch (e) {}
+                  }
+                  if (Array.isArray(payload.savedScripts)) {
+                      setSavedScripts(payload.savedScripts);
+                      try { localStorage.setItem('mullerScripts', JSON.stringify(payload.savedScripts)); } catch (e) {}
+                  }
+                  if (Array.isArray(payload.customVocabLessons)) {
+                      setCustomVocabLessons(payload.customVocabLessons);
+                      try { localStorage.setItem('mullerCustomVocab', JSON.stringify(payload.customVocabLessons)); } catch (e) {}
+                  }
+                  if (payload.prefs && typeof payload.prefs === 'object') {
+                      if (typeof payload.prefs.showFloatingTools === 'boolean') setShowFloatingTools(payload.prefs.showFloatingTools);
+                      if (typeof payload.prefs.reduceMotionUi === 'boolean') setReduceMotionUi(payload.prefs.reduceMotionUi);
+                      if (typeof payload.prefs.uiTheme === 'string') setUiTheme(payload.prefs.uiTheme);
+                  }
+                  if (payload.storiesProDraft && typeof payload.storiesProDraft === 'object') {
+                      if (typeof payload.storiesProDraft.inputMode === 'string') setStoriesProInputMode(payload.storiesProDraft.inputMode);
+                      if (typeof payload.storiesProDraft.sourceText === 'string') setStoriesProSourceText(payload.storiesProDraft.sourceText);
+                      if (typeof payload.storiesProDraft.level === 'string') setStoriesProLevel(payload.storiesProDraft.level);
+                      if (typeof payload.storiesProDraft.tone === 'string') setStoriesProTone(payload.storiesProDraft.tone);
+                  }
+              } finally {
+                  window.setTimeout(() => { cloudApplyingRef.current = false; }, 50);
+              }
+          }, []);
+
           useEffect(() => {
               if (activeTab !== 'lexikon') return;
               try {
@@ -2235,6 +2300,84 @@
               setProfileNameDraft(unifiedAuth.displayName || '');
               setProfileNameMsg('');
           }, [unifiedAuth]);
+
+          useEffect(() => {
+              if (!mullerSupabaseConfigured()) {
+                  setCloudSyncState('local');
+                  setCloudSyncLabel('Local');
+                  return;
+              }
+              if (!supabaseUser || !supabaseUser.id) {
+                  setCloudSyncState('local');
+                  setCloudSyncLabel('Local (sin sesión)');
+                  return;
+              }
+              setCloudSyncState('syncing');
+              setCloudSyncLabel('Supabase conectando…');
+              const client = mullerGetSupabaseClient();
+              if (!client) {
+                  setCloudSyncState('error');
+                  setCloudSyncLabel('Error Supabase');
+                  return;
+              }
+              let cancelled = false;
+              client.from('muller_user_state')
+                  .select('payload, updated_at')
+                  .eq('user_id', supabaseUser.id)
+                  .maybeSingle()
+                  .then(({ data, error }) => {
+                      if (cancelled) return;
+                      if (error) {
+                          setCloudSyncState('error');
+                          setCloudSyncLabel('Error al leer nube');
+                          return;
+                      }
+                      if (data && data.payload) {
+                          applyCloudSnapshot(data.payload);
+                          setCloudSyncAt(data.updated_at || new Date().toISOString());
+                      }
+                      cloudLoadedRef.current = true;
+                      setCloudSyncState('synced');
+                      setCloudSyncLabel('Supabase activo');
+                  })
+                  .catch(() => {
+                      if (cancelled) return;
+                      setCloudSyncState('error');
+                      setCloudSyncLabel('Error de red');
+                  });
+              return () => { cancelled = true; };
+          }, [supabaseUser, applyCloudSnapshot]);
+
+          useEffect(() => {
+              if (!mullerSupabaseConfigured() || !supabaseUser || !supabaseUser.id) return undefined;
+              if (!cloudLoadedRef.current || cloudApplyingRef.current) return undefined;
+              const client = mullerGetSupabaseClient();
+              if (!client) return undefined;
+              if (cloudPushTimerRef.current) window.clearTimeout(cloudPushTimerRef.current);
+              setCloudSyncState('syncing');
+              setCloudSyncLabel('Sincronizando…');
+              cloudPushTimerRef.current = window.setTimeout(async () => {
+                  try {
+                      const payload = buildCloudSnapshot();
+                      const nowIso = new Date().toISOString();
+                      const { error } = await client.from('muller_user_state').upsert({
+                          user_id: supabaseUser.id,
+                          payload,
+                          updated_at: nowIso
+                      }, { onConflict: 'user_id' });
+                      if (error) throw error;
+                      setCloudSyncState('synced');
+                      setCloudSyncLabel('Supabase activo');
+                      setCloudSyncAt(nowIso);
+                  } catch (err) {
+                      setCloudSyncState('error');
+                      setCloudSyncLabel('Sync con errores');
+                  }
+              }, 1200);
+              return () => {
+                  if (cloudPushTimerRef.current) window.clearTimeout(cloudPushTimerRef.current);
+              };
+          }, [supabaseUser, buildCloudSnapshot, userStats, savedScripts, customVocabLessons, showFloatingTools, reduceMotionUi, uiTheme, storiesProInputMode, storiesProSourceText, storiesProLevel, storiesProTone]);
 
           useEffect(() => {
               const onBip = (e) => {
@@ -2960,6 +3103,53 @@
               return String((j.responseData && j.responseData.translatedText) || '').trim();
           };
 
+        const mullerStoryClean = (t) => String(t || '').replace(/\s+/g, ' ').replace(/\s([,.;:!?])/g, '$1').trim();
+        const mullerStorySimplifyGerman = (txt) => {
+            return String(txt || '')
+                .replace(/\bjedoch\b/gi, 'aber')
+                .replace(/\bdennoch\b/gi, 'trotzdem')
+                .replace(/\baufgrund\b/gi, 'wegen')
+                .replace(/\bbeziehungsweise\b/gi, 'oder')
+                .replace(/\baußerdem\b/gi, 'auch')
+                .replace(/\binsbesondere\b/gi, 'vor allem')
+                .replace(/\ballerdings\b/gi, 'aber')
+                .replace(/\bdaher\b/gi, 'deshalb');
+        };
+        const mullerStoryStylizeGerman = (txt, level, tone) => {
+            let out = mullerStoryClean(txt);
+            if (!out) return '';
+            if (tone === 'natural') out = out.replace(/\s,\s/g, ', ');
+            if (tone === 'formal') {
+                out = out
+                    .replace(/\bich\b/g, 'Ich')
+                    .replace(/\bwir\b/g, 'Wir')
+                    .replace(/\bman\b/g, 'man');
+            }
+            if (level === 'A2') out = mullerStorySimplifyGerman(out);
+            if (level === 'B1') out = mullerStorySimplifyGerman(out).replace(/\bwelche[rnms]?\b/gi, 'die');
+            return out;
+        };
+        const mullerStorySplitScenes = (deText, esText) => {
+            const deParts = String(deText || '').split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
+            const esParts = String(esText || '').split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
+            const out = deParts.slice(0, 14).map((line, i) => ({
+                speaker: i % 2 === 0 ? 'Lukas' : 'Elena',
+                text: line,
+                translation: esParts[i] || ''
+            }));
+            return out.length ? out : [{ speaker: 'Lukas', text: mullerStoryClean(deText), translation: mullerStoryClean(esText) }];
+        };
+        const mullerStoryGlossary = (deText) => {
+            const words = String(deText || '')
+                .toLowerCase()
+                .replace(/[^a-zäöüß\s-]/gi, ' ')
+                .split(/\s+/)
+                .map((w) => w.trim())
+                .filter((w) => w.length >= 6 && !/^\d+$/.test(w));
+            const unique = Array.from(new Set(words)).slice(0, 10);
+            return unique.map((w) => ({ de: w, es: '(revísalo en Lexikon)' }));
+        };
+
           const mullerLexikonApplyPairsFromTranslate = (sourceText, translated, detectedLang, targetLang) => {
               const d = String(detectedLang || '').toLowerCase();
               const t = String(targetLang || '').toLowerCase();
@@ -3050,6 +3240,82 @@
               } finally {
                   setLexikonTransLoading(false);
               }
+          };
+
+          const runHistoriasProOcr = async (file) => {
+              if (!file) return;
+              if (typeof Tesseract === 'undefined') {
+                  setStoriesProErr('No se pudo cargar OCR (Tesseract).');
+                  return;
+              }
+              setStoriesProErr('');
+              setStoriesProBusy(true);
+              try {
+                  const worker = await Tesseract.createWorker(storiesProOcrLang === 'de' ? 'deu' : 'spa', 1);
+                  const { data: { text } } = await worker.recognize(file);
+                  await worker.terminate();
+                  const cleaned = mullerStoryClean(text);
+                  setStoriesProSourceText(cleaned);
+                  setStoriesProInputMode(storiesProOcrLang === 'de' ? 'de' : 'es');
+              } catch (err) {
+                  setStoriesProErr(err && err.message ? err.message : 'Error leyendo OCR');
+              } finally {
+                  setStoriesProBusy(false);
+              }
+          };
+
+          const runHistoriasProGenerate = async () => {
+              const src = mullerStoryClean(storiesProSourceText);
+              if (!src) {
+                  setStoriesProErr('Escribe o carga un texto antes de generar.');
+                  return;
+              }
+              setStoriesProBusy(true);
+              setStoriesProErr('');
+              try {
+                  let deNatural = '';
+                  let esBase = '';
+                  if (storiesProInputMode === 'es') {
+                      esBase = src;
+                      deNatural = await mullerTranslateViaGtx(src, 'auto', 'de');
+                  } else {
+                      deNatural = src;
+                      esBase = await mullerTranslateViaGtx(src, 'auto', 'es');
+                  }
+                  deNatural = mullerStoryStylizeGerman(deNatural, storiesProLevel, storiesProTone);
+                  const deSimple = mullerStorySimplifyGerman(deNatural);
+                  const scenes = mullerStorySplitScenes(deNatural, esBase);
+                  const glossary = mullerStoryGlossary(deNatural);
+                  setStoriesProResult({
+                      deNatural,
+                      deSimple,
+                      esBase,
+                      scenes,
+                      glossary,
+                      mode: storiesProInputMode === 'de' ? 'correccion' : 'conversion'
+                  });
+              } catch (err) {
+                  setStoriesProErr(err && err.message ? err.message : 'No se pudo generar la historia.');
+              } finally {
+                  setStoriesProBusy(false);
+              }
+          };
+
+          const sendHistoriasProToHistoria = () => {
+              if (!storiesProResult || !Array.isArray(storiesProResult.scenes) || storiesProResult.scenes.length === 0) {
+                  setStoriesProErr('Primero genera la historia.');
+                  return;
+              }
+              const title = `Historias Pro · ${storiesProLevel} · ${new Date().toLocaleDateString()}`;
+              setGuionData(storiesProResult.scenes);
+              setSceneIndex(0);
+              setMode('dialogue');
+              setShowCurrentTranslation(false);
+              setIsDefaultScript(false);
+              setActiveScriptTitle(title);
+              setActiveSavedScriptId(null);
+              setActiveTab('historia');
+              stopAudio();
           };
 
           const appendPairToCustomLesson = (de, es) => {
@@ -3860,6 +4126,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   if (activeTab === 'lexikon') return 'bg-slate-100';
                   if (activeTab === 'bxbank') return 'bg-slate-100';
                   if (activeTab === 'storybuilder') return 'bg-indigo-100';
+                  if (activeTab === 'historiaspro') return 'bg-emerald-50';
                   if (activeTab === 'shadowing') return 'bg-teal-50';
                   if (activeTab === 'escritura') return 'bg-stone-100';
                   if (activeTab === 'telc') return 'bg-slate-100';
@@ -3878,6 +4145,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               if (activeTab === 'lexikon') return 'bg-slate-900';
               if (activeTab === 'bxbank') return 'bg-slate-900'; // Suavizado
               if (activeTab === 'storybuilder') return 'bg-indigo-950'; // Suavizado
+              if (activeTab === 'historiaspro') return 'bg-emerald-950/80';
               if (activeTab === 'shadowing') return 'bg-teal-950/90';
               if (activeTab === 'escritura') return 'bg-stone-950';
               if (fluesternMode) return 'bg-zinc-900 filter contrast-125 sepia-50'; 
@@ -4423,6 +4691,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   lexikon: { icon: 'library', title: 'Lexikon', desc: 'Diccionario y traducción', tone: 'border-cyan-500/35 bg-cyan-900/25 text-cyan-200' },
                   telc: { icon: 'clipboard-check', title: 'TELC', desc: 'Guía por niveles A1-C2', tone: 'border-orange-500/35 bg-orange-900/25 text-orange-200' },
                   storybuilder: { icon: 'sparkles', title: 'IA', desc: 'Generación y resumen de contenido', tone: 'border-fuchsia-500/35 bg-fuchsia-900/25 text-fuchsia-200' },
+                  historiaspro: { icon: 'feather', title: 'Historias Pro', desc: 'ES/DE/OCR y estilización', tone: 'border-emerald-500/35 bg-emerald-900/25 text-emerald-200' },
                   comunidad: { icon: 'trophy', title: 'Comunidad', desc: 'Economía, directorio y liga', tone: 'border-violet-500/35 bg-violet-900/25 text-violet-200' },
               };
               return map[activeTab] || { icon: 'layout-dashboard', title: 'Inicio', desc: 'Panel rápido y continuidad', tone: 'border-indigo-500/35 bg-indigo-900/25 text-indigo-200' };
@@ -4455,6 +4724,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   lexikon: 'Sugerencia: guarda pares útiles y repásalos en vocabulario.',
                   telc: 'Sugerencia: elige nivel y combina con simulacro en Entrenamiento.',
                   storybuilder: 'Sugerencia: guarda siempre el guion generado en Biblioteca.',
+                  historiaspro: 'Sugerencia: genera en A2/B1 y envía escenas a Historia.',
                   comunidad: 'Sugerencia: revisa economía y liga al final de cada sesión.',
               };
               return h[activeTab] || '';
@@ -4500,6 +4770,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       <button type="button" onClick={()=>{setActiveTab('lexikon'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'lexikon' ? 'bg-cyan-700 text-white shadow-[0_0_16px_rgba(14,116,144,0.5)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="library" className="w-4 h-4 md:w-5 md:h-5" /> Lexikon</button>
                       <button onClick={()=>{setActiveTab('telc'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'telc' ? 'bg-orange-700 text-white shadow-[0_0_16px_rgba(194,65,12,0.5)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="clipboard-check" className="w-4 h-4 md:w-5 md:h-5" /> TELC</button>
                       <button onClick={()=>{setActiveTab('storybuilder'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'storybuilder' ? 'bg-fuchsia-600 text-white shadow-[0_0_18px_rgba(192,38,211,0.45)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="sparkles" className="w-4 h-4 md:w-5 md:h-5" /> IA</button>
+                      <button onClick={()=>{setActiveTab('historiaspro'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'historiaspro' ? 'bg-emerald-600 text-white shadow-[0_0_18px_rgba(16,185,129,0.45)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="feather" className="w-4 h-4 md:w-5 md:h-5" /> Historias Pro</button>
                       <button onClick={()=>{setActiveTab('comunidad'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'comunidad' ? 'bg-violet-600 text-white shadow-[0_0_18px_rgba(124,58,237,0.5)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="trophy" className="w-4 h-4 md:w-5 md:h-5" /> Comunidad</button>
                       </div>
                   </div>
@@ -4537,7 +4808,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           {userStats.isPremium ? <Icon name="crown" className="h-3 w-3 shrink-0 md:h-3.5 md:w-3.5" /> : <Icon name="user-circle" className="h-3 w-3 shrink-0 md:h-3.5 md:w-3.5" />}
                                           <span className="truncate">{userStats.username || 'Estudiante'}</span>
                                       </span>
-                                      <span className="hidden text-[9px] font-semibold normal-case tracking-normal text-gray-500 sm:inline">Cuenta local</span>
+                                      <span className="hidden text-[9px] font-semibold normal-case tracking-normal text-gray-500 sm:inline">Sync: {cloudSyncLabel}</span>
                                   </span>
                                   <Icon name="chevron-down" className={`h-3.5 w-3.5 shrink-0 text-gray-400 transition md:h-4 md:w-4 ${userMenuOpen ? 'rotate-180' : ''}`} />
                               </button>
@@ -5330,6 +5601,96 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                   <h2 className="text-lg md:text-2xl font-bold text-fuchsia-300 text-center">La IA del Profesor Müller está escribiendo un guion...</h2>
                               </div>
                           )}
+                      </div>
+                  )}
+
+                  {activeTab === 'historiaspro' && !practiceActive && (
+                      <div className="p-4 md:p-8 max-w-5xl mx-auto w-full animate-in fade-in duration-500">
+                          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                              <div>
+                                  <h1 className="text-2xl md:text-4xl font-black flex items-center gap-2 md:gap-3 text-emerald-300"><Icon name="feather" className="w-7 h-7 md:w-10 md:h-10" /> Historias Pro</h1>
+                                  <p className="text-sm text-emerald-100/80 mt-1">Escribe en español/alemán o sube manuscrito (OCR), y obtén versión natural por nivel, simplificada, glosario y escenas para `Historia`.</p>
+                              </div>
+                              <div className={`text-xs px-3 py-2 rounded-xl border ${cloudSyncState === 'synced' ? 'bg-emerald-900/40 border-emerald-500/35 text-emerald-200' : cloudSyncState === 'syncing' ? 'bg-sky-900/35 border-sky-500/35 text-sky-200' : cloudSyncState === 'error' ? 'bg-rose-900/40 border-rose-500/40 text-rose-200' : 'bg-black/30 border-white/10 text-gray-300'}`}>
+                                  Sync: {cloudSyncLabel}{cloudSyncAt ? ` · ${new Date(cloudSyncAt).toLocaleTimeString()}` : ''}
+                              </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                              <section className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 md:p-5 space-y-3">
+                                  <div className="flex flex-wrap gap-2">
+                                      {[
+                                          { id: 'es', label: 'Entrada español' },
+                                          { id: 'de', label: 'Entrada alemán (corregir)' },
+                                          { id: 'ocr', label: 'OCR manuscrito' },
+                                      ].map((x) => (
+                                          <button key={x.id} type="button" onClick={() => setStoriesProInputMode(x.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${storiesProInputMode === x.id ? 'bg-emerald-600 border-emerald-400 text-white' : 'bg-black/30 border-white/10 text-gray-300'}`}>{x.label}</button>
+                                      ))}
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                      <label className="text-xs text-gray-400">
+                                          Nivel de salida
+                                          <select className="mt-1 w-full bg-black/50 border border-white/15 rounded-lg px-2 py-2 text-white" value={storiesProLevel} onChange={(e) => setStoriesProLevel(e.target.value)}>
+                                              {['A2', 'B1', 'B2', 'C1'].map((lv) => <option key={lv} value={lv}>{lv}</option>)}
+                                          </select>
+                                      </label>
+                                      <label className="text-xs text-gray-400">
+                                          Estilo
+                                          <select className="mt-1 w-full bg-black/50 border border-white/15 rounded-lg px-2 py-2 text-white" value={storiesProTone} onChange={(e) => setStoriesProTone(e.target.value)}>
+                                              <option value="natural">Natural</option>
+                                              <option value="formal">Formal</option>
+                                          </select>
+                                      </label>
+                                  </div>
+                                  {storiesProInputMode === 'ocr' && (
+                                      <div className="rounded-xl border border-white/10 bg-black/25 p-3">
+                                          <div className="flex items-center gap-2 mb-2">
+                                              <label className="text-xs text-gray-400">Idioma OCR:</label>
+                                              <select className="bg-black/40 border border-white/15 rounded-lg px-2 py-1 text-xs text-white" value={storiesProOcrLang} onChange={(e) => setStoriesProOcrLang(e.target.value)}>
+                                                  <option value="es">Español</option>
+                                                  <option value="de">Alemán</option>
+                                              </select>
+                                          </div>
+                                          <input type="file" accept="image/*" onChange={(e) => runHistoriasProOcr(e.target.files && e.target.files[0])} className="w-full text-xs text-gray-300 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-emerald-700 file:text-white" />
+                                      </div>
+                                  )}
+                                  <textarea value={storiesProSourceText} onChange={(e) => setStoriesProSourceText(e.target.value)} className="w-full h-52 bg-black/45 border border-white/15 rounded-xl p-3 text-white outline-none focus:border-emerald-500 resize-y" placeholder={storiesProInputMode === 'de' ? 'Escribe tu historia en alemán para corrección/estilización…' : 'Escribe tu historia en español…'} />
+                                  {storiesProErr ? <p className="text-xs text-rose-300">{storiesProErr}</p> : null}
+                                  <div className="flex flex-wrap gap-2">
+                                      <button type="button" disabled={storiesProBusy} onClick={runHistoriasProGenerate} className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 font-bold text-sm">{storiesProBusy ? 'Procesando…' : 'Generar Historias Pro'}</button>
+                                      <button type="button" disabled={!storiesProResult} onClick={sendHistoriasProToHistoria} className="px-4 py-2 rounded-xl bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 font-bold text-sm">Enviar escenas a Historia</button>
+                                  </div>
+                              </section>
+
+                              <section className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 md:p-5 space-y-3">
+                                  {!storiesProResult ? (
+                                      <p className="text-sm text-gray-400">Genera una historia para ver salida natural, versión simplificada, glosario y escenas prácticas.</p>
+                                  ) : (
+                                      <>
+                                          <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/25 p-3">
+                                              <p className="text-[11px] uppercase tracking-wider font-bold text-emerald-300 mb-1">Alemán natural ({storiesProLevel})</p>
+                                              <p className="text-sm text-gray-100 leading-relaxed whitespace-pre-wrap">{storiesProResult.deNatural}</p>
+                                          </div>
+                                          <div className="rounded-xl border border-sky-500/30 bg-sky-950/20 p-3">
+                                              <p className="text-[11px] uppercase tracking-wider font-bold text-sky-300 mb-1">Versión simplificada</p>
+                                              <p className="text-sm text-gray-100 leading-relaxed whitespace-pre-wrap">{storiesProResult.deSimple}</p>
+                                          </div>
+                                          <div className="rounded-xl border border-violet-500/30 bg-violet-950/20 p-3">
+                                              <p className="text-[11px] uppercase tracking-wider font-bold text-violet-300 mb-1">Glosario rápido</p>
+                                              <div className="flex flex-wrap gap-2">
+                                                  {(storiesProResult.glossary || []).map((g, i) => <span key={i} className="text-xs rounded-md px-2 py-1 bg-black/35 border border-white/10 text-gray-200">{g.de}</span>)}
+                                              </div>
+                                          </div>
+                                          <div className="rounded-xl border border-white/10 bg-black/25 p-3">
+                                              <p className="text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-2">Escenas para Historia</p>
+                                              <ul className="space-y-1.5 text-sm text-gray-300 max-h-40 overflow-y-auto">
+                                                  {(storiesProResult.scenes || []).map((s, i) => <li key={i}><span className="font-bold text-emerald-300">{s.speaker}:</span> {s.text}</li>)}
+                                              </ul>
+                                          </div>
+                                      </>
+                                  )}
+                              </section>
+                          </div>
                       </div>
                   )}
 
@@ -6321,6 +6682,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                   { id: 'progreso', label: 'Progreso', sub: 'Plan del día y estadísticas', icon: 'bar-chart', go: () => setActiveTab('progreso') },
                                   { id: 'bib', label: 'Biblioteca', sub: 'Guiones y listas', icon: 'file-text', go: () => setActiveTab('guiones') },
                                   { id: 'lex', label: 'Lexikon', sub: 'Diccionario y traductor', icon: 'library', go: () => setActiveTab('lexikon') },
+                                  { id: 'hpro', label: 'Historias Pro', sub: 'ES/DE/OCR + estilo', icon: 'feather', go: () => setActiveTab('historiaspro') },
                                   { id: 'com', label: 'Comunidad', sub: 'Cuenta, directorio, liga', icon: 'trophy', go: () => setActiveTab('comunidad') },
                               ].map((c) => (
                                   <button key={c.id} type="button" onClick={() => { stopAudio(); setPracticeActive(null); c.go(); }} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-900/85 hover:bg-slate-800/95 p-4 text-left transition shadow-lg ring-1 ring-white/[0.04]">
