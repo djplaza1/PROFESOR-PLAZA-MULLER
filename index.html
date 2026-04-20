@@ -102,6 +102,20 @@
         .float-icon-glow {
             box-shadow: 0 4px 14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12);
         }
+        .muller-glass-card {
+            background: linear-gradient(160deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 100%);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 26px rgba(0,0,0,0.25);
+            backdrop-filter: blur(10px);
+        }
+        .muller-top-nav button .lucide-wrapper,
+        .muller-top-nav button i[data-lucide] {
+            padding: 0.28rem;
+            border-radius: 0.45rem;
+            background: linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+        }
         .muller-reduce-motion *,
         .muller-reduce-motion *::before,
         .muller-reduce-motion *::after {
@@ -4359,22 +4373,22 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           void oralClock;
           const activeSectionMeta = useMemo(() => {
               const map = {
-                  inicio: { icon: 'layout-dashboard', title: 'Inicio', desc: 'Panel rápido y continuidad' },
-                  ruta: { icon: 'map', title: 'Ruta', desc: 'Camino A1-A2 guiado' },
-                  historia: { icon: 'play', title: 'Historia', desc: 'Escucha, modos y simulación oral' },
-                  shadowing: { icon: 'audio-lines', title: 'Shadowing', desc: 'Fluidez y pronunciación' },
-                  escritura: { icon: 'pen-line', title: 'Escritura', desc: 'Canvas, dictado y OCR' },
-                  vocabulario: { icon: 'book-open', title: 'Vocabulario', desc: 'SRS y recall activo' },
-                  entrenamiento: { icon: 'graduation-cap', title: 'Entrenamiento', desc: 'Artículos, prep. y simulacro' },
-                  bxbank: { icon: bxBankLevel === 'b1' ? 'target' : 'layers', title: bxBankLevel === 'b1' ? 'Banco B1' : 'Banco B2', desc: 'Frases y estructuras por nivel' },
-                  progreso: { icon: 'bar-chart', title: 'Progreso', desc: 'Métricas, export y objetivos' },
-                  guiones: { icon: 'file-text', title: 'Biblioteca', desc: 'Guiones y distribución' },
-                  lexikon: { icon: 'library', title: 'Lexikon', desc: 'Diccionario y traducción' },
-                  telc: { icon: 'clipboard-check', title: 'TELC', desc: 'Guía por niveles A1-C2' },
-                  storybuilder: { icon: 'sparkles', title: 'IA', desc: 'Generación y resumen de contenido' },
-                  comunidad: { icon: 'trophy', title: 'Comunidad', desc: 'Economía, directorio y liga' },
+                  inicio: { icon: 'layout-dashboard', title: 'Inicio', desc: 'Panel rápido y continuidad', tone: 'border-indigo-500/35 bg-indigo-900/25 text-indigo-200' },
+                  ruta: { icon: 'map', title: 'Ruta', desc: 'Camino A1-A2 guiado', tone: 'border-fuchsia-500/35 bg-fuchsia-900/25 text-fuchsia-200' },
+                  historia: { icon: 'play', title: 'Historia', desc: 'Escucha, modos y simulación oral', tone: 'border-blue-500/35 bg-blue-900/25 text-blue-200' },
+                  shadowing: { icon: 'audio-lines', title: 'Shadowing', desc: 'Fluidez y pronunciación', tone: 'border-teal-500/35 bg-teal-900/25 text-teal-200' },
+                  escritura: { icon: 'pen-line', title: 'Escritura', desc: 'Canvas, dictado y OCR', tone: 'border-rose-500/35 bg-rose-900/25 text-rose-200' },
+                  vocabulario: { icon: 'book-open', title: 'Vocabulario', desc: 'SRS y recall activo', tone: 'border-amber-500/35 bg-amber-900/25 text-amber-200' },
+                  entrenamiento: { icon: 'graduation-cap', title: 'Entrenamiento', desc: 'Artículos, prep. y simulacro', tone: 'border-fuchsia-500/35 bg-fuchsia-900/25 text-fuchsia-200' },
+                  bxbank: { icon: bxBankLevel === 'b1' ? 'target' : 'layers', title: bxBankLevel === 'b1' ? 'Banco B1' : 'Banco B2', desc: 'Frases y estructuras por nivel', tone: bxBankLevel === 'b1' ? 'border-emerald-500/35 bg-emerald-900/25 text-emerald-200' : 'border-sky-500/35 bg-sky-900/25 text-sky-200' },
+                  progreso: { icon: 'bar-chart', title: 'Progreso', desc: 'Métricas, export y objetivos', tone: 'border-yellow-500/35 bg-yellow-900/25 text-yellow-200' },
+                  guiones: { icon: 'file-text', title: 'Biblioteca', desc: 'Guiones y distribución', tone: 'border-purple-500/35 bg-purple-900/25 text-purple-200' },
+                  lexikon: { icon: 'library', title: 'Lexikon', desc: 'Diccionario y traducción', tone: 'border-cyan-500/35 bg-cyan-900/25 text-cyan-200' },
+                  telc: { icon: 'clipboard-check', title: 'TELC', desc: 'Guía por niveles A1-C2', tone: 'border-orange-500/35 bg-orange-900/25 text-orange-200' },
+                  storybuilder: { icon: 'sparkles', title: 'IA', desc: 'Generación y resumen de contenido', tone: 'border-fuchsia-500/35 bg-fuchsia-900/25 text-fuchsia-200' },
+                  comunidad: { icon: 'trophy', title: 'Comunidad', desc: 'Economía, directorio y liga', tone: 'border-violet-500/35 bg-violet-900/25 text-violet-200' },
               };
-              return map[activeTab] || { icon: 'layout-dashboard', title: 'Inicio', desc: 'Panel rápido y continuidad' };
+              return map[activeTab] || { icon: 'layout-dashboard', title: 'Inicio', desc: 'Panel rápido y continuidad', tone: 'border-indigo-500/35 bg-indigo-900/25 text-indigo-200' };
           }, [activeTab, bxBankLevel]);
           const activeModeBadge = useMemo(() => {
               if (activeTab === 'historia') {
@@ -4406,7 +4420,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               )}
               
               {/* SUPERIOR NAV BAR */}
-              <div className="w-full bg-gradient-to-b from-zinc-900/95 via-black/90 to-black/95 backdrop-blur-xl border-b border-white/[0.07] shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-2 md:p-3 pt-[max(0.5rem,env(safe-area-inset-top,0px))] flex flex-col md:flex-row gap-2 md:gap-3 justify-between items-stretch md:items-center z-20">
+              <div className="muller-top-nav w-full bg-gradient-to-b from-zinc-900/95 via-black/90 to-black/95 backdrop-blur-xl border-b border-white/[0.07] shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-2 md:p-3 pt-[max(0.5rem,env(safe-area-inset-top,0px))] flex flex-col md:flex-row gap-2 md:gap-3 justify-between items-stretch md:items-center z-20">
                   <div className="flex flex-col gap-2 w-full min-w-0 md:flex-1 md:max-w-[min(100%,76rem)]">
                       <div className="flex flex-wrap gap-1.5 md:gap-2 bg-zinc-950/85 p-1.5 rounded-2xl ring-1 ring-white/[0.1] w-full items-center touch-manipulation justify-center md:justify-start">
                       <button onClick={()=>{setActiveTab('inicio'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'inicio' ? 'bg-indigo-600 text-white shadow-[0_0_18px_rgba(79,70,229,0.5)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="layout-dashboard" className="w-4 h-4 md:w-5 md:h-5" /> Inicio</button>
@@ -4589,11 +4603,11 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
 
               <div className="w-full border-b border-white/[0.08] bg-black/35 backdrop-blur-md px-3 md:px-4 py-2 md:py-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 border border-white/15 text-cyan-200 shrink-0">
+                      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border shrink-0 ${activeSectionMeta.tone}`}>
                           <Icon name={activeSectionMeta.icon} className="w-4 h-4" />
                       </span>
                       <div className="min-w-0">
-                          <p className="text-[11px] font-black uppercase tracking-wider text-cyan-300 truncate">Sección activa</p>
+                          <p className="text-[11px] font-black uppercase tracking-wider text-cyan-300 truncate">Müller · sección activa</p>
                           <p className="text-sm font-bold text-white truncate">{activeSectionMeta.title} <span className="text-gray-400 font-semibold">· {activeSectionMeta.desc}</span></p>
                       </div>
                   </div>
