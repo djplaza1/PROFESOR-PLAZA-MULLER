@@ -4357,6 +4357,38 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               ? Math.max(0, Math.ceil((oralDeadline - Date.now()) / 1000))
               : null;
           void oralClock;
+          const activeSectionMeta = useMemo(() => {
+              const map = {
+                  inicio: { icon: 'layout-dashboard', title: 'Inicio', desc: 'Panel rápido y continuidad' },
+                  ruta: { icon: 'map', title: 'Ruta', desc: 'Camino A1-A2 guiado' },
+                  historia: { icon: 'play', title: 'Historia', desc: 'Escucha, modos y simulación oral' },
+                  shadowing: { icon: 'audio-lines', title: 'Shadowing', desc: 'Fluidez y pronunciación' },
+                  escritura: { icon: 'pen-line', title: 'Escritura', desc: 'Canvas, dictado y OCR' },
+                  vocabulario: { icon: 'book-open', title: 'Vocabulario', desc: 'SRS y recall activo' },
+                  entrenamiento: { icon: 'graduation-cap', title: 'Entrenamiento', desc: 'Artículos, prep. y simulacro' },
+                  bxbank: { icon: bxBankLevel === 'b1' ? 'target' : 'layers', title: bxBankLevel === 'b1' ? 'Banco B1' : 'Banco B2', desc: 'Frases y estructuras por nivel' },
+                  progreso: { icon: 'bar-chart', title: 'Progreso', desc: 'Métricas, export y objetivos' },
+                  guiones: { icon: 'file-text', title: 'Biblioteca', desc: 'Guiones y distribución' },
+                  lexikon: { icon: 'library', title: 'Lexikon', desc: 'Diccionario y traducción' },
+                  telc: { icon: 'clipboard-check', title: 'TELC', desc: 'Guía por niveles A1-C2' },
+                  storybuilder: { icon: 'sparkles', title: 'IA', desc: 'Generación y resumen de contenido' },
+                  comunidad: { icon: 'trophy', title: 'Comunidad', desc: 'Economía, directorio y liga' },
+              };
+              return map[activeTab] || { icon: 'layout-dashboard', title: 'Inicio', desc: 'Panel rápido y continuidad' };
+          }, [activeTab, bxBankLevel]);
+          const activeModeBadge = useMemo(() => {
+              if (activeTab === 'historia') {
+                  if (mode === 'interview') return 'Modo oral B1';
+                  if (podcastMode) return 'Modo podcast';
+                  if (historiaAudioOnly) return 'Solo audio';
+                  if (diktatMode) return 'Diktat';
+                  if (puzzleMode) return 'Puzzle';
+              }
+              if (activeTab === 'vocabulario' && vocabSrsDueCount > 0) return `${vocabSrsDueCount} SRS pendientes`;
+              if (activeTab === 'entrenamiento') return 'Simulacro y práctica avanzada';
+              if (activeTab === 'bxbank') return bxBankLevel === 'b1' ? 'Banco B1 activo' : 'Banco B2 activo';
+              return null;
+          }, [activeTab, mode, podcastMode, historiaAudioOnly, diktatMode, puzzleMode, vocabSrsDueCount, bxBankLevel]);
 
           return (
             <div className={`flex flex-col muller-main-fill md:h-screen md:max-h-[850px] w-full font-sans md:rounded-xl overflow-hidden shadow-2xl relative transition-colors duration-500 muller-theme-bg ${reduceMotionUi ? 'muller-reduce-motion' : ''} ${themeShellClass} ${uiTheme === 'light' ? 'text-slate-900' : 'text-white'} ${getBgColor()}`}>
@@ -4384,7 +4416,6 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       <button onClick={()=>{setActiveTab('escritura'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'escritura' ? 'bg-rose-700 text-white shadow-[0_0_18px_rgba(190,18,60,0.45)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="pen-line" className="w-4 h-4 md:w-5 md:h-5" /> Escritura</button>
                       <button onClick={()=>{setActiveTab('vocabulario'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'vocabulario' ? 'bg-amber-600 text-white shadow-[0_0_20px_rgba(217,119,6,0.4)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="book-open" className="w-4 h-4 md:w-5 md:h-5" /> Vocab{vocabSrsDueCount > 0 ? <span className="ml-0.5 min-w-[1.1rem] px-1 rounded-full bg-white/20 text-[10px] font-black leading-none py-0.5" title="Tarjetas prioritarias SRS en la lista actual">{vocabSrsDueCount > 99 ? '99+' : vocabSrsDueCount}</span> : null}</button>
                       <button onClick={()=>{setActiveTab('entrenamiento'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'entrenamiento' ? 'bg-fuchsia-600 text-white shadow-[0_0_18px_rgba(192,38,211,0.6)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="graduation-cap" className="w-4 h-4 md:w-5 md:h-5" /> Entrena</button>
-                      <ExerciseHelpBtn helpId="advanced_menu" compact />
                       <button onClick={()=>{setActiveTab('bxbank'); setBxBankLevel('b1'); stopAudio(); setPracticeActive(null); setBxCategory('mix');}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'bxbank' ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.8)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="target" className="w-4 h-4 md:w-5 md:h-5" /> Banco B1/B2</button>
                       </div>
                       <div className="flex flex-wrap gap-1.5 md:gap-2 bg-zinc-950/85 p-1.5 rounded-2xl ring-1 ring-white/[0.1] w-full items-center touch-manipulation justify-center md:justify-start">
@@ -4553,6 +4584,24 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                           </button>
                           </>
                       )}
+                  </div>
+              </div>
+
+              <div className="w-full border-b border-white/[0.08] bg-black/35 backdrop-blur-md px-3 md:px-4 py-2 md:py-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 border border-white/15 text-cyan-200 shrink-0">
+                          <Icon name={activeSectionMeta.icon} className="w-4 h-4" />
+                      </span>
+                      <div className="min-w-0">
+                          <p className="text-[11px] font-black uppercase tracking-wider text-cyan-300 truncate">Sección activa</p>
+                          <p className="text-sm font-bold text-white truncate">{activeSectionMeta.title} <span className="text-gray-400 font-semibold">· {activeSectionMeta.desc}</span></p>
+                      </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap md:justify-end">
+                      {activeModeBadge ? <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border border-amber-500/35 bg-amber-900/30 text-amber-200">{activeModeBadge}</span> : null}
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border border-rose-500/35 bg-rose-950/40 text-rose-200">❤️ {userStats.hearts}</span>
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border border-amber-500/35 bg-amber-950/40 text-amber-200">🪙 {coinsUiLabel}</span>
+                      <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('muller-open-profile-settings', { detail: { tab: 'ajustes' } }))} className="px-2.5 py-1 rounded-full text-[11px] font-bold border border-sky-500/35 bg-sky-900/30 text-sky-200 hover:bg-sky-800/40 transition">Ajustes</button>
                   </div>
               </div>
 
