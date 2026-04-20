@@ -116,6 +116,26 @@
             border: 1px solid rgba(255,255,255,0.1);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
         }
+        .muller-nav-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        @media (max-width: 1024px) {
+            .muller-top-nav {
+                position: sticky;
+                top: 0;
+                z-index: 80;
+            }
+            .muller-nav-row {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                justify-content: flex-start;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .muller-nav-row::-webkit-scrollbar { display: none; }
+        }
         .muller-skeleton {
             background: linear-gradient(90deg, rgba(148,163,184,0.18) 25%, rgba(148,163,184,0.34) 37%, rgba(148,163,184,0.18) 63%);
             background-size: 400% 100%;
@@ -4748,7 +4768,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               {/* SUPERIOR NAV BAR */}
               <div className="muller-top-nav w-full bg-gradient-to-b from-zinc-900/95 via-black/90 to-black/95 backdrop-blur-xl border-b border-white/[0.07] shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-2 md:p-3 pt-[max(0.5rem,env(safe-area-inset-top,0px))] flex flex-col md:flex-row gap-2 md:gap-3 justify-between items-stretch md:items-center z-20">
                   <div className="flex flex-col gap-2 w-full min-w-0 md:flex-1 md:max-w-[min(100%,76rem)]">
-                      <div className="flex flex-wrap gap-1.5 md:gap-2 bg-zinc-950/85 p-1.5 rounded-2xl ring-1 ring-white/[0.1] w-full items-center touch-manipulation justify-center md:justify-start">
+                      <div className="muller-nav-row gap-1.5 md:gap-2 bg-zinc-950/85 p-1.5 rounded-2xl ring-1 ring-white/[0.1] w-full touch-manipulation">
                       <button onClick={()=>{setActiveTab('inicio'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'inicio' ? 'bg-indigo-600 text-white shadow-[0_0_18px_rgba(79,70,229,0.5)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="layout-dashboard" className="w-4 h-4 md:w-5 md:h-5" /> Inicio</button>
                       <button onClick={()=>{setActiveTab('ruta'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'ruta' ? 'bg-fuchsia-600 text-white shadow-[0_0_18px_rgba(192,38,211,0.45)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="map" className="w-4 h-4 md:w-5 md:h-5" /> Ruta</button>
                       <button onClick={()=>{setActiveTab('historia'); setMode('dialogue'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'historia' ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="play" className="w-4 h-4 md:w-5 md:h-5" /> Historia</button>
@@ -4758,7 +4778,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       <button onClick={()=>{setActiveTab('entrenamiento'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'entrenamiento' ? 'bg-fuchsia-600 text-white shadow-[0_0_18px_rgba(192,38,211,0.6)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="graduation-cap" className="w-4 h-4 md:w-5 md:h-5" /> Entrena</button>
                       <button onClick={()=>{setActiveTab('bxbank'); setBxBankLevel('b1'); stopAudio(); setPracticeActive(null); setBxCategory('mix');}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'bxbank' ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.8)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="target" className="w-4 h-4 md:w-5 md:h-5" /> Banco B1/B2</button>
                       </div>
-                      <div className="flex flex-wrap gap-1.5 md:gap-2 bg-zinc-950/85 p-1.5 rounded-2xl ring-1 ring-white/[0.1] w-full items-center touch-manipulation justify-center md:justify-start">
+                      <div className="muller-nav-row gap-1.5 md:gap-2 bg-zinc-950/85 p-1.5 rounded-2xl ring-1 ring-white/[0.1] w-full touch-manipulation">
                       {activeTab === 'bxbank' ? (
                           <div className="flex items-center gap-1 rounded-xl bg-black/30 border border-white/10 px-1.5 py-1">
                               <button type="button" onClick={() => setBxBankLevel('b1')} className={`px-2.5 py-1 rounded-lg text-[11px] font-black ${bxBankLevel === 'b1' ? 'bg-emerald-600 text-white' : 'text-gray-300 hover:text-white'}`}>B1</button>
@@ -4775,7 +4795,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 self-start md:self-auto">
                       <button type="button" onClick={() => window.__MULLER_OPEN_EXERCISE_HELP && window.__MULLER_OPEN_EXERCISE_HELP('nav_inicio')} className="text-[10px] font-black text-amber-200/90 hover:text-white underline underline-offset-2 px-2 py-1 rounded-lg border border-white/10 hover:bg-white/10" title="Ayuda contextual rápida">
                           Ayuda
                       </button>
@@ -4783,11 +4803,10 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                           <button type="button" aria-label="Centro Müller: voces, plan del día y ayuda" onClick={() => { setShowMullerHub(true); setMullerHubTab('voices'); }} className="bg-gradient-to-br from-sky-600 to-indigo-900 hover:from-sky-500 hover:to-indigo-800 text-white p-2 rounded-full shadow-lg ring-2 ring-white/15 transition" title="Voces del sistema, plan del día, retos y tour">
                               <Icon name="layout-dashboard" className="w-5 h-5" />
                           </button>
-                          <button type="button" onClick={() => window.__MULLER_OPEN_EXERCISE_HELP && window.__MULLER_OPEN_EXERCISE_HELP('hub_centro')} className="text-[9px] font-bold text-sky-300/90 hover:text-white underline underline-offset-2" title="Centro Müller">Ayuda</button>
                       </span>
                   </div>
                   
-                  <div className={`flex items-center gap-2 md:gap-3 w-full md:w-auto pb-1 md:pb-0 justify-end ${userMenuOpen ? 'overflow-visible' : 'overflow-x-auto'}`}>
+                  <div className={`flex items-center gap-2 md:gap-3 w-full md:w-auto pb-1 md:pb-0 justify-between md:justify-end ${userMenuOpen ? 'overflow-visible' : 'overflow-x-auto'}`}>
                       <div className="flex items-center gap-2 md:gap-3 bg-black/60 px-2 py-1 md:px-3 md:py-1.5 rounded-full border border-white/20 whitespace-nowrap">
                           <div className="relative flex items-center mr-1 md:mr-2 border-r border-white/20 pr-2 md:pr-3" ref={userMenuWrapRef}>
                               <button
