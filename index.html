@@ -1556,9 +1556,7 @@
         // --- COMPONENTE PRINCIPAL ---
         function App() {
           const [activeTab, setActiveTab] = useState('inicio');
-          const [showSplash, setShowSplash] = useState(() => {
-              try { return !sessionStorage.getItem('muller_splash_session_v1'); } catch (e) { return true; }
-          }); 
+          const [showSplash, setShowSplash] = useState(false); 
           const [rutaSubTab, setRutaSubTab] = useState('camino');
           const [rutaProgress, setRutaProgress] = useState(() => (typeof window.mullerRutaLoad === 'function' ? window.mullerRutaLoad() : { completed: {}, placementDone: false, suggestedLevelIdx: 0, playTimeMs: 0, lessonsCompleted: 0 }));
           const [rutaRun, setRutaRun] = useState(null);
@@ -1727,7 +1725,10 @@
               window.addEventListener('muller-toast', onToast);
               return () => window.removeEventListener('muller-toast', onToast);
           }, []);
-          useEffect(() => { try { localStorage.setItem('muller_show_floating_tools', showFloatingTools ? '1' : '0'); } catch (e) {} }, [showFloatingTools]);
+          useEffect(() => {
+              try { localStorage.setItem('muller_show_floating_tools', showFloatingTools ? '1' : '0'); } catch (e) {}
+              try { window.dispatchEvent(new CustomEvent('muller-floating-tools-updated', { detail: { enabled: !!showFloatingTools } })); } catch (e) {}
+          }, [showFloatingTools]);
           useEffect(() => {
               try { localStorage.setItem('muller_reduce_motion', reduceMotionUi ? '1' : '0'); } catch (e) {}
               try {
@@ -7163,6 +7164,9 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
         // ========== COMPONENTES FLOTANTES (Sincronización y Permiso Micrófono) ==========
         function FloatingButtons() {
             const [lastBackupIso, setLastBackupIso] = React.useState(() => localStorage.getItem('muller_last_backup_iso'));
+            const [showFloatingTools, setShowFloatingTools] = React.useState(() => {
+                try { return localStorage.getItem('muller_show_floating_tools') !== '0'; } catch (e) { return true; }
+            });
             const backupAgeDays = lastBackupIso ? Math.floor((Date.now() - new Date(lastBackupIso).getTime()) / (1000 * 60 * 60 * 24)) : null;
 
             const requestMicPermission = async () => {
@@ -7204,6 +7208,17 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                 window.addEventListener('muller-export-full-backup', onFull);
                 return () => window.removeEventListener('muller-export-full-backup', onFull);
             }, [exportData]);
+            React.useEffect(() => {
+                const onFloatingTools = (ev) => {
+                    if (ev && ev.detail && typeof ev.detail.enabled === 'boolean') {
+                        setShowFloatingTools(ev.detail.enabled);
+                        return;
+                    }
+                    try { setShowFloatingTools(localStorage.getItem('muller_show_floating_tools') !== '0'); } catch (e) {}
+                };
+                window.addEventListener('muller-floating-tools-updated', onFloatingTools);
+                return () => window.removeEventListener('muller-floating-tools-updated', onFloatingTools);
+            }, []);
 
             const importData = (event) => {
                 const file = event.target.files[0];
