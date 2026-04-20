@@ -1163,7 +1163,7 @@
             nav_progreso: { title: 'Progreso', what: 'Resumen de racha, mazos difícil/normal, gramática, gráfico semanal y exportación PDF/Anki.', tips: ['Exporta PDF antes de examen para revisar en papel.', 'Los mazos se alimentan desde Vocab y gramática guardada en Historia.', 'SRS de vocabulario tiene su propio contador en la pantalla de ayuda.'] },
             nav_biblioteca: { title: 'Biblioteca', what: 'Guardas guiones pegados desde la IA y listas de vocabulario personalizadas; puedes enviar un texto pegado a B1 o B2 (vocabulario, verbos, etc.) con nivel automático por frase o forzando un nivel.', tips: ['Revisa el formato del prompt de IA antes de pegar.', '“Distribuir” estima B1/B2 por heurística local (no es IA); puedes forzar todo a B1 o B2.', 'Las tarjetas del archivo b1-b2-database.json no son “tuyas”: “Borrar aportaciones” solo quita lo añadido desde Distribuir.', 'Las lecciones de vocab se practican con el botón Practicar.'] },
             nav_lexikon: { title: 'Lexikon', what: 'Traducción de palabras o frases (detección automática de idioma hacia alemán o español que elijas); opción aparte para solo Wiktionary; guardar pares en las mismas lecciones que en Biblioteca → Vocab.', tips: ['En “Palabra → traducción” elige ES→DE si buscas cómo se dice en alemán una palabra en español.', 'En el traductor usa “→ Alemán” o “→ Español” para forzar el sentido (incluye palabras malsonantes: el servicio puede devolver equivalentes o censura según el motor).', 'Si el desplegable de lecciones está vacío, crea lecciones en Biblioteca → Vocab; al abrir Lexikon se vuelve a leer el almacenamiento local.'] },
-            nav_telc: { title: 'Día del examen TELC', what: 'Checklist estática: qué llevar, tiempos orientativos y consejos. No sustituye la convocatoria oficial.', tips: ['Imprime o exporta la lista la noche anterior.', 'Llega con margen para el registro.', 'Hidrátate y duerme bien: el examen es resistencia.'] },
+            nav_telc: { title: 'TELC por nivel', what: 'Orientación por nivel CEFR: estructura típica de examen (lectura, escucha, escritura, oral), checklist del día y enlaces oficiales. No sustituye modelos de examen ni convocatoria.', tips: ['Elige tu nivel arriba (A1–C2).', 'Los tiempos reales los marca tu centro; confirma en tu hoja de inscripción.', 'Para modelos oficiales usa telc.de / el centro examinador.', 'Combina con Entrenamiento avanzado (morado) para práctica tipo test.'] },
             nav_ia: { title: 'IA Story Builder', what: 'Genera un guion nuevo con nivel y tema; útil cuando quieres vocabulario fresco sin pegar texto manual.', tips: ['Indica bien el nivel (B1/B2) y el tema.', 'Tras generar, guarda y estudia en Historia.', 'Combina con vocab propio en el campo de palabras si existe.'] },
             nav_comunidad: { title: 'Comunidad', what: 'Opción A: cuenta solo en el navegador (PBKDF2 local). Opción B (gratis): Supabase — mismo registro pero con sesión en la nube, directorio de perfiles y tabla de liga semanal compartida; bots siguen siendo simulados en tu ranking.', tips: ['Pega URL y anon key de Supabase en index.html (Project Settings → API) y ejecuta supabase/schema.sql en el SQL Editor.', 'El plan gratuito de Supabase suele bastar para estudio; revisa límites en el dashboard.', 'Si no configuras Supabase, todo sigue funcionando en modo local.', 'Tecla O para abrir Comunidad.'] },
             historia_base: { title: 'Historia — vista general', what: 'Escuchas y lees escenas; el vocabulario resaltado enlaza con las tarjetas. Abajo tienes play, escenas y velocidad.', tips: ['Primero escucha, luego muestra traducción.', 'Sube o baja la velocidad según el nivel del día.', 'PDF del guion sirve para repaso offline.'] },
@@ -1437,6 +1437,58 @@
             { q: 'Weil ich müde ___.', opts: ['bin', 'war', 'bin ich'], ok: 0 },
         ];
 
+        /** Contenido orientativo TELC / marcos similares (no texto de examen oficial). */
+        window.MULLER_TELC_BY_LEVEL = {
+            A1: {
+                label: 'A1 · Start Deutsch 1 / equivalente',
+                summary: 'Nivel inicial: tareas cortas, vocabulario cotidiano y comprensión global.',
+                sections: [
+                    { title: 'Pruebas típicas (estructura general)', items: ['Lectura: textos muy breves (avisos, carteles, formularios sencillos).', 'Escucha: diálogos lentos en situaciones cotidianas (tiendas, horarios).', 'Escritura: rellenar formularios, mensajes cortos (correo, SMS).', 'Oral: presentarse, preguntar precios, pedir información fija (Redemittel).'] },
+                    { title: 'Qué trabajar en Müller', items: ['Ruta A1 y Vocab con SRS.', 'Historia en modo dictado y huecos.', 'Shadowing con frases cortas.'] },
+                ],
+            },
+            A2: {
+                label: 'A2 · Fit in Deutsch A2 / Goethe-Zertifikat A2',
+                summary: 'Comprende frases aisladas y textos sencillos sobre temas familiares.',
+                sections: [
+                    { title: 'Pruebas típicas', items: ['Lectura: correos breves, anuncios, textos informativos sencillos.', 'Escucha: entender la idea principal en medios claros.', 'Escritura: correo o carta corta (motivo, tiempo, petición).', 'Oral: describir rutina, planes; interacción en situaciones conocidas.'] },
+                    { title: 'Enfoque TELC', items: ['Suele haber varias partes de lectura con tareas de verificación.', 'La expresión escrita pide cumplir el encargo (Auftrag) del enunciado.'] },
+                ],
+            },
+            B1: {
+                label: 'B1 · TELC Deutsch B1 / Zertifikat B1',
+                summary: 'Nivel independiente: textos auténticos moderados y producción conectada.',
+                sections: [
+                    { title: 'Estructura habitual (4 competencias)', items: ['Lesen: varios textos (periodístico, opinión, práctico) con preguntas globales y detalle.', 'Hören: entrevistas, reportajes; una sola emisión en muchos centros — lee antes las preguntas.', 'Schreiben: dos tareas (p. ej. correo + texto argumentativo o foro); respeta extensión y registro.', 'Sprechen: interacción (información, opiniones); a veces preparación previa.'] },
+                    { title: 'Estrategia', items: ['Marca tiempo por bloque al inicio.', 'En escritura: plan de 5 minutos + párrafos con conectores (jedoch, deshalb, außerdem).', 'En oral: no solo vocabulario: claridad y turnos.'] },
+                ],
+            },
+            B2: {
+                label: 'B2 · TELC Deutsch B2 / Zertifikat B2',
+                summary: 'Textos más largos y matizados; producción argumentativa y registro elevado.',
+                sections: [
+                    { title: 'Pruebas típicas', items: ['Lectura: artículos, comentarios; inferencias y opiniones del autor.', 'Escucha: ritmo más natural; notas y detalles.', 'Escritura: carta formal / texto de opinión con estructura clara (Einleitung – Hauptteil – Schluss).', 'Oral: debate, ventajas/desventajas, matizar posiciones.'] },
+                    { title: 'Errores frecuentes', items: ['Confundir registro (du/Sie, coloquial vs académico).', 'Subordinadas sin verbo al final.', 'Tiempo insuficiente en la última parte escrita.'] },
+                ],
+            },
+            C1: {
+                label: 'C1 · TELC Deutsch C1 / Kleines / Großes Deutsch',
+                summary: 'Comprensión sutil; producción estructurada y variación léxica.',
+                sections: [
+                    { title: 'Enfoque', items: ['Lectura: textos complejos (ironía, matices, estructura implícita).', 'Escucha: conferencias, entrevistas densas.', 'Escritura: textos formales extensos (informe, ensayo breve) con cohesión fuerte.', 'Oral: argumentación fina, reformulación, concesión (zwar … aber).'] },
+                    { title: 'Preparación', items: ['Lee prensa alemana (Zeit, Spiegel) con anotación de conectores.', 'Simula cronómetro en Escritura (panel Müller / TELC).'] },
+                ],
+            },
+            C2: {
+                label: 'C2 · TELC Deutsch C2 (casi nativo)',
+                summary: 'Comprensión casi total; producción precisa y estilísticamente variada.',
+                sections: [
+                    { title: 'Pruebas típicas', items: ['Lectura: textos literarios o especializados; reformulación y síntesis.', 'Escucha: velocidad y ambiente natural.', 'Escritura: resúmenes, estilo y precisión léxica.', 'Oral: presentación estructurada y discusión abierta.'] },
+                    { title: 'Nota', items: ['C2 no es “más vocabulario”: es precisión, registro y estilo.'] },
+                ],
+            },
+        };
+
         // --- COMPONENTE PRINCIPAL ---
         function App() {
           const [activeTab, setActiveTab] = useState('inicio');
@@ -1451,6 +1503,7 @@
           const [rutaSpeakErr, setRutaSpeakErr] = useState('');
           const [placementSel, setPlacementSel] = useState([null, null, null, null]);
           const [celebrationModal, setCelebrationModal] = useState(null);
+          const [telcLevel, setTelcLevel] = useState('B1');
           const [diktatMotivationMsg, setDiktatMotivationMsg] = useState('');
           const rutaTabTimerRef = useRef(null);
           const [rutaTranscript, setRutaTranscript] = useState('');
@@ -4243,8 +4296,9 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               )}
               
               {/* SUPERIOR NAV BAR */}
-              <div className="w-full bg-gradient-to-b from-zinc-900/95 via-black/90 to-black/95 backdrop-blur-xl border-b border-white/[0.07] shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-2 md:p-3 pt-[max(0.5rem,env(safe-area-inset-top,0px))] flex flex-col md:flex-row gap-2 md:gap-3 justify-between items-center z-20">
-                  <div className="flex gap-1 md:gap-2 bg-zinc-950/80 p-1 rounded-xl ring-1 ring-white/[0.06] w-full md:w-auto overflow-x-auto hide-scrollbar items-center touch-manipulation">
+              <div className="w-full bg-gradient-to-b from-zinc-900/95 via-black/90 to-black/95 backdrop-blur-xl border-b border-white/[0.07] shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-2 md:p-3 pt-[max(0.5rem,env(safe-area-inset-top,0px))] flex flex-col md:flex-row gap-2 md:gap-3 justify-between items-stretch md:items-center z-20">
+                  <div className="flex flex-col gap-1.5 w-full min-w-0 md:flex-1 md:max-w-[min(100%,72rem)]">
+                      <div className="flex flex-wrap gap-1 md:gap-2 bg-zinc-950/80 p-1 rounded-xl ring-1 ring-white/[0.06] w-full items-center touch-manipulation justify-center md:justify-start">
                       <button onClick={()=>{setActiveTab('inicio'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2 rounded-lg font-bold text-sm md:text-xs min-h-[2.75rem] md:min-h-0 transition ${activeTab === 'inicio' ? 'bg-indigo-600 text-white shadow-[0_0_18px_rgba(79,70,229,0.45)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="layout-dashboard" className="w-3 h-3 md:w-4 md:h-4" /> Inicio</button>
                       <ExerciseHelpBtn helpId="nav_inicio" compact />
                       <button onClick={()=>{setActiveTab('ruta'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2 rounded-lg font-bold text-sm md:text-xs min-h-[2.75rem] md:min-h-0 transition ${activeTab === 'ruta' ? 'bg-fuchsia-600 text-white shadow-[0_0_18px_rgba(192,38,211,0.45)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="map" className="w-3 h-3 md:w-4 md:h-4" /> Ruta</button>
@@ -4259,6 +4313,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       <ExerciseHelpBtn helpId="nav_vocab" compact />
                       <button onClick={()=>{setActiveTab('b1meister'); stopAudio(); setPracticeActive(null); setBxCategory('mix');}} className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2 rounded-lg font-bold text-sm md:text-xs min-h-[2.75rem] md:min-h-0 transition ${activeTab === 'b1meister' ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.8)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="target" className="w-3 h-3 md:w-4 md:h-4" /> B1</button>
                       <ExerciseHelpBtn helpId="nav_b1" compact />
+                      </div>
+                      <div className="flex flex-wrap gap-1 md:gap-2 bg-zinc-950/80 p-1 rounded-xl ring-1 ring-white/[0.06] w-full items-center touch-manipulation justify-center md:justify-start">
                       <button onClick={()=>{setActiveTab('b2ausblick'); stopAudio(); setPracticeActive(null); setBxCategory('mix');}} className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2 rounded-lg font-bold text-sm md:text-xs min-h-[2.75rem] md:min-h-0 transition ${activeTab === 'b2ausblick' ? 'bg-sky-600 text-white shadow-[0_0_15px_rgba(2,132,199,0.8)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="layers" className="w-3 h-3 md:w-4 md:h-4" /> B2</button>
                       <ExerciseHelpBtn helpId="nav_b2" compact />
                       <button onClick={()=>{setActiveTab('progreso'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2 rounded-lg font-bold text-sm md:text-xs min-h-[2.75rem] md:min-h-0 transition ${activeTab === 'progreso' ? 'bg-yellow-600 text-white shadow-[0_0_18px_rgba(202,138,4,0.35)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="bar-chart" className="w-3 h-3 md:w-4 md:h-4" /> Progreso</button>
@@ -4273,6 +4329,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       <ExerciseHelpBtn helpId="nav_ia" compact />
                       <button onClick={()=>{setActiveTab('comunidad'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2 rounded-lg font-bold text-sm md:text-xs min-h-[2.75rem] md:min-h-0 transition ${activeTab === 'comunidad' ? 'bg-violet-600 text-white shadow-[0_0_18px_rgba(124,58,237,0.45)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="trophy" className="w-3 h-3 md:w-4 md:h-4" /> Comunidad</button>
                       <ExerciseHelpBtn helpId="nav_comunidad" compact />
+                      </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
@@ -4775,16 +4832,45 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               {/* CONTENIDO PRINCIPAL */}
               <div className={`muller-app-main flex-1 overflow-y-auto relative flex flex-col hide-scrollbar pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] ${uiTheme === 'light' ? 'text-slate-900' : ''}`}>
                   
-                  {activeTab === 'telc' && !practiceActive && (
-                      <div className="p-4 md:p-8 max-w-3xl mx-auto w-full animate-in fade-in duration-500 overflow-y-auto pb-24">
+                  {activeTab === 'telc' && !practiceActive && (() => {
+                      const telcPack = (window.MULLER_TELC_BY_LEVEL && window.MULLER_TELC_BY_LEVEL[telcLevel]) || (window.MULLER_TELC_BY_LEVEL && window.MULLER_TELC_BY_LEVEL.B1);
+                      const tc = uiTheme === 'light' ? 'text-slate-800 border-orange-200 bg-white/90' : 'text-gray-200 border-orange-900/40 bg-black/35';
+                      const tcMuted = uiTheme === 'light' ? 'text-slate-600' : 'text-gray-400';
+                      const tcHeading = uiTheme === 'light' ? 'text-slate-900' : 'text-white';
+                      const lvBtnOff = uiTheme === 'light' ? 'bg-slate-200/90 border-slate-300 text-slate-600 hover:bg-slate-300' : 'bg-black/30 border-white/10 text-gray-400 hover:text-white';
+                      return (
+                      <div className={`p-4 md:p-8 max-w-3xl mx-auto w-full animate-in fade-in duration-500 overflow-y-auto pb-24 ${uiTheme === 'light' ? 'text-slate-900' : ''}`}>
                           <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
-                              <h1 className="text-2xl md:text-4xl font-black text-orange-300 flex items-center gap-2"><Icon name="clipboard-check" className="w-8 h-8 md:w-10 md:h-10" /> Pre-examen TELC (checklist)</h1>
+                              <h1 className={`text-2xl md:text-4xl font-black flex items-center gap-2 ${uiTheme === 'light' ? 'text-orange-800' : 'text-orange-300'}`}><Icon name="clipboard-check" className="w-8 h-8 md:w-10 md:h-10" /> TELC · Guía y examen</h1>
                               <ExerciseHelpBtn helpId="nav_telc" />
                           </div>
-                          <p className="text-sm text-gray-400 mb-6 leading-relaxed">Orientación general (B1/B2). Los tiempos exactos dependen del centro examinador — confirma siempre tu convocatoria.</p>
-                          <div className="space-y-6 text-sm text-gray-300">
-                              <section className="bg-black/35 border border-orange-900/40 rounded-2xl p-4 md:p-6">
-                                  <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><Icon name="briefcase" className="w-5 h-5" /> Qué llevar</h2>
+                          <p className={`text-sm mb-4 leading-relaxed ${tcMuted}`}>Orientación educativa por nivel (CEFR). No es un modelo oficial de examen: para convocatorias y modelos actuales usa <a href="https://www.telc.net" target="_blank" rel="noopener noreferrer" className={`font-semibold hover:underline ${uiTheme === 'light' ? 'text-orange-700' : 'text-orange-400'}`}>telc.net</a> y tu centro.</p>
+                          <div className="flex flex-wrap gap-2 mb-6">
+                              {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((lv) => (
+                                  <button key={lv} type="button" onClick={() => setTelcLevel(lv)} className={`px-3 py-2 rounded-xl text-sm font-black border transition ${telcLevel === lv ? 'bg-orange-600 border-orange-400 text-white shadow-lg' : lvBtnOff}`}>{lv}</button>
+                              ))}
+                          </div>
+                          <div className={`rounded-2xl border p-4 md:p-6 mb-6 ${tc}`}>
+                              <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${uiTheme === 'light' ? 'text-orange-600' : 'text-orange-400/90'}`}>Nivel seleccionado</p>
+                              <h2 className={`text-xl md:text-2xl font-black mb-2 ${tcHeading}`}>{telcPack.label}</h2>
+                              <p className={`text-sm leading-relaxed ${tcMuted}`}>{telcPack.summary}</p>
+                          </div>
+                          <div className="space-y-5 text-sm mb-8">
+                              {(telcPack.sections || []).map((sec, si) => (
+                                  <section key={si} className={`rounded-2xl border p-4 md:p-6 ${tc}`}>
+                                      <h3 className={`text-lg font-bold mb-2 flex items-center gap-2 ${tcHeading}`}><Icon name="book-open" className={`w-5 h-5 shrink-0 ${uiTheme === 'light' ? 'text-orange-600' : 'text-orange-400'}`} /> {sec.title}</h3>
+                                      <ul className="list-disc list-inside space-y-1.5">
+                                          {(sec.items || []).map((line, li) => (
+                                              <li key={li} className={uiTheme === 'light' ? 'text-slate-700' : ''}>{line}</li>
+                                          ))}
+                                      </ul>
+                                  </section>
+                              ))}
+                          </div>
+                          <h2 className={`text-lg font-black mb-3 ${tcHeading}`}>Día del examen (todos los niveles)</h2>
+                          <div className={`space-y-6 text-sm ${uiTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>
+                              <section className={`rounded-2xl border p-4 md:p-6 ${tc}`}>
+                                  <h3 className={`text-lg font-bold mb-2 flex items-center gap-2 ${tcHeading}`}><Icon name="briefcase" className="w-5 h-5" /> Qué llevar</h3>
                                   <ul className="list-disc list-inside space-y-1.5">
                                       <li>Documento de identidad válido (mismo que al registrarte).</li>
                                       <li>Confirmación / hoja de inscripción al examen (si el centro la envió).</li>
@@ -4793,49 +4879,56 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       <li>Llegada con margen: localiza baños y aula el día anterior si puedes.</li>
                                   </ul>
                               </section>
-                              <section className="bg-black/35 border border-orange-900/40 rounded-2xl p-4 md:p-6">
-                                  <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><Icon name="clock" className="w-5 h-5" /> Tiempos orientativos</h2>
+                              <section className={`rounded-2xl border p-4 md:p-6 ${tc}`}>
+                                  <h3 className={`text-lg font-bold mb-2 flex items-center gap-2 ${tcHeading}`}><Icon name="clock" className="w-5 h-5" /> Tiempos orientativos</h3>
                                   <ul className="list-disc list-inside space-y-1.5">
-                                      <li>Lectura: bloque con varias tareas seguidas — gestiona el reloj desde el primer minuto.</li>
-                                      <li>Escritura: planifica 5 minutos de borrador mental antes de escribir en limpio.</li>
-                                      <li>Oral: suele haber preparación corta antes de la interacción; usa notas solo si el formato lo permite.</li>
-                                      <li>Escucha: una sola emisión en muchos centros — lee las preguntas antes de sonar el audio.</li>
+                                      <li>Lectura: varias tareas seguidas — gestiona el reloj desde el primer minuto.</li>
+                                      <li>Escritura: planifica unos minutos de borrador antes de escribir en limpio.</li>
+                                      <li>Oral: suele haber preparación corta; usa notas solo si el formato lo permite.</li>
+                                      <li>Escucha: en muchos centros una sola emisión — lee las preguntas antes del audio.</li>
                                   </ul>
                               </section>
-                              <section className="bg-black/35 border border-orange-900/40 rounded-2xl p-4 md:p-6">
-                                  <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><Icon name="lightbulb" className="w-5 h-5" /> Consejos</h2>
+                              <section className={`rounded-2xl border p-4 md:p-6 ${tc}`}>
+                                  <h3 className={`text-lg font-bold mb-2 flex items-center gap-2 ${tcHeading}`}><Icon name="lightbulb" className="w-5 h-5" /> Consejos</h3>
                                   <ul className="list-disc list-inside space-y-1.5">
-                                      <li>Duerme al menos 7 h la noche anterior; el cansancio penaliza la escucha.</li>
-                                      <li>Si no entiendes una instrucción, pide repetición corta en alemán (formulación educada).</li>
-                                      <li>En producción escrita, prioriza coherencia y conectores sobre vocabulario raro.</li>
+                                      <li>Descansa bien; el cansancio penaliza sobre todo la escucha.</li>
+                                      <li>Si no entiendes una instrucción, pide aclaración corta en alemán.</li>
+                                      <li>En la redacción: coherencia y conectores antes que vocabulario raro.</li>
                                   </ul>
                               </section>
                           </div>
-                          <div className="flex flex-wrap gap-3 mt-8">
+                          <div className={`rounded-xl border border-dashed border-orange-500/35 p-4 mb-6 text-xs ${uiTheme === 'light' ? 'bg-orange-50 text-slate-600' : 'bg-orange-950/20 text-gray-400'}`}>
+                              Práctica tipo test: abre el botón morado <strong className={uiTheme === 'light' ? 'text-fuchsia-700' : 'text-fuchsia-300'}>Entrenamiento avanzado</strong> (artículos, verbos+prep., preposiciones) y el simulacro con cronómetro si está disponible en tu versión.
+                          </div>
+                          <div className="flex flex-wrap gap-3 mt-2">
                               <button type="button" onClick={() => {
                                   const lines = [
-                                      'Checklist TELC — Müller',
+                                      `Checklist TELC — Müller · nivel ${telcLevel}`,
+                                      telcPack.label,
+                                      telcPack.summary,
+                                      '',
                                       'Qué llevar: DNI/documento, confirmación, lápices, llegada temprana.',
                                       'Tiempos: gestionar lectura; planificar escritura; oral con preparación; escucha única.',
-                                      'Consejos: descanso, pedir aclaraciones, coherencia en la redacción.'
+                                      'Consejos: descanso, pedir aclaraciones, coherencia en la redacción.',
                                   ];
                                   const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
                                   const a = document.createElement('a');
                                   a.href = URL.createObjectURL(blob);
-                                  a.download = `telc_checklist_${new Date().toISOString().slice(0, 10)}.txt`;
+                                  a.download = `telc_checklist_${telcLevel}_${new Date().toISOString().slice(0, 10)}.txt`;
                                   a.click();
                                   URL.revokeObjectURL(a.href);
                               }} className="px-4 py-2 rounded-xl bg-orange-700 hover:bg-orange-600 font-bold text-sm border border-orange-500/40">Exportar checklist (.txt)</button>
                               <button type="button" onClick={() => {
                                   const w = window.open('', '_blank');
                                   if (!w) return;
-                                  w.document.write(`<html><head><title>TELC Checklist</title></head><body style="font-family:sans-serif;padding:24px;"><h1>Checklist TELC</h1><p>Usa la vista previa de impresión (Ctrl+P) para guardar PDF.</p><ul><li>Documento</li><li>Confirmación</li><li>Material de escritura</li></ul></body></html>`);
+                                  w.document.write(`<html><head><title>TELC Müller ${telcLevel}</title></head><body style="font-family:sans-serif;padding:24px;max-width:640px;"><h1>TELC · ${telcLevel}</h1><p>${telcPack.summary}</p><p>Usa Ctrl+P para PDF.</p><h2>Checklist</h2><ul><li>Documento</li><li>Confirmación</li><li>Material de escritura</li></ul></body></html>`);
                                   w.document.close();
                                   w.print();
                               }} className="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 font-bold text-sm border border-white/10">Imprimir / PDF (navegador)</button>
                           </div>
                       </div>
-                  )}
+                      );
+                  })()}
 
                   {/* STORY BUILDER (sin cambios) */}
                   {activeTab === 'storybuilder' && (
