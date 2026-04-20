@@ -1,4 +1,15 @@
-<!DOCTYPE html>
+              return Object.keys(m).map((email) => ({ email, displayName: m[email].displayName, userId: m[email].userId, createdAt: m[email].createdAt }));
+          }, [authTick]);
+          const [mainDailyGoal, setMainDailyGoal] = useState(() => mullerGetMainDailyGoalCards());
+          const [oralQIdx, setOralQIdx] = useState(0);
+          const [oralSecs, setOralSecs] = useState(90);
+          const [oralDeadline, setOralDeadline] = useState(null);
+          const [oralClock, setOralClock] = useState(0);
+          const [pwaDeferredPrompt, setPwaDeferredPrompt] = useState(null);
+          const [tourStep, setTourStep] = useState(0);
+          const [dailyChallenges, setDailyChallenges] = useState(() => {
+              try {
+  <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -1994,18 +2005,7 @@
           const directoryLocals = useMemo(() => {
               void authTick;
               const m = mullerAccountsLoad();
-              return Object.keys(m).map((email) => ({ email, displayName: m[email].displayName, userId: m[email].userId, createdAt: m[email].createdAt }));
-          }, [authTick]);
-          const [mainDailyGoal, setMainDailyGoal] = useState(() => mullerGetMainDailyGoalCards());
-          const [oralQIdx, setOralQIdx] = useState(0);
-          const [oralSecs, setOralSecs] = useState(90);
-          const [oralDeadline, setOralDeadline] = useState(null);
-          const [oralClock, setOralClock] = useState(0);
-          const [pwaDeferredPrompt, setPwaDeferredPrompt] = useState(null);
-          const [tourStep, setTourStep] = useState(0);
-          const [dailyChallenges, setDailyChallenges] = useState(() => {
-              try {
-                  const k = 'muller_daily_v1_' + new Date().toISOString().slice(0, 10);
+                const k = 'muller_daily_v1_' + new Date().toISOString().slice(0, 10);
                   const j = localStorage.getItem(k);
                   return j ? JSON.parse(j) : { vocab: false, shadow: false, write: false };
               } catch (e) { return { vocab: false, shadow: false, write: false }; }
@@ -7631,8 +7631,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
 
               {/* REPRODUCTOR CONTROLES INFERIORES */}
               {activeTab === 'historia' && mode !== 'quiz' && mode !== 'interview' && !practiceActive && (
-                  <div className="bg-gray-950 p-3 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 border-t border-gray-800 z-20">
-                      <div className="flex flex-col text-xs md:text-sm text-gray-400 w-full sm:w-auto text-center sm:text-left">
+<div className="bg-gray-950 p-3 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 border border-gray-800 z-20 mb-4 md:mb-8 mx-2 md:mx-4 rounded-2xl shadow-2xl">                      <div className="flex flex-col text-xs md:text-sm text-gray-400 w-full sm:w-auto text-center sm:text-left">
                         <span className="font-bold text-white text-sm md:text-base truncate sm:max-w-[200px]">{activeScriptTitle}</span>
                         <span>Szene {isReviewing ? reviewIndexPointer + 1 : sceneIndex + 1} von {isReviewing ? userStats.failedDiktatScenes.length : guionData.length} {isReviewing && "(Repaso)"}</span>
                       </div>
