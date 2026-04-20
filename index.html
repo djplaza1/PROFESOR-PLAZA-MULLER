@@ -1163,7 +1163,7 @@
             nav_progreso: { title: 'Progreso', what: 'Resumen de racha, mazos difícil/normal, gramática, gráfico semanal y exportación PDF/Anki.', tips: ['Exporta PDF antes de examen para revisar en papel.', 'Los mazos se alimentan desde Vocab y gramática guardada en Historia.', 'SRS de vocabulario tiene su propio contador en la pantalla de ayuda.'] },
             nav_biblioteca: { title: 'Biblioteca', what: 'Guardas guiones pegados desde la IA y listas de vocabulario personalizadas; puedes enviar un texto pegado a B1 o B2 (vocabulario, verbos, etc.) con nivel automático por frase o forzando un nivel.', tips: ['Revisa el formato del prompt de IA antes de pegar.', '“Distribuir” estima B1/B2 por heurística local (no es IA); puedes forzar todo a B1 o B2.', 'Las tarjetas del archivo b1-b2-database.json no son “tuyas”: “Borrar aportaciones” solo quita lo añadido desde Distribuir.', 'Las lecciones de vocab se practican con el botón Practicar.'] },
             nav_lexikon: { title: 'Lexikon', what: 'Traducción de palabras o frases (detección automática de idioma hacia alemán o español que elijas); opción aparte para solo Wiktionary; guardar pares en las mismas lecciones que en Biblioteca → Vocab.', tips: ['En “Palabra → traducción” elige ES→DE si buscas cómo se dice en alemán una palabra en español.', 'En el traductor usa “→ Alemán” o “→ Español” para forzar el sentido (incluye palabras malsonantes: el servicio puede devolver equivalentes o censura según el motor).', 'Si el desplegable de lecciones está vacío, crea lecciones en Biblioteca → Vocab; al abrir Lexikon se vuelve a leer el almacenamiento local.'] },
-            nav_telc: { title: 'TELC por nivel', what: 'Orientación por nivel CEFR: estructura típica de examen (lectura, escucha, escritura, oral), checklist del día y enlaces oficiales. No sustituye modelos de examen ni convocatoria.', tips: ['Elige tu nivel arriba (A1–C2).', 'Los tiempos reales los marca tu centro; confirma en tu hoja de inscripción.', 'Para modelos oficiales usa telc.de / el centro examinador.', 'Combina con Entrenamiento avanzado (morado) para práctica tipo test.'] },
+            nav_telc: { title: 'TELC por nivel', what: 'Orientación por nivel CEFR: estructura típica de examen (lectura, escucha, escritura, oral), checklist del día y enlaces oficiales. No sustituye modelos de examen ni convocatoria.', tips: ['Elige tu nivel arriba (A1–C2).', 'Los tiempos reales los marca tu centro; confirma en tu hoja de inscripción.', 'Para modelos oficiales usa telc.de / el centro examinador.', 'Combina con la pestaña Entrenamiento para práctica tipo test.'] },
             nav_ia: { title: 'IA Story Builder', what: 'Genera un guion nuevo con nivel y tema; útil cuando quieres vocabulario fresco sin pegar texto manual.', tips: ['Indica bien el nivel (B1/B2) y el tema.', 'Tras generar, guarda y estudia en Historia.', 'Combina con vocab propio en el campo de palabras si existe.'] },
             nav_comunidad: { title: 'Comunidad', what: 'Opción A: cuenta solo en el navegador (PBKDF2 local). Opción B (gratis): Supabase — mismo registro pero con sesión en la nube, directorio de perfiles y tabla de liga semanal compartida; bots siguen siendo simulados en tu ranking.', tips: ['Pega URL y anon key de Supabase en index.html (Project Settings → API) y ejecuta supabase/schema.sql en el SQL Editor.', 'El plan gratuito de Supabase suele bastar para estudio; revisa límites en el dashboard.', 'Si no configuras Supabase, todo sigue funcionando en modo local.', 'Tecla O para abrir Comunidad.'] },
             historia_base: { title: 'Historia — vista general', what: 'Escuchas y lees escenas; el vocabulario resaltado enlaza con las tarjetas. Abajo tienes play, escenas y velocidad.', tips: ['Primero escucha, luego muestra traducción.', 'Sube o baja la velocidad según el nivel del día.', 'PDF del guion sirve para repaso offline.'] },
@@ -1174,7 +1174,7 @@
             historia_diktat: { title: 'Diktat', what: 'Dictado: escribes lo que oyes y comparas con el modelo. Refuerza ortografía y oído.', tips: ['No mires el texto hasta corregir.', 'Repite el audio varias veces; el TELC permite escuchar.', 'Presta atención a umlauts y ß.'] },
             historia_huecos: { title: 'Huecos (Lückentext)', what: 'Palabras clave ocultas en el texto; piensa significado y forma antes de seguir.', tips: ['Lee la frase entera en silencio primero.', 'Fíjate en colocaciones del vocabulario marcado.', 'Si bloqueas, revela traducción y vuelve a intentar.'] },
             historia_artikel: { title: 'Artículos (Sniper)', what: 'Los artículos aparecen ocultos: debes decidir der/die/das o forma casuada al leer.', tips: ['Revisa género en las tarjetas de vocabulario de la escena.', 'Di en voz alta la palabra con artículo correcto antes de continuar.', 'Combina con entrenamiento avanzado de artículos para más volumen.'] },
-            historia_declinar: { title: 'Declinación', what: 'Se ocultan terminaciones de artículos/adjetivos: piensa caso (Nom/Akk/Dat/Gen).', tips: ['Identifica primero qué sustantivo gobierna el verbo/preposición.', 'Repasa la tabla corta en cabeza antes de mostrar.', 'Enlaza con el modo de preposiciones del panel morado.'] },
+            historia_declinar: { title: 'Declinación', what: 'Se ocultan terminaciones de artículos/adjetivos: piensa caso (Nom/Akk/Dat/Gen).', tips: ['Identifica primero qué sustantivo gobierna el verbo/preposición.', 'Repasa la tabla corta en cabeza antes de mostrar.', 'Enlaza con el modo de preposiciones en Entrenamiento.'] },
             historia_tempus: { title: 'Tempus', what: 'Panel extra con formas verbales del texto para repasar Präteritum/Perfekt y familia.', tips: ['Di en voz alta las tres formas que propone el panel.', 'Compara con la frase original en contexto.', 'Anota verbos irregulares en tu lista.'] },
             historia_blind: { title: 'Modo oído (blur)', what: 'El texto aparece borroso hasta que te acercas: fuerzas escucha primero.', tips: ['Escucha el audio completo una vez con ojos en blur.', 'Quita blur solo para palabras concretas.', 'Ideal para reducir dependencia de la lectura.'] },
             historia_dialogue: { title: 'Diálogo estándar', what: 'Ves la escena, reproduces audio y puedes mostrar traducción. Es el modo por defecto sin dictado ni puzzle.', tips: ['Alterna lectura en voz alta y solo escucha.', 'Pulsa Tutor IA si una estructura no te encaja.', 'Guarda gramática con el botón de guardar si quieres repasarla después.'] },
@@ -1192,17 +1192,17 @@
             bx_mix: { title: 'B1/B2 — modo MIX', what: 'Baraja frases de todas las categorías del JSON activo.', tips: ['Ideal cuando ya dominas categorías sueltas.', 'Marca mentalmente las que fallas y vuelve en modo categoría.', 'Escucha primero, lee después.'] },
             bx_vocabulario: { title: 'B1/B2 — vocabulario', what: 'Frases cortas con léxico clave por nivel.', tips: ['Lee en voz alta ambas columnas.', 'Copia 3 que te cuesten a Escritura.', 'Relaciona con Historia buscando palabras en guion.'] },
             bx_verbos: { title: 'B1/B2 — verbos', what: 'Patrones verbales y colocaciones frecuentes.', tips: ['En voz alta: infinitivo + ejemplo.', 'Crea una mini frase tuya con cada verbo.', 'Cruza con preposiciones si el verbo las pide.'] },
-            bx_preposiciones: { title: 'B1/B2 — preposiciones', what: 'Uso de Kasus con preposiciones típicas.', tips: ['Memoriza verbo + preposición como bloque.', 'Haz dos frases: una Dativo otra Akkusativ si aplica.', 'Repasa en panel morado para más ítems.'] },
+            bx_preposiciones: { title: 'B1/B2 — preposiciones', what: 'Uso de Kasus con preposiciones típicas.', tips: ['Memoriza verbo + preposición como bloque.', 'Haz dos frases: una Dativo otra Akkusativ si aplica.', 'Repasa en Entrenamiento para más ítems.'] },
             bx_conectores: { title: 'B1/B2 — conectores', what: 'Conectores lógicos para escritura oral y Redemittel.', tips: ['Clasifica: oposición, causa, consecuencia, tiempo.', 'Escribe un minipárrafo usando solo conectores nuevos.', 'Úsalos en Historia al improvisar respuestas.'] },
             bx_redemittel: { title: 'B1/B2 — Redemittel', what: 'Fórmulas listas para examen oral/escrito.', tips: ['Aprende de memoria 5 por semana.', 'Dílas en voz alta con buena entonación.', 'Inserta una por respuesta en simulación oral.'] },
-            progreso_dashboard: { title: 'Progreso — panel', what: 'Ves racha, monedas, mazos y exportaciones; el bloque morado resume entrenamiento avanzado si lo usas.', tips: ['Haz PDF antes de vacaciones para no perder la foto.', 'Revisa mazos difícil cada pocos días.', 'Combina con backup JSON flotante para copia total.'] },
+            progreso_dashboard: { title: 'Progreso — panel', what: 'Ves racha, monedas, mazos y exportaciones; el bloque de Entrenamiento resume práctica avanzada si lo usas.', tips: ['Haz PDF antes de vacaciones para no perder la foto.', 'Revisa mazos difícil cada pocos días.', 'Combina con backup JSON flotante para copia total.'] },
             guiones_import: { title: 'Biblioteca — guiones', what: 'Pegas texto de la IA con título y lo guardas; al cargarlo se vuelve tu Historia activa.', tips: ['Comprueba títulos para encontrar lecciones rápido.', 'Borra versiones viejas para no confundirte.', 'El prompt sugerido está arriba: cópialo tal cual a ChatGPT/Gemini.'] },
             guiones_vocab_custom: { title: 'Biblioteca — vocabulario propio', what: 'Pegas listas “alemán — español” y guardas lecciones; luego Practicar o mezcla.', tips: ['Una línea por palabra facilita el parseo.', 'Mezcla varias lecciones para simular examen amplio.', 'Exporta a Anki desde Progreso si usas mazos allí.'] },
             guiones_bx_distrib: { title: 'Biblioteca → B1 / B2 (subpestañas)', what: 'Desde un texto pegado se extraen frases y se clasifican por tipo (vocabulario, verbos, etc.); cada frase se coloca en B1 o B2 según reglas locales o en un solo nivel si lo fuerzas.', tips: ['Si tenías un guion guardado cargado en Historia al pulsar Distribuir, esas tarjetas quedan vinculadas: al borrar ese guion puedes quitar también esas entradas en B1/B2.', 'El nivel automático es una estimación: revisa en B1/B2 y mueve o borra tarjetas con “Tu biblioteca”.', 'Frases antiguas sin vincular: usa “Borrar mis aportaciones” o borra tarjeta a tarjeta. El archivo b1-b2-database.json del proyecto no se borra desde aquí.'] },
             guiones_mix: { title: 'Mezclar lecciones de vocabulario', what: 'Seleccionas varias lecciones guardadas y generas una sesión única en la pestaña Vocab.', tips: ['Marca al menos dos lecciones si quieres variedad.', 'Las tarjetas difíciles se suelen repetir al final.', 'Úsalo antes de un examen para repaso amplio.'] },
             storybuilder: { title: 'IA Story Builder', what: 'Pides a la app/IA integrada un guion según nivel y tema; luego lo estudias como cualquier Historia.', tips: ['Sé concreto en el tema (trabajo, medio ambiente…).', 'Revisa que el vocabulario coincida con tus metas.', 'Guarda siempre en Biblioteca para no perderlo.'] },
             practice_mazos: { title: 'Entrenamiento rápido (mazos)', what: 'Repasas tarjetas guardadas como difícil, normal o gramática: audio, revelar traducción, siguiente.', tips: ['No mires revelar hasta haber intentado recordar.', 'Haz lotes cortos varias veces al día.', 'Cuando vacíe un mazo, vuelve a Historia para añadir nuevas frases.'] },
-            advanced_menu: { title: 'Entrenamiento avanzado (panel morado)', what: 'Práctica guiada de artículos, verbos con preposición, preposiciones puras, conectores y simulacro tipo examen con cronómetro.', tips: ['Empieza por la categoría con peor porcentaje en el dashboard.', 'El modo examen entrena gestión de tiempo, no solo aciertos.', 'Cierra sesiones cortas para fijar mejor.', 'Artículos (JSON): usa "levels": ["A1","A2","B1"] para que la misma palabra salga en varios mazos; si repites la misma "de" con otro "level", la app une los niveles automáticamente.'] },
+            advanced_menu: { title: 'Entrenamiento avanzado', what: 'Práctica guiada de artículos, verbos con preposición, preposiciones puras, conectores y simulacro tipo examen con cronómetro.', tips: ['Empieza por la categoría con peor porcentaje en el dashboard.', 'El modo examen entrena gestión de tiempo, no solo aciertos.', 'Cierra sesiones cortas para fijar mejor.', 'Artículos (JSON): usa "levels": ["A1","A2","B1"] para que la misma palabra salga en varios mazos; si repites la misma "de" con otro "level", la app une los niveles automáticamente.'] },
             advanced_exam: { title: 'Simulacro TELC (avanzado)', what: 'Cronómetro orientativo, pistas limitadas y mezcla de ítems según lo que elijas.', tips: ['Elige duración realista (20–30 min al principio).', 'Usa pistas solo cuando lleves bloqueado más de un minuto.', 'Al terminar, repasa solo los fallos en modo categoría.'] },
             nav_ruta: { title: 'Ruta A1 → A2', what: 'Camino guiado desde cero: lecciones con frases, huecos, lectura en voz alta y recompensas. Pestaña Gramática resume reglas por nivel. Test de nivel sugiere por dónde empezar.', tips: ['Tecla R para abrir Ruta.', 'Elige mentor (voz) arriba: Frau Lena, Herr Tom o Lina.', 'Cada 3 lecciones completadas hay bonus extra de monedas.', 'El contenido se ampliará con el tiempo: la estructura ya está lista.'] },
             ruta_gramatica: { title: 'Ruta — Gramática', what: 'Resumen por niveles (A1, A2, B1) con explicaciones claras. No sustituye un libro de texto: combínalo con Historia y ejercicios.', tips: ['Abre el bloque del nivel que estudies en el camino.', 'Copia un ejemplo a Escritura para fijarlo.', 'Si algo no cuadra, pregunta a tu tutor o al foro.'] },
@@ -3770,6 +3770,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   if (activeTab === 'progreso') return 'bg-indigo-100';
                   if (activeTab === 'guiones') return 'bg-slate-100';
                   if (activeTab === 'vocabulario') return 'bg-amber-50';
+                  if (activeTab === 'entrenamiento') return 'bg-fuchsia-50';
                   if (activeTab === 'lexikon') return 'bg-slate-100';
                   if (activeTab === 'b1meister' || activeTab === 'b2ausblick') return 'bg-slate-100';
                   if (activeTab === 'storybuilder') return 'bg-indigo-100';
@@ -3787,6 +3788,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               if (activeTab === 'progreso') return 'bg-indigo-950';
               if (activeTab === 'guiones') return 'bg-slate-900';
               if (activeTab === 'vocabulario') return 'bg-amber-950/70'; // Suavizado
+              if (activeTab === 'entrenamiento') return 'bg-fuchsia-950/85';
               if (activeTab === 'lexikon') return 'bg-slate-900';
               if (activeTab === 'b1meister' || activeTab === 'b2ausblick') return 'bg-slate-900'; // Suavizado
               if (activeTab === 'storybuilder') return 'bg-indigo-950'; // Suavizado
@@ -4352,6 +4354,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       <ExerciseHelpBtn helpId="nav_escritura" compact />
                       <button onClick={()=>{setActiveTab('vocabulario'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2 rounded-lg font-bold text-sm md:text-xs min-h-[2.75rem] md:min-h-0 transition ${activeTab === 'vocabulario' ? 'bg-amber-600 text-white shadow-[0_0_20px_rgba(217,119,6,0.35)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="book-open" className="w-3 h-3 md:w-4 md:h-4" /> Vocab{vocabSrsDueCount > 0 ? <span className="ml-0.5 min-w-[1.1rem] px-1 rounded-full bg-white/20 text-[10px] font-black leading-none py-0.5" title="Tarjetas prioritarias SRS en la lista actual">{vocabSrsDueCount > 99 ? '99+' : vocabSrsDueCount}</span> : null}</button>
                       <ExerciseHelpBtn helpId="nav_vocab" compact />
+                      <button onClick={()=>{setActiveTab('entrenamiento'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2 rounded-lg font-bold text-sm md:text-xs min-h-[2.75rem] md:min-h-0 transition ${activeTab === 'entrenamiento' ? 'bg-fuchsia-600 text-white shadow-[0_0_16px_rgba(192,38,211,0.6)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="graduation-cap" className="w-3 h-3 md:w-4 md:h-4" /> Entrena</button>
+                      <ExerciseHelpBtn helpId="advanced_menu" compact />
                       <button onClick={()=>{setActiveTab('b1meister'); stopAudio(); setPracticeActive(null); setBxCategory('mix');}} className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-2 md:py-2 rounded-lg font-bold text-sm md:text-xs min-h-[2.75rem] md:min-h-0 transition ${activeTab === 'b1meister' ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.8)] ring-1 ring-white/20' : 'text-gray-400 hover:text-white whitespace-nowrap'}`}><Icon nav name="target" className="w-3 h-3 md:w-4 md:h-4" /> B1</button>
                       <ExerciseHelpBtn helpId="nav_b1" compact />
                       </div>
@@ -4374,15 +4378,6 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="inline-flex flex-col items-center gap-0.5">
-                          <button type="button" onClick={() => window.dispatchEvent(new Event('toggleAdvancedModal'))} className="bg-gradient-to-br from-fuchsia-600 to-purple-900 hover:from-fuchsia-500 hover:to-purple-800 text-white p-2 rounded-full shadow-lg ring-2 ring-white/15 transition" title="Entrenamiento avanzado (artículos, verbos, prep.)">
-                              <Icon name="graduation-cap" className="w-5 h-5" />
-                          </button>
-                          <button type="button" onClick={() => window.__MULLER_OPEN_EXERCISE_HELP && window.__MULLER_OPEN_EXERCISE_HELP('advanced_menu')} className="text-[9px] font-bold text-fuchsia-300/90 hover:text-white underline underline-offset-2" title="Qué es el entrenamiento avanzado">Ayuda</button>
-                      </span>
-                      <button type="button" onClick={() => { if (window.__mullerAudiobook) window.__mullerAudiobook.toggle(); }} className={`p-2 rounded-full shadow-lg ring-2 ring-white/15 transition text-white ${audiobookPlaying ? 'bg-red-600 hover:bg-red-500' : 'bg-gradient-to-br from-amber-500 to-orange-800 hover:from-amber-400 hover:to-orange-700'}`} title={audiobookPlaying ? 'Detener audiolibro' : 'Audiolibro: reproduce todo el guión'}>
-                          <Icon name={audiobookPlaying ? 'square' : 'headphones'} className="w-5 h-5" />
-                      </button>
                       <span className="inline-flex flex-col items-center gap-0.5">
                           <button type="button" aria-label="Centro Müller: voces, plan del día y ayuda" onClick={() => { setShowMullerHub(true); setMullerHubTab('voices'); }} className="bg-gradient-to-br from-sky-600 to-indigo-900 hover:from-sky-500 hover:to-indigo-800 text-white p-2 rounded-full shadow-lg ring-2 ring-white/15 transition" title="Voces del sistema, plan del día, retos y tour">
                               <Icon name="layout-dashboard" className="w-5 h-5" />
@@ -4558,7 +4553,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               {showOnboarding && onboardingStep >= 1 && onboardingStep <= 5 && (() => {
                   const obSteps = [
                       { t: 'Bienvenida', d: 'Müller funciona en el navegador: Historia (audio), Vocab con SRS, Escritura con OCR local, B1/B2 y Progreso. Todo gratis en este dispositivo.' },
-                      { t: 'Pestañas', d: 'Arriba cambias de actividad. El botón morado abre entrenamiento avanzado (artículos, verbos, prep.). El panel azul es el Centro Müller (voces, plan, ayuda).' },
+                      { t: 'Pestañas', d: 'Arriba cambias de actividad. La pestaña Entrenamiento abre artículos, verbos y preposiciones con simulacro. El panel azul es el Centro Müller (voces, plan, ayuda).' },
                       { t: 'Temas y accesibilidad', d: 'En Centro Müller → Voces puedes elegir tema Oscuro / Claro / Alto contraste y presets de velocidad TTS (Lenta / Normal / Examen).' },
                       { t: 'Objetivos y racha', d: 'En Vocab configuras objetivo diario de tarjetas; la racha solo sube si hay actividad mínima real (umbrales fijos en el informe del Centro).' },
                       { t: 'Copia de seguridad', d: 'Los botones flotantes a la derecha exportan/importan. Puedes hacer backup total o solo SRS / mazos desde el menú pequeño. Sin cuenta en la nube obligatoria.' },
@@ -4833,7 +4828,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       { t: 'Bienvenido al Entrenador Müller', d: 'Historia es el centro: escenas, audio y modos (Diktat, quiz…). Usa las pestañas arriba para cambiar de actividad.' },
                       { t: 'Voces naturales (gratis)', d: 'Pulsa el icono del panel azul: elige voz alemana y español del sistema. Prueba con el botón “Probar voz”.' },
                       { t: 'Vocab y Progreso', d: 'Fácil/Normal/Difícil programa repaso espaciado (SRS). En Progreso ves mazos y exportas a Anki.' },
-                      { t: 'Entrenamiento avanzado', d: 'El botón morado abre artículos, verbos y preposiciones con seguimiento de precisión.' },
+                      { t: 'Entrenamiento avanzado', d: 'Entrenamiento concentra artículos, verbos y preposiciones con seguimiento de precisión.' },
                       { t: 'Shadowing, Escritura y B1/B2', d: 'Shadowing entrena pronunciación; Escritura incluye OCR; B1/B2 son frases modelo. ¡Viel Erfolg!' },
                   ];
                   const item = steps[tourStep - 1];
@@ -4939,7 +4934,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                               </section>
                           </div>
                           <div className={`rounded-xl border border-dashed border-orange-500/35 p-4 mb-6 text-xs ${uiTheme === 'light' ? 'bg-orange-50 text-slate-600' : 'bg-orange-950/20 text-gray-400'}`}>
-                              Práctica tipo test: abre el botón morado <strong className={uiTheme === 'light' ? 'text-fuchsia-700' : 'text-fuchsia-300'}>Entrenamiento avanzado</strong> (artículos, verbos+prep., preposiciones) y el simulacro con cronómetro si está disponible en tu versión.
+                              Práctica tipo test: abre la pestaña <strong className={uiTheme === 'light' ? 'text-fuchsia-700' : 'text-fuchsia-300'}>Entrenamiento</strong> (artículos, verbos+prep., preposiciones) y el simulacro con cronómetro si está disponible en tu versión.
                           </div>
                           <div className="flex flex-wrap gap-3 mt-2">
                               <button type="button" onClick={() => {
@@ -5057,6 +5052,19 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                              )}
                          </div>
                          <p className="mt-4 md:mt-6 text-gray-500 font-bold text-sm md:text-base">Tarjeta {practiceIndex + 1} de {currentPracticeList.length}</p>
+                      </div>
+                  )}
+
+                  {activeTab === 'entrenamiento' && !practiceActive && (
+                      <div className="flex-1 overflow-y-auto hide-scrollbar p-4 md:p-8 max-w-6xl mx-auto w-full animate-in fade-in duration-500">
+                          <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
+                              <div>
+                                  <h1 className="text-2xl md:text-4xl font-black text-fuchsia-200 flex items-center gap-2 md:gap-3"><Icon name="graduation-cap" className="w-8 h-8 md:w-10 md:h-10" /> Entrenamiento avanzado</h1>
+                                  <p className="text-xs md:text-sm text-fuchsia-100/80 mt-1">Centro principal de práctica: artículos, verbos con preposición, preposiciones y simulacro TELC.</p>
+                              </div>
+                              <ExerciseHelpBtn helpId="advanced_menu" />
+                          </div>
+                          <AdvancedPracticePanelFinal embedded />
                       </div>
                   )}
 
@@ -5256,7 +5264,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       <button type="button" className="py-2 px-3 rounded-xl bg-blue-900/40 border border-blue-500/25 text-left text-xs hover:bg-blue-900/60 transition" onClick={() => { setActiveTab('historia'); setMode('dialogue'); stopAudio(); setPracticeActive(null); }}>1. Historia — escenas en voz alta o podcast</button>
                                       <button type="button" className="py-2 px-3 rounded-xl bg-teal-900/40 border border-teal-500/25 text-left text-xs hover:bg-teal-900/60 transition" onClick={() => { setActiveTab('shadowing'); stopAudio(); setPracticeActive(null); }}>2. Shadowing — misma escena + pronunciación</button>
                                       <button type="button" className="py-2 px-3 rounded-xl bg-amber-900/40 border border-amber-500/25 text-left text-xs hover:bg-amber-900/60 transition" onClick={() => { setActiveTab('vocabulario'); stopAudio(); setPracticeActive(null); }}>3. Vocab — tarjetas</button>
-                                      <button type="button" className="py-2 px-3 rounded-xl bg-purple-900/40 border border-purple-500/25 text-left text-xs hover:bg-purple-900/60 transition" onClick={() => { window.dispatchEvent(new Event('toggleAdvancedModal')); }}>4. Entrenamiento avanzado (morado)</button>
+                                      <button type="button" className="py-2 px-3 rounded-xl bg-purple-900/40 border border-purple-500/25 text-left text-xs hover:bg-purple-900/60 transition" onClick={() => { setActiveTab('entrenamiento'); stopAudio(); setPracticeActive(null); }}>4. Entrenamiento avanzado</button>
                                       <button type="button" className="py-2 px-3 rounded-xl bg-rose-900/40 border border-rose-500/25 text-left text-xs hover:bg-rose-900/60 transition" onClick={() => { setActiveTab('escritura'); setWritingMode('dictation'); stopAudio(); setPracticeActive(null); }}>5. Escritura — dictado + OCR</button>
                                   </div>
                                   <p className="text-[10px] text-gray-500 uppercase tracking-wider pt-3 mb-2">Retos del día (+5 monedas, una vez al día)</p>
@@ -5312,7 +5320,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       <div className="bg-black/30 rounded-lg p-2 text-center border border-white/10"><span className="text-gray-400 block">Hoy</span><span className="font-black text-cyan-300 text-lg">{mullerProgresoSnapshot.todayAttempts}/{mullerProgresoSnapshot.dailyGoal}</span></div>
                                       <div className="bg-black/30 rounded-lg p-2 text-center border border-white/10"><span className="text-gray-400 block">Racha</span><span className="font-black text-orange-300 text-lg">{mullerProgresoSnapshot.streakDays} d</span></div>
                                   </div>
-                                  <p className="text-[10px] text-gray-500 mt-3">Abre el botón morado flotante para practicar artículos, verbos y preposiciones.</p>
+                                  <p className="text-[10px] text-gray-500 mt-3">Abre la pestaña Entrenamiento para practicar artículos, verbos y preposiciones.</p>
                               </div>
                           )}
                           <p className="text-xs text-emerald-200/90 mb-4 flex flex-wrap items-center gap-2"><Icon name="timer" className="w-4 h-4" /> Repaso espaciado (SRS): <strong>{Object.keys(vocabSrsMap).length}</strong> palabras con fecha de repaso · se ordenan solas al abrir una lección. Solo en este navegador.</p>
@@ -6804,6 +6812,9 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                         <button onClick={togglePlay} className={`p-3 md:p-6 rounded-full flex items-center justify-center transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.5)] ${isPlaying ? 'bg-red-500 text-white' : 'bg-blue-600 text-white'}`}>
                             {isPlaying ? <Icon name="square" className="w-5 h-5 md:w-8 md:h-8 fill-current" /> : <Icon name="play" className="w-5 h-5 md:w-8 md:h-8 ml-0.5 md:ml-1 fill-current" />}
                         </button>
+                        <button type="button" onClick={() => { if (window.__mullerAudiobook) window.__mullerAudiobook.toggle(); }} className={`p-2 md:p-3 rounded-full transition text-white border border-gray-700 shadow-md ${audiobookPlaying ? 'bg-red-600 hover:bg-red-500' : 'bg-amber-700 hover:bg-amber-600'}`} title={audiobookPlaying ? 'Detener audiolibro' : 'Audiolibro: reproduce todo el guión'}>
+                            <Icon name={audiobookPlaying ? 'square' : 'headphones'} className="w-4 h-4 md:w-6 md:h-6 text-white" />
+                        </button>
                         <button onClick={handleNext} className={`muller-icon-nav p-2 md:p-3 bg-gray-900 rounded-full transition text-white border border-gray-700 shadow-md ${podcastMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`} disabled={podcastMode}><Icon name="chevron-right" className="w-4 h-4 md:w-6 md:h-6 text-white" /></button>
                       </div>
                       <button type="button" onClick={exportScriptPDF} className="flex bg-red-700 hover:bg-red-600 border border-red-500 px-3 md:px-4 py-1.5 md:py-2 rounded-xl text-white font-bold items-center gap-2 shadow-lg transition text-xs md:text-sm shrink-0" title="PDF con alemán, traducción al español, vocabulario y análisis"><Icon name="file-down" className="w-3 h-3 md:w-4 md:h-4" /> PDF Guion</button>
@@ -8047,7 +8058,7 @@ function TelcMixedExamFinal({ onBack, examCtx, setExamCtx }) {
     );
 }
 
-function AdvancedPracticePanelFinal() {
+function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null }) {
     const [show, setShow] = React.useState(false);
     const [activeMode, setActiveMode] = React.useState('menu');
     const [dashboard, setDashboard] = React.useState(() => getAdvancedDashboard());
@@ -8056,6 +8067,7 @@ function AdvancedPracticePanelFinal() {
     const [examSetup, setExamSetup] = React.useState({ durationMin: 20, hintsTotal: 8, track: 'articulos', articleLevel: 'B1' });
 
     React.useEffect(() => {
+        if (embedded) return;
         const open = () => {
             runAchievementsCheck();
             setShow(true);
@@ -8083,29 +8095,32 @@ function AdvancedPracticePanelFinal() {
             window.removeEventListener('advancedProgressUpdated', refresh);
             window.removeEventListener('achievementsUpdated', refresh);
         };
-    }, []);
+    }, [embedded]);
 
     React.useEffect(() => {
-        if (show && window.lucide) window.lucide.createIcons();
-    }, [show, activeMode]);
+        const visible = embedded || show;
+        if (visible && window.lucide) window.lucide.createIcons();
+    }, [embedded, show, activeMode]);
 
     const handleClosePanel = () => {
-        setShow(false);
+        if (!embedded) setShow(false);
         setExamCtx(null);
         setActiveMode('menu');
+        if (embedded && typeof onRequestClose === 'function') onRequestClose();
     };
 
-    if (!show) return null;
+    const visible = embedded || show;
+    if (!visible) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-950/95 backdrop-blur-md z-[100] flex flex-col p-4 md:p-10 text-white overflow-y-auto">
+        <div className={embedded ? "w-full text-white" : "fixed inset-0 bg-gray-950/95 backdrop-blur-md z-[100] flex flex-col p-4 md:p-10 text-white overflow-y-auto"}>
             <div className="flex justify-between items-center mb-10 border-b border-purple-900/50 pb-4 gap-2 flex-wrap">
                 <div className="flex items-center gap-3 flex-wrap">
                     <span className="bg-purple-600 p-2 rounded-lg"><i data-lucide="graduation-cap" className="w-6 h-6"></i></span>
                     <h2 className="text-2xl md:text-3xl font-bold text-purple-100">Área de Entrenamiento Müller</h2>
                     <button type="button" onClick={() => window.__MULLER_OPEN_EXERCISE_HELP && window.__MULLER_OPEN_EXERCISE_HELP(activeMode === 'exam_setup' ? 'advanced_exam' : 'advanced_menu')} className="text-xs font-bold text-purple-200 border border-purple-500/40 rounded-lg px-2 py-1.5 hover:bg-purple-900/50 transition">Ayuda</button>
                 </div>
-                <button type="button" onClick={handleClosePanel} className="bg-red-600/20 text-red-400 border border-red-900/50 px-4 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition">X Cerrar</button>
+                {!embedded && <button type="button" onClick={handleClosePanel} className="bg-red-600/20 text-red-400 border border-red-900/50 px-4 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition">X Cerrar</button>}
             </div>
 
             {activeMode === 'exam_setup' && (
