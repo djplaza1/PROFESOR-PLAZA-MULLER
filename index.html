@@ -2002,13 +2002,20 @@
               rows.forEach((r, i) => { r.rank = i + 1; });
               return { week, rows };
           }, [userStats, unifiedAuth, remoteLeagueRows]);
-          const directoryLocals = useMemo(() => {
+        const directoryLocals = useMemo(() => {
               void authTick;
               const m = mullerAccountsLoad();
-                const k = 'muller_daily_v1_' + new Date().toISOString().slice(0, 10);
+              return Object.keys(m).map((email) => ({ email, displayName: m[email].displayName, userId: m[email].userId, createdAt: m[email].createdAt }));
+          }, [authTick]);
+
+          const [dailyTasks, setDailyTasks] = useState(() => {
+              try {
+                  const k = 'muller_daily_v1_' + new Date().toISOString().slice(0, 10);
                   const j = localStorage.getItem(k);
                   return j ? JSON.parse(j) : { vocab: false, shadow: false, write: false };
-              } catch (e) { return { vocab: false, shadow: false, write: false }; }
+              } catch (e) { 
+                  return { vocab: false, shadow: false, write: false }; 
+              }
           });
           const [vocabSrsEpoch, setVocabSrsEpoch] = useState(0);
           const vocabSrsMap = useMemo(() => mullerGetVocabSrsMap(), [vocabSrsEpoch]);
@@ -7631,7 +7638,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
 
               {/* REPRODUCTOR CONTROLES INFERIORES */}
               {activeTab === 'historia' && mode !== 'quiz' && mode !== 'interview' && !practiceActive && (
-<div className="bg-gray-950 p-3 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 border border-gray-800 z-20 mb-4 md:mb-8 mx-2 md:mx-4 rounded-2xl shadow-2xl">                      <div className="flex flex-col text-xs md:text-sm text-gray-400 w-full sm:w-auto text-center sm:text-left">
+                  <div className="bg-gray-950 p-3 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 border-t border-gray-800 z-20">
+                      <div className="flex flex-col text-xs md:text-sm text-gray-400 w-full sm:w-auto text-center sm:text-left">
                         <span className="font-bold text-white text-sm md:text-base truncate sm:max-w-[200px]">{activeScriptTitle}</span>
                         <span>Szene {isReviewing ? reviewIndexPointer + 1 : sceneIndex + 1} von {isReviewing ? userStats.failedDiktatScenes.length : guionData.length} {isReviewing && "(Repaso)"}</span>
                       </div>
