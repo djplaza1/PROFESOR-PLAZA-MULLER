@@ -1219,7 +1219,8 @@
         window.__mullerSfxEnabled = function () {
             try { return localStorage.getItem('muller_sfx_enabled') !== '0'; } catch (e) { return true; }
         };
-        window.__mullerPlaySfx = function (kind) {
+        window.__mullerConsecutiveCorrect = 0;
+        window.__mullerPlaySfx = function (kind, arg2) {
             if (!window.__mullerSfxEnabled()) return;
             try {
                 var Ctx = window.AudioContext || window.webkitAudioContext;
@@ -1256,8 +1257,36 @@
                     [523, 659, 784, 1046].forEach(function (f, i) {
                         tone(f, i * 0.08, 0.22, 0.095);
                     });
+                } else if (kind === 'streak') {
+                    var n = Math.max(5, Number(arg2) || 5);
+                    var tier = Math.floor(n / 5);
+                    var base = 392 * Math.pow(1.035, Math.min(tier, 40));
+                    var count = 4 + Math.min(6, Math.floor(tier / 4));
+                    for (var si = 0; si < count; si++) {
+                        tone(base * Math.pow(1.259921, si), si * 0.055, 0.11, 0.09);
+                    }
+                    tone(Math.min(1400, base * Math.pow(1.259921, count)), count * 0.055 + 0.02, 0.2, 0.1);
                 }
             } catch (e) {}
+        };
+        /** Acierto / fallo en ejercicios: ok/bad + racha global 5,10,15… (sin límite). opts.silent: no audio. */
+        window.__mullerNotifyExerciseOutcome = function (correct, opts) {
+            opts = opts || {};
+            if (correct) {
+                window.__mullerConsecutiveCorrect = (window.__mullerConsecutiveCorrect || 0) + 1;
+                var streakN = window.__mullerConsecutiveCorrect;
+                if (!opts.silent && window.__mullerSfxEnabled()) {
+                    window.__mullerPlaySfx('ok');
+                    if (streakN > 0 && streakN % 5 === 0) {
+                        setTimeout(function () { window.__mullerPlaySfx('streak', streakN); }, 130);
+                    }
+                }
+            } else {
+                window.__mullerConsecutiveCorrect = 0;
+                if (!opts.silent && window.__mullerSfxEnabled()) {
+                    window.__mullerPlaySfx('bad');
+                }
+            }
         };
         window.__mullerRandomMotivation = function () {
             var m = [
@@ -1594,6 +1623,7 @@
           const [puzzleWords, setPuzzleWords] = useState([]);
           const [puzzleAnswer, setPuzzleAnswer] = useState([]);
           const [showPuzzleResult, setShowPuzzleResult] = useState(false);
+          const [puzzleLastOk, setPuzzleLastOk] = useState(null);
           const [isListening, setIsListening] = useState(false);
           const [spokenText, setSpokenText] = useState("");
           const [pronunciationScore, setPronunciationScore] = useState(null);
@@ -2311,8 +2341,8 @@
               if (!lesson || !lesson.fill) return false;
               const got = (rutaFillInput || '').trim().toLowerCase().replace(/\s+/g, ' ');
               const exp = String(lesson.fill.answer || '').trim().toLowerCase();
-              if (got === exp) { window.__mullerPlaySfx && window.__mullerPlaySfx('ok'); setRutaSpeakErr(''); return true; }
-              window.__mullerPlaySfx && window.__mullerPlaySfx('bad');
+              if (got === exp) { window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(true); setRutaSpeakErr(''); return true; }
+              window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(false);
               setRutaSpeakErr(typeof window.__mullerRandomMotivation === 'function' ? window.__mullerRandomMotivation() : 'Sigue practicando.');
               return false;
           };
@@ -2323,8 +2353,8 @@
               if (!a || !b) { setRutaSpeakErr('Graba de nuevo con el micrófono.'); return false; }
               const dist = levenshteinDistance(a, b);
               const tol = Math.max(2, Math.floor(b.length / 5));
-              if (a === b || dist <= tol) { window.__mullerPlaySfx && window.__mullerPlaySfx('ok'); setRutaSpeakErr(''); return true; }
-              window.__mullerPlaySfx && window.__mullerPlaySfx('bad');
+              if (a === b || dist <= tol) { window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(true); setRutaSpeakErr(''); return true; }
+              window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(false);
               setRutaSpeakErr(typeof window.__mullerRandomMotivation === 'function' ? window.__mullerRandomMotivation() : 'Casi — prueba otra vez.');
               return false;
           };
@@ -2559,7 +2589,7 @@
           const resetModes = () => { 
               setDiktatInput(""); setShowDiktatResult(false); 
               setSpokenText(""); setPronunciationScore(null); setGrammarPolizeiMsg(""); setPronunciationFeedback([]);
-              setShowPuzzleResult(false); setShowCurrentTranslation(false); 
+              setShowPuzzleResult(false); setPuzzleLastOk(null); setShowCurrentTranslation(false); 
               initPuzzle(guionData[getActualSceneIndex()]?.text || ""); 
           };
           
@@ -3277,7 +3307,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               const originalText = cleanText(guionData[getActualSceneIndex()].text);
               const typedText = cleanText(diktatInput);
               if (originalText !== typedText) {
-                  window.__mullerPlaySfx && window.__mullerPlaySfx('bad');
+                  window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(false);
                   setDiktatMotivationMsg(typeof window.__mullerRandomMotivation === 'function' ? window.__mullerRandomMotivation() : 'Sigue intentándolo.');
                   if (!isReviewing && !userStats.failedDiktatScenes.includes(sceneIndex)) {
                       saveProgress({ failedDiktatScenes: [...userStats.failedDiktatScenes, sceneIndex], diktatAttempts: userStats.diktatAttempts + 1, activityByDay: mergeActivityPoints(6) });
@@ -3285,7 +3315,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   deductHeart();
               } else {
                   setDiktatMotivationMsg('');
-                  window.__mullerPlaySfx && window.__mullerPlaySfx('ok');
+                  window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(true);
                   saveProgress({ coins: userStats.coins + 5, diktatCorrect: userStats.diktatCorrect + 1, diktatAttempts: userStats.diktatAttempts + 1, activityByDay: mergeActivityPoints(25) });
               }
           };
@@ -3398,6 +3428,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       setGrammarPolizeiMsg("No se detectó voz. Comprueba el micrófono o habla más cerca.");
                       setPronunciationScore(null);
                       setPronunciationFeedback([]);
+                      if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
                   }
                   return;
               }
@@ -3433,10 +3464,16 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       pronunciationTotalScore: (userStats.pronunciationTotalScore || 0) + finalScore,
                       ...(finalScore >= 85 ? { coins: userStats.coins + 2, activityByDay: mergeActivityPoints(8) } : {}),
                   });
+                  if (window.__mullerNotifyExerciseOutcome) {
+                      window.__mullerNotifyExerciseOutcome(finalScore >= 75);
+                  }
                   return;
               }
-              if (penalty || finalScore < 50) { window.__mullerPlaySfx && window.__mullerPlaySfx('bad'); deductHeart(); }
-              else if (finalScore >= 90) saveProgress({ coins: userStats.coins + 5, activityByDay: mergeActivityPoints(12) });
+              if (penalty || finalScore < 50) { window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(false); deductHeart(); }
+              else {
+                  window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(true);
+                  if (finalScore >= 90) saveProgress({ coins: userStats.coins + 5, activityByDay: mergeActivityPoints(12) });
+              }
           };
 
           const playVocabAudio = () => {
@@ -3463,6 +3500,9 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
             let newNorm = [...userStats.normalVocab];
             if (level === 'hard') { if (!newDiff.some(w => w.de === currentWord.de)) newDiff.push(currentWord); } 
             else if (level === 'normal') { if (!newNorm.some(w => w.de === currentWord.de)) newNorm.push(currentWord); }
+            if (window.__mullerNotifyExerciseOutcome) {
+                window.__mullerNotifyExerciseOutcome(level === 'easy' || level === 'normal');
+            }
             mullerBumpVocabStreakRating();
             saveProgress({ difficultVocab: newDiff, normalVocab: newNorm, activityByDay: mergeActivityPoints(15) });
             try {
@@ -3494,6 +3534,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           };
 
           const nextPracticeWord = () => {
+              if (practiceShowTrans && window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
               const list = practiceActive === 'diff' ? userStats.difficultVocab : (practiceActive === 'norm' ? userStats.normalVocab : userStats.difficultGrammar);
               if (practiceIndex < list.length - 1) { setPracticeIndex(practiceIndex + 1); setPracticeShowTrans(false); saveProgress({ activityByDay: mergeActivityPoints(6) }); } 
               else {
@@ -5802,7 +5843,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       <span className="text-[10px] font-normal opacity-80">{m.sub}</span>
                                   </button>
                               ))}
-                              <button type="button" onClick={() => { try { localStorage.setItem('muller_sfx_enabled', (typeof window.__mullerSfxEnabled === 'function' && window.__mullerSfxEnabled()) ? '0' : '1'); } catch (e) {} setSfxEpoch((x) => x + 1); }} className="ml-auto text-xs font-bold rounded-xl border border-white/15 px-3 py-2 text-gray-300 hover:bg-white/10">
+                              <button type="button" onClick={() => { try { localStorage.setItem('muller_sfx_enabled', (typeof window.__mullerSfxEnabled === 'function' && window.__mullerSfxEnabled()) ? '0' : '1'); } catch (e) {} setSfxEpoch((x) => x + 1); }} className="ml-auto text-xs font-bold rounded-xl border border-white/15 px-3 py-2 text-gray-300 hover:bg-white/10" title="Acierto, fallo y fanfarria cada 5 aciertos seguidos (5, 10, 15…)">
                                   Sonidos: {sfxEpoch >= 0 && typeof window.__mullerSfxEnabled === 'function' && window.__mullerSfxEnabled() ? 'ON' : 'OFF'}
                               </button>
                           </div>
@@ -5871,7 +5912,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                                   <div className="flex flex-col gap-2">
                                                       {q.opts.map((o, oi) => (
                                                           <label key={oi} className={`flex items-center gap-2 cursor-pointer rounded-lg px-3 py-2 text-sm ${placementSel[qi] === oi ? 'bg-fuchsia-800/50 border border-fuchsia-500/50' : 'bg-black/20 border border-transparent hover:border-white/10'}`}>
-                                                              <input type="radio" name={`place-q-${qi}`} checked={placementSel[qi] === oi} onChange={() => { const n = [...placementSel]; n[qi] = oi; setPlacementSel(n); }} className="accent-fuchsia-500" />
+                                                              <input type="radio" name={`place-q-${qi}`} checked={placementSel[qi] === oi} onChange={() => { const n = [...placementSel]; n[qi] = oi; setPlacementSel(n); if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(oi === q.ok); }} className="accent-fuchsia-500" />
                                                               <span className="text-gray-200">{o}</span>
                                                           </label>
                                                       ))}
@@ -6596,12 +6637,28 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                         </div>
                                         <div className="flex gap-3 md:gap-4 w-full md:w-auto justify-center">
                                             <button onClick={() => { setIsPlaying(true); togglePlay(); setIsPlaying(true); }} className="bg-gray-800 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold flex items-center gap-1 md:gap-2 text-xs md:text-sm"><Icon name="volume-2" className="w-3 h-3 md:w-5 md:h-5" /> Pista</button>
-                                            <button onClick={()=>setShowPuzzleResult(true)} disabled={puzzleWords.length > 0} className={`px-4 md:px-8 py-2 md:py-3 rounded-lg font-bold flex items-center gap-1 md:gap-2 text-xs md:text-sm ${puzzleWords.length === 0 ? 'bg-green-600' : 'bg-gray-800'}`}><Icon name="check-circle" className="w-3 h-3 md:w-5 md:h-5" /> Comprobar</button>
+                                            <button onClick={() => {
+                                                const raw = (guionData[getActualSceneIndex()]?.text || '').trim();
+                                                const norm = (s) => String(s || '').toLowerCase().replace(/[.,!?;:…]/g, ' ').replace(/\s+/g, ' ').trim();
+                                                const target = norm(raw.split(/\s+/).filter(Boolean).join(' '));
+                                                const built = norm(puzzleAnswer.map((w) => w.text).join(' '));
+                                                const ok = !!target && built === target;
+                                                if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(ok);
+                                                setPuzzleLastOk(ok);
+                                                setShowPuzzleResult(true);
+                                            }} disabled={puzzleWords.length > 0} className={`px-4 md:px-8 py-2 md:py-3 rounded-lg font-bold flex items-center gap-1 md:gap-2 text-xs md:text-sm ${puzzleWords.length === 0 ? 'bg-green-600' : 'bg-gray-800'}`}><Icon name="check-circle" className="w-3 h-3 md:w-5 md:h-5" /> Comprobar</button>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="w-full text-center flex flex-col items-center gap-4 md:gap-6">
-                                        <h1 className="text-xl md:text-4xl font-medium text-white bg-green-900/40 p-4 md:p-6 rounded-xl border border-green-500/30 w-full max-w-full break-words leading-snug">{renderHighlightedText(guionData[getActualSceneIndex()].text, guionData[getActualSceneIndex()].vocab)}</h1>
+                                        {puzzleLastOk ? (
+                                            <h1 className="text-xl md:text-4xl font-medium text-white bg-green-900/40 p-4 md:p-6 rounded-xl border border-green-500/30 w-full max-w-full break-words leading-snug">{renderHighlightedText(guionData[getActualSceneIndex()].text, guionData[getActualSceneIndex()].vocab)}</h1>
+                                        ) : (
+                                            <div className="w-full max-w-full space-y-3">
+                                                <p className="text-red-200 font-black text-lg md:text-2xl bg-red-950/50 border border-red-500/40 rounded-xl px-4 py-3">Orden incorrecto — compara con la solución:</p>
+                                                <h1 className="text-xl md:text-4xl font-medium text-white bg-amber-950/40 p-4 md:p-6 rounded-xl border border-amber-600/30 w-full max-w-full break-words leading-snug">{renderHighlightedText(guionData[getActualSceneIndex()].text, guionData[getActualSceneIndex()].vocab)}</h1>
+                                            </div>
+                                        )}
                                         <button onClick={handleNext} className="bg-indigo-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold mt-2 md:mt-4 flex items-center gap-2 w-full md:w-auto justify-center text-sm md:text-base">Siguiente ➔</button>
                                     </div>
                                 )}
@@ -7491,8 +7548,10 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
 
         if (guess === correct) {
             setFeedback({ type: 'success', text: `¡Richtig! 🟢 ${current.de}`, tip: getCardTip('articulos', current), currentCard: current });
+            if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
         } else {
             setFeedback({ type: 'error', text: `⚠️ FALSCH! Era: ${current.de}`, tip: getCardTip('articulos', current), currentCard: current });
+            if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
         }
     };
 
@@ -7637,8 +7696,10 @@ function CloudPracticeFinal({ onBack, type, examCtx, setExamCtx }) {
 
         if (guess === currentItem.answer) {
             setFeedback({ type: 'success', text: `¡Richtig! Es '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(type, currentItem) });
+            if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
         } else {
             setFeedback({ type: 'error', text: `⚠️ FALSCH: Era '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(type, currentItem) });
+            if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
         }
     };
 
@@ -7886,8 +7947,10 @@ function TelcMixedExamFinal({ onBack, examCtx, setExamCtx }) {
             window.speechSynthesis.speak(utterance);
             if (guess === correct) {
                 setFeedback({ type: 'success', text: `¡Richtig! 🟢 ${current.de}`, tip: getCardTip('articulos', current), currentCard: current, kind: 'articulos' });
+                if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
             } else {
                 setFeedback({ type: 'error', text: `⚠️ FALSCH! Era: ${current.de}`, tip: getCardTip('articulos', current), currentCard: current, kind: 'articulos' });
+                if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
             }
             return;
         }
@@ -7900,8 +7963,10 @@ function TelcMixedExamFinal({ onBack, examCtx, setExamCtx }) {
         window.speechSynthesis.speak(utterance);
         if (guess === currentItem.answer) {
             setFeedback({ type: 'success', text: `¡Richtig! Es '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(cloudType, currentItem), kind: card.kind });
+            if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
         } else {
             setFeedback({ type: 'error', text: `⚠️ FALSCH: Era '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(cloudType, currentItem), kind: card.kind });
+            if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
         }
     };
 
