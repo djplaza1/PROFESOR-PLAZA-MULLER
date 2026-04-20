@@ -1361,6 +1361,9 @@
           const [supabaseProfile, setSupabaseProfile] = useState(null);
           const [remoteLeagueRows, setRemoteLeagueRows] = useState(null);
           const [remoteProfiles, setRemoteProfiles] = useState(null);
+          const [profileNameDraft, setProfileNameDraft] = useState('');
+          const [profileNameBusy, setProfileNameBusy] = useState(false);
+          const [profileNameMsg, setProfileNameMsg] = useState('');
           const unifiedAuth = useMemo(() => {
               void authTick;
               if (mullerSupabaseConfigured() && supabaseUser) {
@@ -1733,6 +1736,16 @@
               });
               return () => { cancelled = true; };
           }, [activeTab, communitySubTab, authTick]);
+
+          useEffect(() => {
+              if (!unifiedAuth) {
+                  setProfileNameDraft('');
+                  setProfileNameMsg('');
+                  return;
+              }
+              setProfileNameDraft(unifiedAuth.displayName || '');
+              setProfileNameMsg('');
+          }, [unifiedAuth]);
 
           useEffect(() => {
               const onBip = (e) => {
@@ -5248,6 +5261,61 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           <p className="text-[11px] font-bold uppercase tracking-wider text-violet-400">{unifiedAuth.source === 'supabase' ? 'Cuenta Supabase (nube · gratis)' : 'Cuenta solo en este navegador'}</p>
                                           <p className="text-sm text-gray-400"><span className="text-gray-300 font-semibold">Nombre:</span> {unifiedAuth.displayName}</p>
                                           <p className="text-sm text-gray-400"><span className="text-gray-300 font-semibold">Email:</span> {mullerMaskEmail(unifiedAuth.email)}</p>
+                                          <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2">
+                                              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500">Cambiar nombre visible</label>
+                                              <div className="flex flex-col sm:flex-row gap-2">
+                                                  <input
+                                                      type="text"
+                                                      value={profileNameDraft}
+                                                      onChange={(e) => setProfileNameDraft(e.target.value)}
+                                                      className="flex-1 bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-white outline-none focus:border-violet-500"
+                                                      placeholder="Ej: SuperKlaus"
+                                                  />
+                                                  <button
+                                                      type="button"
+                                                      disabled={profileNameBusy}
+                                                      className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 font-bold text-sm"
+                                                      onClick={async () => {
+                                                          const nextName = String(profileNameDraft || '').trim();
+                                                          if (!nextName) { setProfileNameMsg('Escribe un nombre válido.'); return; }
+                                                          setProfileNameBusy(true);
+                                                          setProfileNameMsg('');
+                                                          try {
+                                                              if (unifiedAuth.source === 'supabase') {
+                                                                  const client = mullerGetSupabaseClient();
+                                                                  if (!client || !supabaseUser) throw new Error('Supabase no disponible');
+                                                                  const { error: e1 } = await client.auth.updateUser({ data: { display_name: nextName } });
+                                                                  if (e1) throw new Error(e1.message);
+                                                                  const { error: e2 } = await client.from('profiles').upsert({
+                                                                      id: supabaseUser.id,
+                                                                      display_name: nextName,
+                                                                      updated_at: new Date().toISOString(),
+                                                                  }, { onConflict: 'id' });
+                                                                  if (e2) throw new Error(e2.message);
+                                                                  setSupabaseProfile((p) => ({ ...(p || {}), id: supabaseUser.id, display_name: nextName, updated_at: new Date().toISOString() }));
+                                                              } else {
+                                                                  const map = mullerAccountsLoad();
+                                                                  const em = unifiedAuth.email;
+                                                                  if (map[em]) {
+                                                                      map[em].displayName = nextName;
+                                                                      mullerAccountsSave(map);
+                                                                  }
+                                                              }
+                                                              saveProgress({ username: nextName });
+                                                              setAuthTick((x) => x + 1);
+                                                              setProfileNameMsg('Nombre actualizado.');
+                                                          } catch (err) {
+                                                              setProfileNameMsg('No se pudo actualizar: ' + (err && err.message ? err.message : 'error'));
+                                                          } finally {
+                                                              setProfileNameBusy(false);
+                                                          }
+                                                      }}
+                                                  >
+                                                      {profileNameBusy ? 'Guardando…' : 'Guardar nombre'}
+                                                  </button>
+                                              </div>
+                                              {profileNameMsg ? <p className="text-xs text-gray-400">{profileNameMsg}</p> : null}
+                                          </div>
                                           <button
                                               type="button"
                                               className="px-4 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 font-bold text-sm border border-white/10"
