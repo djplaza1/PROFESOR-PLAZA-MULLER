@@ -41,9 +41,12 @@
         }
         /* Escala base: la fija también el script mullerApplyRootFont (px en <html>) para que funcione igual en pestaña web y PWA */
         @media (max-width: 1024px) {
-            html { font-size: 112%; }
+            html { font-size: 100%; }
         }
-        body { margin: 0; background-color: #000; overflow: hidden; font-family: 'Outfit', system-ui, -apple-system, sans-serif; }
+        @media (max-width: 640px) {
+            html { font-size: 95%; }
+        }
+        body { margin: 0; background-color: #000; overflow-x: hidden; overflow-y: auto; font-family: 'Outfit', system-ui, -apple-system, sans-serif; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .lucide-wrapper { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
@@ -139,6 +142,18 @@
                 min-height: 2.35rem !important;
                 padding-top: 0.55rem !important;
                 padding-bottom: 0.55rem !important;
+            }
+        }
+        @media (max-width: 640px) {
+            .muller-nav-row {
+                flex-wrap: wrap;
+                overflow-x: visible;
+                row-gap: 0.35rem;
+            }
+            .muller-nav-row button {
+                flex: 1 1 calc(50% - 0.35rem);
+                justify-content: center;
+                min-width: 9.25rem;
             }
         }
         .muller-skeleton {
@@ -4756,7 +4771,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           }, [activeTab]);
 
           return (
-            <div className={`flex flex-col muller-main-fill md:h-screen md:max-h-[850px] w-full font-sans md:rounded-xl overflow-hidden shadow-2xl relative transition-colors duration-500 muller-theme-bg ${reduceMotionUi ? 'muller-reduce-motion' : ''} ${themeShellClass} ${uiTheme === 'light' ? 'text-slate-900' : 'text-white'} ${getBgColor()}`}>
+            <div className={`flex flex-col muller-main-fill md:h-screen md:max-h-[850px] w-full font-sans md:rounded-xl overflow-x-hidden md:overflow-hidden shadow-2xl relative transition-colors duration-500 muller-theme-bg ${reduceMotionUi ? 'muller-reduce-motion' : ''} ${themeShellClass} ${uiTheme === 'light' ? 'text-slate-900' : 'text-white'} ${getBgColor()}`}>
 
               {showSplash && (
                   <div className="fixed inset-0 z-[300] flex flex-col md:flex-row overflow-hidden" role="presentation">
@@ -5576,7 +5591,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
 
                   {/* STORY BUILDER (sin cambios) */}
                   {activeTab === 'storybuilder' && (
-                      <div className="p-4 md:p-8 max-w-3xl mx-auto w-full animate-in fade-in duration-500 flex flex-col justify-center h-full">
+                      <div className="p-4 md:p-8 max-w-3xl mx-auto w-full animate-in fade-in duration-500 flex flex-col justify-start md:justify-center min-h-full">
                           <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
                               <h1 className="text-2xl md:text-4xl font-black flex items-center gap-2 md:gap-3 text-fuchsia-400"><Icon name="sparkles" className="w-6 h-6 md:w-10 md:h-10" /> AI Story Builder</h1>
                               <ExerciseHelpBtn helpId="storybuilder" />
@@ -5768,7 +5783,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
 
                   {/* B1 / B2 (sin cambios) */}
                   {activeTab === 'bxbank' && !practiceActive && (
-                      <div className="p-4 md:p-8 max-w-5xl mx-auto w-full animate-in fade-in duration-500 flex flex-col h-full">
+                      <div className="p-4 md:p-8 max-w-5xl mx-auto w-full animate-in fade-in duration-500 flex flex-col min-h-full">
                           <div className="flex flex-col md:flex-row md:flex-wrap justify-between items-start md:items-center mb-6 md:mb-8 border-b border-sky-900/50 pb-4 md:pb-6 gap-4">
                               <div className="min-w-0 flex-1 md:max-w-[min(100%,28rem)]">
                                   <h1 className={`text-2xl md:text-4xl font-black flex items-center gap-2 md:gap-3 ${bxBankLevel === 'b1' ? 'text-emerald-400' : 'text-sky-400'}`}>
@@ -6065,7 +6080,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
 
                   {/* BIBLIOTECA (con checkboxes para mezcla) */}
                   {activeTab === 'guiones' && !practiceActive && (
-                      <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col md:flex-row gap-6 md:gap-8 h-full animate-in fade-in">
+                      <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col md:flex-row gap-6 md:gap-8 min-h-full animate-in fade-in">
                           <div className="flex-[2] bg-gray-800/50 p-4 md:p-6 rounded-2xl border border-gray-700 flex flex-col max-h-full overflow-y-auto hide-scrollbar">
                               <div className="bg-purple-900/30 border border-purple-500/50 p-4 md:p-5 rounded-xl mb-4 md:mb-6">
                                   <h3 className="text-purple-300 font-bold flex items-center gap-2 mb-2 text-sm md:text-base"><Icon name="sparkles" className="w-4 h-4 md:w-5 md:h-5" /> Instrucciones para la IA (ChatGPT/Gemini)</h3>
@@ -7187,7 +7202,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
 
                   {/* HISTORIA (Main Engine) con botón Ruido */}
                   {activeTab === 'historia' && !practiceActive && (
-                     <div className="flex-1 flex flex-col relative w-full h-full justify-center items-center p-3 md:p-8">
+                     <div className="flex-1 flex flex-col relative w-full min-h-full justify-center items-center p-3 md:p-8">
                         <div className="absolute top-2 left-2 z-[12] flex flex-col gap-2 items-start max-w-[min(100%,min(420px,96vw))]">
                             <div className="flex flex-wrap gap-1 items-center">
                                 <ExerciseHelpBtn helpId={historiaExerciseHelpId} />
