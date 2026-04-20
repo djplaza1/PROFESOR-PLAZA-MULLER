@@ -375,6 +375,19 @@
             return (item.b1 || '') + '\u0000' + (item.b2 || '') + '\u0000' + (item.es || '');
         }
 
+        /** Quita tarjetas de usuario cuyo Distribuir se hizo con un guion guardado concreto (id en Biblioteca). */
+        function mullerStripBxOverlayBySourceScriptId(overlayNorm, scriptId) {
+            const sid = scriptId != null ? String(scriptId) : '';
+            if (!sid) return normalizeBxPayload(overlayNorm || {});
+            const o = JSON.parse(JSON.stringify(normalizeBxPayload(overlayNorm || {})));
+            ['b1', 'b2'].forEach((lv) => {
+                Object.keys(BX_DB_EMPTY).forEach((cat) => {
+                    o[lv][cat] = (o[lv][cat] || []).filter((x) => String(x && x._mullerSourceScriptId || '') !== sid);
+                });
+            });
+            return o;
+        }
+
         /** Conectores típicos al inicio de frase (no incluimos und/oder/aber para reducir falsos positivos). */
         const MULLER_BX_CONN_START = ['weil', 'dass', 'obwohl', 'wenn', 'als', 'damit', 'ob', 'bevor', 'nachdem', 'deshalb', 'deswegen', 'darum', 'trotzdem', 'dann', 'danach', 'außerdem', 'denn', 'sondern', 'falls', 'sobald', 'solange', 'während', 'zuerst', 'anschließend', 'schließlich', 'zunächst', 'inzwischen', 'allerdings', 'jedoch', 'hingegen', 'folglich', 'trotz', 'außer', 'indem'];
 
@@ -957,7 +970,7 @@
             progreso_dashboard: { title: 'Progreso — panel', what: 'Ves racha, monedas, mazos y exportaciones; el bloque morado resume entrenamiento avanzado si lo usas.', tips: ['Haz PDF antes de vacaciones para no perder la foto.', 'Revisa mazos difícil cada pocos días.', 'Combina con backup JSON flotante para copia total.'] },
             guiones_import: { title: 'Biblioteca — guiones', what: 'Pegas texto de la IA con título y lo guardas; al cargarlo se vuelve tu Historia activa.', tips: ['Comprueba títulos para encontrar lecciones rápido.', 'Borra versiones viejas para no confundirte.', 'El prompt sugerido está arriba: cópialo tal cual a ChatGPT/Gemini.'] },
             guiones_vocab_custom: { title: 'Biblioteca — vocabulario propio', what: 'Pegas listas “alemán — español” y guardas lecciones; luego Practicar o mezcla.', tips: ['Una línea por palabra facilita el parseo.', 'Mezcla varias lecciones para simular examen amplio.', 'Exporta a Anki desde Progreso si usas mazos allí.'] },
-            guiones_bx_distrib: { title: 'Biblioteca → B1 / B2 (subpestañas)', what: 'Desde un texto pegado se extraen frases y se clasifican por tipo (vocabulario, verbos, etc.); cada frase se coloca en B1 o B2 según reglas locales o en un solo nivel si lo fuerzas.', tips: ['Usa el mismo formato que el guion (Nombre: …) o listas palabra - traducción.', 'El nivel automático es una estimación: revisa en B1/B2 y mueve o borra tarjetas con “Tu biblioteca”.', '“Borrar mis aportaciones” vacía solo tu overlay local; el contenido del archivo b1-b2-database.json del proyecto sigue visible.'] },
+            guiones_bx_distrib: { title: 'Biblioteca → B1 / B2 (subpestañas)', what: 'Desde un texto pegado se extraen frases y se clasifican por tipo (vocabulario, verbos, etc.); cada frase se coloca en B1 o B2 según reglas locales o en un solo nivel si lo fuerzas.', tips: ['Si tenías un guion guardado cargado en Historia al pulsar Distribuir, esas tarjetas quedan vinculadas: al borrar ese guion puedes quitar también esas entradas en B1/B2.', 'El nivel automático es una estimación: revisa en B1/B2 y mueve o borra tarjetas con “Tu biblioteca”.', 'Frases antiguas sin vincular: usa “Borrar mis aportaciones” o borra tarjeta a tarjeta. El archivo b1-b2-database.json del proyecto no se borra desde aquí.'] },
             guiones_mix: { title: 'Mezclar lecciones de vocabulario', what: 'Seleccionas varias lecciones guardadas y generas una sesión única en la pestaña Vocab.', tips: ['Marca al menos dos lecciones si quieres variedad.', 'Las tarjetas difíciles se suelen repetir al final.', 'Úsalo antes de un examen para repaso amplio.'] },
             storybuilder: { title: 'IA Story Builder', what: 'Pides a la app/IA integrada un guion según nivel y tema; luego lo estudias como cualquier Historia.', tips: ['Sé concreto en el tema (trabajo, medio ambiente…).', 'Revisa que el vocabulario coincida con tus metas.', 'Guarda siempre en Biblioteca para no perderlo.'] },
             practice_mazos: { title: 'Entrenamiento rápido (mazos)', what: 'Repasas tarjetas guardadas como difícil, normal o gramática: audio, revelar traducción, siguiente.', tips: ['No mires revelar hasta haber intentado recordar.', 'Haz lotes cortos varias veces al día.', 'Cuando vacíe un mazo, vuelve a Historia para añadir nuevas frases.'] },
@@ -1001,6 +1014,8 @@
           const [diktatInput, setDiktatInput] = useState("");
           const [showDiktatResult, setShowDiktatResult] = useState(false);
           const [savedScripts, setSavedScripts] = useState([]);
+          /** Si practicas un guion guardado en Biblioteca, su id; si no, null (ejemplo, IA o no guardado). Sirve para vincular «Distribuir → B1/B2». */
+          const [activeSavedScriptId, setActiveSavedScriptId] = useState(null);
           const [customVocabLessons, setCustomVocabLessons] = useState([]);
           const [vocabTitleInput, setVocabTitleInput] = useState("");
           const [vocabTextInput, setVocabTextInput] = useState("");
@@ -1217,7 +1232,21 @@
               if (savedData) setUserStats(JSON.parse(savedData));
               else setShowLoginModal(true);
               const scripts = localStorage.getItem('mullerScripts');
-              if(scripts) setSavedScripts(JSON.parse(scripts));
+              if (scripts) {
+                  try {
+                      let arr = JSON.parse(scripts);
+                      if (Array.isArray(arr)) {
+                          let changed = false;
+                          arr = arr.map((s, i) => {
+                              if (s && s.id != null && s.id !== '') return s;
+                              changed = true;
+                              return { ...s, id: 'muller_script_' + Date.now() + '_' + i + '_' + Math.random().toString(36).slice(2, 9) };
+                          });
+                          if (changed) localStorage.setItem('mullerScripts', JSON.stringify(arr));
+                          setSavedScripts(arr);
+                      }
+                  } catch (e) { setSavedScripts([]); }
+              }
               const savedCustomVocab = localStorage.getItem('mullerCustomVocab');
               if(savedCustomVocab) setCustomVocabLessons(JSON.parse(savedCustomVocab));
               setUserStats((prev) => ({ ...prev, streakDays: mullerComputeHonestStreakDays() }));
@@ -1725,7 +1754,8 @@
                 )).catch(function () {});
             }
         } catch (e) {}
-        setGuionData(newGuion); setActiveScriptTitle(newScriptTitle); setIsDefaultScript(false); 
+        setGuionData(newGuion); setActiveScriptTitle(newScriptTitle); setIsDefaultScript(false);
+        setActiveSavedScriptId(String(scriptObj.id));
         setSceneIndex(0); setMode('dialogue'); stopAudio(); resetModes(); setIsReviewing(false);
         setNewScriptTitle(""); setActiveTab('historia');
     } catch (e) { 
@@ -1756,7 +1786,8 @@
                           ...it,
                           _mullerUser: true,
                           _mullerUid: 'bx_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 11),
-                          _mullerCategory: cat
+                          _mullerCategory: cat,
+                          ...(activeSavedScriptId ? { _mullerSourceScriptId: String(activeSavedScriptId) } : {})
                       });
                       if (lv === 'b2') c2[cat]++; else c1[cat]++;
                       nuevos++;
@@ -1896,7 +1927,38 @@
 
           const loadSavedScript = (script) => {
               setGuionData(JSON.parse(script.data)); setActiveScriptTitle(script.title); setIsDefaultScript(false);
+              setActiveSavedScriptId(script && script.id != null ? String(script.id) : null);
               setSceneIndex(0); setMode('dialogue'); stopAudio(); resetModes(); setIsReviewing(false); setActiveTab('historia');
+          };
+
+          const deleteSavedScript = (e, script) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const sid = script && script.id != null ? String(script.id) : '';
+              if (!sid) {
+                  alert('Este guion no tiene id interno; recarga la página y prueba de nuevo.');
+                  return;
+              }
+              if (!window.confirm('¿Eliminar este guion de la lista?')) return;
+              const stripBx = window.confirm(
+                  '¿Quitar también de B1/B2 las frases que añadiste con «Distribuir texto» mientras tenías cargado este guion en Historia?\n\n' +
+                  '(Solo afecta a tarjetas nuevas vinculadas a este guion. Las que enviaste antes sin esta vinculación, o el contenido del archivo b1-b2-database.json, no se tocan.)'
+              );
+              setSavedScripts((prev) => {
+                  const next = prev.filter((s) => String(s.id) !== sid);
+                  try { localStorage.setItem('mullerScripts', JSON.stringify(next)); } catch (err) {}
+                  return next;
+              });
+              if (stripBx) {
+                  setBxUserOverlay((prev) => {
+                      const stripped = mullerStripBxOverlayBySourceScriptId(prev, sid);
+                      try { localStorage.setItem(MULLER_BX_USER_OVERLAY_KEY, JSON.stringify(stripped)); } catch (err) {}
+                      return stripped;
+                  });
+                  setBxIndex(0);
+                  setBxImportSummary('');
+              }
+              if (String(activeSavedScriptId) === sid) setActiveSavedScriptId(null);
           };
 
           const handleGenerateAIStory = () => {
@@ -1927,7 +1989,7 @@
                       });
                   }
                   setGuionData(mockLongStory); setActiveScriptTitle(`AI Generated: ${aiLevel} - ${aiTheme}`);
-                  setIsDefaultScript(false); setSceneIndex(0); setMode('dialogue'); stopAudio(); resetModes(); setIsReviewing(false);
+                  setIsDefaultScript(false); setActiveSavedScriptId(null); setSceneIndex(0); setMode('dialogue'); stopAudio(); resetModes(); setIsReviewing(false);
                   setIsGeneratingStory(false); setActiveTab('historia'); setAiCustomWords(""); 
               }, 3000);
           };
@@ -3815,6 +3877,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       <ExerciseHelpBtn helpId="guiones_bx_distrib" compact />
                                   </div>
                                   <p className="text-[11px] md:text-xs text-gray-400 mb-3 leading-relaxed">Pega un guion (<code className="text-gray-300">Nombre:</code> …), listas <code className="text-gray-300">alemán - español</code> o líneas sueltas. La app clasifica cada trozo en <strong className="text-gray-200">vocabulario, verbos, preposiciones, conectores o Redemittel</strong> y, con <strong className="text-gray-200">nivel automático</strong>, estima si va a B1 o B2 (heurística local, no IA). Si el cuadro está vacío, se usa el texto del guion de arriba. Tus aportaciones se guardan en el navegador y se <strong className="text-gray-200">mezclan</strong> con las tarjetas del archivo <code className="text-gray-300">b1-b2-database.json</code> (esas no se borran con el botón rojo).</p>
+                                  <p className="text-[10px] md:text-xs text-indigo-300/90 mb-3 leading-relaxed bg-indigo-950/25 border border-indigo-500/20 rounded-lg px-3 py-2">Si en <strong className="text-white">Historia</strong> tenías cargado un guion <strong className="text-white">guardado en esta lista</strong>, al pulsar Distribuir las frases quedan <strong className="text-white">vinculadas a ese guion</strong>. Al borrar el guion con la papelera, te preguntamos si quieres quitar también esas tarjetas en B1/B2. Lo que enviaste con el ejemplo por defecto o sin guion cargado no se vincula (úsalo «Borrar mis aportaciones» para vaciar todo lo tuyo).</p>
                                   <textarea className="w-full min-h-[100px] md:min-h-[120px] bg-black/50 border border-emerald-800/60 p-3 rounded-lg text-white font-mono text-xs md:text-sm mb-3 outline-none focus:border-emerald-500 resize-none" placeholder="Pega aquí o déjalo vacío para usar el cuadro del guion de arriba…" value={bxImportText} onChange={(e) => setBxImportText(e.target.value)} />
                                   <div className="flex flex-wrap gap-2 mb-3">
                                       <button type="button" onClick={() => handleBxDistribToLevels('auto')} className="flex-1 min-w-[200px] bg-gradient-to-r from-emerald-700 to-sky-700 hover:opacity-95 text-white font-bold py-2.5 rounded-xl text-xs md:text-sm shadow-lg">→ Nivel automático (B1 o B2 por frase)</button>
@@ -3838,7 +3901,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                                   <p className="font-bold text-white group-hover:text-purple-400 truncate text-sm md:text-base">{script.title}</p>
                                                   <p className="text-[10px] md:text-xs text-gray-500 mt-1">Click para cargar</p>
                                               </div>
-                                              <button onClick={(e) => { e.stopPropagation(); const newScripts = savedScripts.filter(s => s.id !== script.id); setSavedScripts(newScripts); localStorage.setItem('mullerScripts', JSON.stringify(newScripts)); }} className="text-gray-500 hover:text-red-500 p-1 md:p-2"><Icon name="trash-2" className="w-3 h-3 md:w-4 md:h-4" /></button>
+                                              <button type="button" title="Eliminar guion" onClick={(e) => deleteSavedScript(e, script)} className="text-gray-500 hover:text-red-500 p-1 md:p-2 shrink-0 rounded-lg hover:bg-red-950/40"><Icon name="trash-2" className="w-3 h-3 md:w-4 md:h-4" /></button>
                                           </div>
                                       ))}
                                   </div>
