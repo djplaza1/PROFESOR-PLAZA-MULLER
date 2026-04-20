@@ -179,13 +179,9 @@ set search_path = public
 as $$
 declare
   v_uid uuid;
-  v_is_creator boolean := false;
   v_day text := to_char(now(), 'YYYY-MM-DD');
   v_now timestamptz := now();
-  v_granted int := 0;
-  v_balance bigint := 0;
-  v_reason text := 'ok';
-  v_cnt int := 0;
+  v_claims_today int := 0;
   v_last_claim timestamptz := null;
 begin
   v_uid := auth.uid();
@@ -197,58 +193,68 @@ begin
   values (v_uid, 0, now())
   on conflict (user_id) do nothing;
 
-  v_is_creator := public.muller_is_creator(v_uid);
-  if v_is_creator then
-    return query select 0, 999999999::bigint, 'creator_unlimited';
+  if public.muller_is_creator(v_uid) then
+    granted := 0;
+    balance := 999999999::bigint;
+    reason := 'creator_unlimited';
+    return next;
     return;
   end if;
 
   if p_reward_type not in ('daily_bonus', 'ad_reward') then
-    return query select 0, (select coins from public.muller_wallets where user_id = v_uid), 'invalid_reward_type';
+    granted := 0;
+    select coins into balance from public.muller_wallets where user_id = v_uid;
+    balance := coalesce(balance, 0);
+    reason := 'invalid_reward_type';
+    return next;
     return;
   end if;
 
   select claim_count, last_claim_at
-    into v_cnt, v_last_claim
+    into v_claims_today, v_last_claim
     from public.muller_reward_claims
     where user_id = v_uid and reward_type = p_reward_type and day_key = v_day;
 
-  v_cnt := coalesce(v_cnt, 0);
+  v_claims_today := coalesce(v_claims_today, 0);
+  granted := 0;
+  reason := 'ok';
 
   if p_reward_type = 'daily_bonus' then
-    if v_cnt >= 1 then
-      v_reason := 'already_claimed_today';
+    if v_claims_today >= 1 then
+      reason := 'already_claimed_today';
     else
-      v_granted := 40;
+      granted := 40;
     end if;
   elsif p_reward_type = 'ad_reward' then
-    if v_cnt >= 6 then
-      v_reason := 'daily_limit_reached';
+    if v_claims_today >= 6 then
+      reason := 'daily_limit_reached';
     elsif v_last_claim is not null and v_last_claim > (v_now - interval '15 minutes') then
-      v_reason := 'cooldown_15m';
+      reason := 'cooldown_15m';
     else
-      v_granted := 18;
+      granted := 18;
     end if;
   end if;
 
-  if v_granted > 0 then
+  if granted > 0 then
     update public.muller_wallets
-      set coins = coins + v_granted,
+      set coins = coins + granted,
           updated_at = v_now
       where user_id = v_uid
-      returning coins into v_balance;
+      returning coins into balance;
 
     insert into public.muller_reward_claims (user_id, reward_type, day_key, claim_count, last_claim_at)
     values (v_uid, p_reward_type, v_day, 1, v_now)
     on conflict (user_id, reward_type, day_key)
     do update set claim_count = public.muller_reward_claims.claim_count + 1,
                   last_claim_at = excluded.last_claim_at;
-    v_reason := 'ok';
+    reason := 'ok';
   else
-    select coins into v_balance from public.muller_wallets where user_id = v_uid;
+    select coins into balance from public.muller_wallets where user_id = v_uid;
   end if;
 
-  return query select v_granted, coalesce(v_balance, 0), v_reason;
+  balance := coalesce(balance, 0);
+  return next;
+  return;
 end;
 $$;
 
