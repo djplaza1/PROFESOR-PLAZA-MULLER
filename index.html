@@ -219,8 +219,9 @@
         /** Supabase (gratis): Dashboard → Project Settings → API → Project URL y anon public key */
         window.MULLER_SUPABASE_URL = window.MULLER_SUPABASE_URL || 'https://mrimappoycvfujzegxdt.supabase.co';
         window.MULLER_SUPABASE_ANON_KEY = window.MULLER_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yaW1hcHBveWN2ZnVqemVneGR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MzI1MDMsImV4cCI6MjA5MjIwODUwM30.L_5Lk3S_TgiaSe8jAAhTcQTbUsQiTjxA9pWq0ZDayBY';
-        window.MULLER_CREATOR_EMAIL = window.MULLER_CREATOR_EMAIL || '';
+        window.MULLER_CREATOR_EMAIL = window.MULLER_CREATOR_EMAIL || 'djplaza1@gmail.com';
         window.MULLER_REWARDED_AD_URL = window.MULLER_REWARDED_AD_URL || '';
+        window.MULLER_PREMIUM_CHECKOUT_URL = window.MULLER_PREMIUM_CHECKOUT_URL || '';
 
         // --- COMPONENTE AISLANTE DE ICONOS (Lucide + contenedor “premium” opcional) ---
         const Icon = ({ name, className, nav = false }) => {
@@ -1371,6 +1372,8 @@
           const [walletIsCreator, setWalletIsCreator] = useState(false);
           const [economyMsg, setEconomyMsg] = useState('');
           const [adOpenedAt, setAdOpenedAt] = useState(0);
+          const [rewardStatus, setRewardStatus] = useState(null);
+          const [premiumStatus, setPremiumStatus] = useState(null);
           const unifiedAuth = useMemo(() => {
               void authTick;
               if (mullerSupabaseConfigured() && supabaseUser) {
@@ -1395,6 +1398,16 @@
               return !!(creatorEmail && String(unifiedAuth.email || '').toLowerCase() === creatorEmail);
           }, [walletIsCreator, unifiedAuth]);
           const coinsUiLabel = isCreatorAccount ? '∞' : userStats.coins;
+          const economyReasonText = (reason) => {
+              const r = String(reason || '');
+              if (r === 'already_claimed_today') return 'Ya has reclamado el bonus diario hoy.';
+              if (r === 'daily_limit_reached') return 'Límite diario de anuncios alcanzado (6/6).';
+              if (r === 'cooldown_15m') return 'Debes esperar 15 minutos entre anuncios.';
+              if (r === 'invalid_reward_type') return 'Tipo de recompensa inválido.';
+              if (r === 'creator_unlimited') return 'Cuenta creador: saldo ilimitado.';
+              if (r === 'ok') return 'Operación completada.';
+              return r || 'No disponible.';
+          };
           const leagueBoard = useMemo(() => {
               const week = mullerIsoWeekMonday();
               const bots = MULLER_BOT_PLAYERS.map((b) => ({
@@ -1777,6 +1790,25 @@
               });
               return () => { cancelled = true; };
           }, [activeTab, communitySubTab, authTick]);
+
+          useEffect(() => {
+              const client = mullerGetSupabaseClient();
+              if (!client || activeTab !== 'comunidad' || communitySubTab !== 'economia' || !supabaseUser) {
+                  setRewardStatus(null);
+                  setPremiumStatus(null);
+                  return undefined;
+              }
+              let cancelled = false;
+              client.rpc('muller_reward_status').then(({ data, error }) => {
+                  if (cancelled || error || !Array.isArray(data) || !data[0]) return;
+                  setRewardStatus(data[0]);
+              });
+              client.rpc('muller_get_premium_status').then(({ data, error }) => {
+                  if (cancelled || error || !Array.isArray(data) || !data[0]) return;
+                  setPremiumStatus(data[0]);
+              });
+              return () => { cancelled = true; };
+          }, [activeTab, communitySubTab, authTick, supabaseUser]);
 
           useEffect(() => {
               if (!unifiedAuth) {
@@ -5505,6 +5537,20 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       <p className="text-sm text-gray-300">
                                           <span className="font-bold text-white">Saldo actual:</span> {isCreatorAccount ? '∞ (Creador)' : (walletCoins != null ? walletCoins : userStats.coins)}
                                       </p>
+                                      <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                                          <div className="rounded-lg border border-white/10 bg-black/25 px-2 py-1.5">
+                                              <span className="text-gray-500">Bonus diario:</span> <span className="font-bold text-white">{rewardStatus ? (rewardStatus.daily_bonus_claimed ? 'Reclamado' : 'Disponible') : '—'}</span>
+                                          </div>
+                                          <div className="rounded-lg border border-white/10 bg-black/25 px-2 py-1.5">
+                                              <span className="text-gray-500">Anuncios hoy:</span> <span className="font-bold text-white">{rewardStatus ? rewardStatus.ad_claims_today : '—'}</span>
+                                          </div>
+                                          <div className="rounded-lg border border-white/10 bg-black/25 px-2 py-1.5">
+                                              <span className="text-gray-500">Restantes:</span> <span className="font-bold text-white">{rewardStatus ? rewardStatus.ad_remaining_today : '—'}</span>
+                                          </div>
+                                      </div>
+                                      {rewardStatus && Number(rewardStatus.ad_cooldown_seconds || 0) > 0 ? (
+                                          <p className="text-[11px] text-indigo-300 mt-2">Cooldown anuncio: {Math.ceil(Number(rewardStatus.ad_cooldown_seconds || 0) / 60)} min</p>
+                                      ) : null}
                                       {walletLoading ? <p className="text-xs text-gray-500 mt-1">Sincronizando wallet…</p> : null}
                                       {economyMsg ? <p className="text-xs text-gray-400 mt-2">{economyMsg}</p> : null}
                                   </div>
@@ -5523,7 +5569,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                                   const row = data[0];
                                                   setWalletCoins(Number(row.balance || 0));
                                                   if (Number(row.granted || 0) > 0) setEconomyMsg('Bonus diario reclamado: +' + row.granted + ' monedas.');
-                                                  else setEconomyMsg('Bonus diario no disponible: ' + row.reason);
+                                                  else setEconomyMsg(economyReasonText(row.reason));
                                                   setAuthTick((x) => x + 1);
                                               }}
                                           >
@@ -5559,7 +5605,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                                   const row = data[0];
                                                   setWalletCoins(Number(row.balance || 0));
                                                   if (Number(row.granted || 0) > 0) setEconomyMsg('Cobrado anuncio: +' + row.granted + ' monedas.');
-                                                  else setEconomyMsg('No disponible: ' + row.reason);
+                                                  else setEconomyMsg(economyReasonText(row.reason));
                                                   setAuthTick((x) => x + 1);
                                               }}
                                           >
@@ -5568,8 +5614,57 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           </button>
                                           <div className="rounded-xl border border-white/10 bg-black/25 p-3">
                                               <p className="text-sm font-black text-white">Gana jugando</p>
-                                              <p className="text-xs text-gray-400 mt-1">Historia, Shadowing y práctica siguen dando monedas locales. Para blindaje total, migra también esas recompensas a RPC.</p>
+                                              <p className="text-xs text-gray-400 mt-1">Racha diaria, sesiones completas y práctica oral ya suman. Próximo paso: migrar TODAS las recompensas a RPC para blindaje total.</p>
                                           </div>
+                                      </div>
+                                  </div>
+
+                                  <div className="rounded-2xl border border-fuchsia-500/30 bg-slate-900/80 p-5">
+                                      <h3 className="text-base font-black text-white mb-2 flex items-center gap-2"><Icon name="gem" className="w-5 h-5 text-fuchsia-400" /> Premium mensual</h3>
+                                      <p className="text-xs text-gray-500 mb-3">Monetización simple: botón de pago externo + estado premium en Supabase. Para activación automática real necesitarás webhook (paso siguiente).</p>
+                                      <p className="text-sm text-gray-300 mb-3">
+                                          Estado: <span className="font-bold text-white">
+                                              {premiumStatus ? (premiumStatus.is_active ? 'Activo' : 'Inactivo') : '—'}
+                                          </span>
+                                          {premiumStatus && premiumStatus.expires_at ? <span className="text-xs text-gray-500 ml-2">hasta {String(premiumStatus.expires_at).slice(0, 10)}</span> : null}
+                                      </p>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                          <button
+                                              type="button"
+                                              className="text-left rounded-xl border border-fuchsia-500/35 bg-fuchsia-900/20 hover:bg-fuchsia-900/35 p-3"
+                                              onClick={() => {
+                                                  const u = String(window.MULLER_PREMIUM_CHECKOUT_URL || '').trim();
+                                                  if (!u) { setEconomyMsg('Configura window.MULLER_PREMIUM_CHECKOUT_URL con tu checkout mensual.'); return; }
+                                                  window.open(u, '_blank', 'noopener,noreferrer');
+                                                  setEconomyMsg('Checkout premium abierto.');
+                                              }}
+                                          >
+                                              <p className="text-sm font-black text-fuchsia-300">Suscribirme mensual</p>
+                                              <p className="text-xs text-gray-400 mt-1">Abre tu página de cobro (Stripe/PayPal/etc).</p>
+                                          </button>
+                                          <button
+                                              type="button"
+                                              className="text-left rounded-xl border border-violet-500/35 bg-violet-900/20 hover:bg-violet-900/35 p-3"
+                                              onClick={async () => {
+                                                  const client = mullerGetSupabaseClient();
+                                                  if (!client || !supabaseUser) { setEconomyMsg('Necesitas sesión Supabase.'); return; }
+                                                  const until = new Date(Date.now() + 30 * 86400000).toISOString();
+                                                  const { error } = await client.from('muller_premium_subscriptions').upsert({
+                                                      user_id: supabaseUser.id,
+                                                      plan: 'monthly',
+                                                      status: 'active',
+                                                      started_at: new Date().toISOString(),
+                                                      expires_at: until,
+                                                      updated_at: new Date().toISOString(),
+                                                  }, { onConflict: 'user_id' });
+                                                  if (error) { setEconomyMsg('No se pudo activar premium: ' + error.message); return; }
+                                                  setEconomyMsg('Premium activado 30 días (modo manual de pruebas).');
+                                                  setAuthTick((x) => x + 1);
+                                              }}
+                                          >
+                                              <p className="text-sm font-black text-violet-300">Ya pagué (activar 30d)</p>
+                                              <p className="text-xs text-gray-400 mt-1">Botón temporal para test hasta conectar webhook.</p>
+                                          </button>
                                       </div>
                                   </div>
                               </div>
