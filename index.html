@@ -1634,18 +1634,44 @@
             },
         ];
 
-       // Reemplazar MULLER_PLACEMENT_Q con un banco de preguntas por nivel
-const PLACEMENT_QUESTIONS = [
-  // Nivel A1
+ window.MULLER_PLACEMENT_QUESTIONS = [
+  // A1 (7 preguntas)
   { level: 'A1', q: 'Ich ___ aus Spanien.', opts: ['bin', 'habe', 'werde'], ok: 0 },
   { level: 'A1', q: '___ Buch liegt auf dem Tisch.', opts: ['Der', 'Die', 'Das'], ok: 2 },
-  // Nivel A2
+  { level: 'A1', q: 'Wie ___ du?', opts: ['heißen', 'heißt', 'heiße'], ok: 1 },
+  { level: 'A1', q: 'Wir ___ müde.', opts: ['sind', 'seid', 'ist'], ok: 0 },
+  { level: 'A1', q: '___ ist dein Name?', opts: ['Was', 'Wie', 'Wo'], ok: 1 },
+  { level: 'A1', q: 'Ich ___ gern Pizza.', opts: ['esse', 'isst', 'esst'], ok: 0 },
+  { level: 'A1', q: 'Er ___ einen Hund.', opts: ['habe', 'hast', 'hat'], ok: 2 },
+
+  // A2 (8 preguntas)
   { level: 'A2', q: 'Letzte Woche ___ wir im Kino.', opts: ['waren', 'sind', 'haben'], ok: 0 },
   { level: 'A2', q: 'Ich freue mich ___ das Wochenende.', opts: ['auf', 'über', 'für'], ok: 0 },
-  // Nivel B1
+  { level: 'A2', q: 'Er ___ jeden Tag um 7 Uhr ___.', opts: ['steht ... auf', 'aufsteht', 'stehst ... auf'], ok: 0 },
+  { level: 'A2', q: 'Das ist der Mann, ___ ich kenne.', opts: ['der', 'den', 'dem'], ok: 1 },
+  { level: 'A2', q: 'Ich habe mein Buch ___.', opts: ['vergessen', 'vergesse', 'vergisst'], ok: 0 },
+  { level: 'A2', q: '___ du mir helfen?', opts: ['Kannst', 'Kann', 'Können'], ok: 0 },
+  { level: 'A2', q: 'Wir sind ___ Berlin gefahren.', opts: ['in', 'nach', 'zu'], ok: 1 },
+  { level: 'A2', q: 'Er ___ krank, deshalb bleibt er zu Hause.', opts: ['ist', 'hat', 'wird'], ok: 0 },
+
+  // B1 (8 preguntas)
   { level: 'B1', q: 'Wenn ich mehr Zeit ___, würde ich reisen.', opts: ['hätte', 'habe', 'gehabt'], ok: 0 },
-  { level: 'B1', q: 'Das ist der Mann, ___ ich gestern getroffen habe.', opts: ['den', 'der', 'dem'], ok: 0 },
-  // ... hasta 12 preguntas
+  { level: 'B1', q: 'Das ist der Mann, mit ___ ich gesprochen habe.', opts: ['dem', 'der', 'den'], ok: 0 },
+  { level: 'B1', q: 'Ich ___ gestern meine Oma ___.', opts: ['habe ... besucht', 'bin ... besucht', 'habe ... besuchen'], ok: 0 },
+  { level: 'B1', q: '___ es regnet, bleiben wir drinnen.', opts: ['Wenn', 'Weil', 'Dass'], ok: 1 },
+  { level: 'B1', q: 'Er ___ schon seit drei Jahren in Berlin.', opts: ['lebt', 'wohnt', 'arbeitet'], ok: 0 },
+  { level: 'B1', q: 'Ich wünsche mir, dass du ___.', opts: ['kommst', 'kommst', 'kommen'], ok: 0 },
+  { level: 'B1', q: 'Das Haus ___ 1990 ___.', opts: ['wurde ... gebaut', 'wird ... gebaut', 'ist ... gebaut'], ok: 0 },
+  { level: 'B1', q: '___ du mich ___, wäre ich früher gekommen.', opts: ['Hättest ... angerufen', 'Hast ... angerufen', 'Würdest ... anrufen'], ok: 0 },
+
+  // B2 (7 preguntas)
+  { level: 'B2', q: 'Es ist wichtig, dass der Antrag rechtzeitig ___.', opts: ['eingereicht wird', 'eingereicht wurde', 'einreicht'], ok: 0 },
+  { level: 'B2', q: '___ der hohen Kosten wurde das Projekt gestoppt.', opts: ['Wegen', 'Trotz', 'Aufgrund'], ok: 0 },
+  { level: 'B2', q: 'Hätte ich das gewusst, ___ ich anders gehandelt.', opts: ['hätte', 'wäre', 'würde'], ok: 0 },
+  { level: 'B2', q: 'Die Diskussion, ___ wir gestern geführt haben, war sehr interessant.', opts: ['die', 'der', 'das'], ok: 0 },
+  { level: 'B2', q: 'Er gilt ___ einer der besten Experten.', opts: ['als', 'für', 'wie'], ok: 0 },
+  { level: 'B2', q: '___ ich mich rechtzeitig beworben habe, wurde ich nicht eingeladen.', opts: ['Obwohl', 'Weil', 'Da'], ok: 0 },
+  { level: 'B2', q: 'Die Maßnahmen ___ nur langsam ___.', opts: ['werden ... umgesetzt', 'wurden ... umgesetzt', 'sind ... umgesetzt'], ok: 0 },
 ];
 
         /** Contenido orientativo TELC / marcos similares (no texto de examen oficial). */
@@ -6610,25 +6636,17 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           window.speechSynthesis.speak(u);
         }} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 font-bold text-sm">
         <Icon name="volume-2" className="w-4 h-4" /> Escuchar dictado
-   // Fragmento corregido en la sección de Escritura > Dictado
-<button
-  type="button"
-  onClick={() => {
-    setWritingDictIdx((i) => (i + 1) % WRITING_DICTATION_LINES.length);
-    setWritingDictReveal(false);
-    setWritingCanvasKey((k) => k + 1); // Solo aquí se limpia el canvas
-  }}
-  className="text-xs font-bold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/10"
->
-  Otro dictado
-</button>
-<button
-  type="button"
-  onClick={() => setWritingDictReveal((r) => !r)}
-  className="text-xs font-bold px-3 py-2 rounded-lg bg-amber-900/60 hover:bg-amber-800/80 border border-amber-600/40"
->
-  {writingDictReveal ? 'Ocultar solución' : 'Mostrar solución'}
-</button>
+      </button>
+      <button type="button" onClick={() => {
+          setWritingDictIdx((i) => (i + 1) % WRITING_DICTATION_LINES.length);
+          setWritingDictReveal(false);
+          setWritingCanvasKey((k) => k + 1); // Solo aquí se limpia el canvas
+        }} className="text-xs font-bold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/10">
+        Otro dictado
+      </button>
+      <button type="button" onClick={() => setWritingDictReveal((r) => !r)} className="text-xs font-bold px-3 py-2 rounded-lg bg-amber-900/60 hover:bg-amber-800/80 border border-amber-600/40">
+        {writingDictReveal ? 'Ocultar solución' : 'Mostrar solución'}
+      </button>
     </div>
     {/* ... */}
   </div>
