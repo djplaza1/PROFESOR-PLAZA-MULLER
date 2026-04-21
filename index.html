@@ -1868,6 +1868,8 @@ const [placementFinished, setPlacementFinished] = useState(false);
           const [writingLetterIdx, setWritingLetterIdx] = useState(0);
           const [writingGuionWriteIdx, setWritingGuionWriteIdx] = useState(0);
           const [writingDictReveal, setWritingDictReveal] = useState(false);
+          const [writingDictSource, setWritingDictSource] = useState('builtin');
+          const [writingDictScriptId, setWritingDictScriptId] = useState('__current__');
           const [writingCanvasKey, setWritingCanvasKey] = useState(0);
           const [writingVocabIdx, setWritingVocabIdx] = useState(0);
           const [ocrHistoryList, setOcrHistoryList] = useState(() => {
@@ -4953,15 +4955,78 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               );
           };
 
+          const writingScriptOptions = useMemo(() => {
+              const out = [];
+              if (Array.isArray(savedScripts)) {
+                  savedScripts.forEach((s) => {
+                      try {
+                          const rows = JSON.parse(s.data || '[]');
+                          const count = Array.isArray(rows) ? rows.filter((r) => r && typeof r.text === 'string' && r.text.trim()).length : 0;
+                          out.push({ id: String(s.id), title: s.title || 'Sin título', count });
+                      } catch (e) {
+                          out.push({ id: String(s.id), title: s.title || 'Sin título', count: 0 });
+                      }
+                  });
+              }
+              return out;
+          }, [savedScripts]);
+
+          const writingDictationPool = useMemo(() => {
+              const fromScenes = (scenes, originLabel) => {
+                  if (!Array.isArray(scenes)) return [];
+                  return scenes
+                      .filter((s) => s && typeof s.text === 'string' && s.text.trim())
+                      .map((s, idx) => ({
+                          de: String(s.text).trim(),
+                          es: s && s.translation ? String(s.translation).trim() : '',
+                          origin: originLabel,
+                          idx
+                      }));
+              };
+              if (writingDictSource === 'builtin') {
+                  return WRITING_DICTATION_LINES.map((x, idx) => ({ ...x, origin: 'Base', idx }));
+              }
+              if (writingDictSource === 'current_story') {
+                  const rows = fromScenes(guionData, activeScriptTitle || 'Historia actual');
+                  return rows.length ? rows : WRITING_DICTATION_LINES.map((x, idx) => ({ ...x, origin: 'Base', idx }));
+              }
+              if (writingDictSource === 'all_saved') {
+                  const rows = [];
+                  (savedScripts || []).forEach((s) => {
+                      try {
+                          const scenes = JSON.parse(s.data || '[]');
+                          rows.push(...fromScenes(scenes, s.title || 'Guion guardado'));
+                      } catch (e) {}
+                  });
+                  return rows.length ? rows : WRITING_DICTATION_LINES.map((x, idx) => ({ ...x, origin: 'Base', idx }));
+              }
+              if (writingDictSource === 'one_saved') {
+                  const sid = String(writingDictScriptId || '');
+                  const picked = (savedScripts || []).find((s) => String(s.id) === sid);
+                  if (!picked) return WRITING_DICTATION_LINES.map((x, idx) => ({ ...x, origin: 'Base', idx }));
+                  try {
+                      const scenes = JSON.parse(picked.data || '[]');
+                      const rows = fromScenes(scenes, picked.title || 'Guion guardado');
+                      return rows.length ? rows : WRITING_DICTATION_LINES.map((x, idx) => ({ ...x, origin: 'Base', idx }));
+                  } catch (e) {
+                      return WRITING_DICTATION_LINES.map((x, idx) => ({ ...x, origin: 'Base', idx }));
+                  }
+              }
+              return WRITING_DICTATION_LINES.map((x, idx) => ({ ...x, origin: 'Base', idx }));
+          }, [writingDictSource, writingDictScriptId, guionData, activeScriptTitle, savedScripts]);
+
           const writingCompareTarget = useMemo(() => {
               if (activeTab !== 'escritura') return null;
               if (writingMode === 'copy') return WRITING_COPY_DRILLS[writingCopyIdx % WRITING_COPY_DRILLS.length];
-              if (writingMode === 'dictation') return WRITING_DICTATION_LINES[writingDictIdx % WRITING_DICTATION_LINES.length].de;
+              if (writingMode === 'dictation') {
+                  if (!writingDictationPool.length) return null;
+                  return writingDictationPool[writingDictIdx % writingDictationPool.length].de;
+              }
               if (writingMode === 'letters') return LETTER_DRILLS[writingLetterIdx % LETTER_DRILLS.length].practice;
               if (writingMode === 'guion' && guionData.length) return guionData[Math.min(writingGuionWriteIdx, guionData.length - 1)]?.text || null;
               if (writingMode === 'vocab' && currentVocabList.length) return currentVocabList[writingVocabIdx % currentVocabList.length].de;
               return null;
-          }, [activeTab, writingMode, writingCopyIdx, writingDictIdx, writingLetterIdx, writingGuionWriteIdx, writingVocabIdx, guionData, currentVocabList]);
+          }, [activeTab, writingMode, writingCopyIdx, writingDictIdx, writingLetterIdx, writingGuionWriteIdx, writingVocabIdx, guionData, currentVocabList, writingDictationPool]);
 
           const persistDailyPatch = (patch) => {
               const k = 'muller_daily_v1_' + new Date().toISOString().slice(0, 10);
@@ -6748,11 +6813,55 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                   <p className="text-[11px] text-gray-500">
                                       Escucha (varias veces si hace falta). Escribe en el lienzo lo que oyes. Luego comprueba el texto.
                                   </p>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                      <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                          Fuente del dictado
+                                          <select
+                                              value={writingDictSource}
+                                              onChange={(e) => {
+                                                  const v = e.target.value;
+                                                  setWritingDictSource(v);
+                                                  setWritingDictIdx(0);
+                                                  setWritingDictReveal(false);
+                                              }}
+                                              className="mt-1 w-full bg-black/45 border border-white/15 rounded-lg px-2 py-1.5 text-xs text-white font-semibold"
+                                          >
+                                              <option value="builtin">Base integrada</option>
+                                              <option value="current_story">Historia actual</option>
+                                              <option value="all_saved">Mezcla de guiones guardados</option>
+                                              <option value="one_saved">Un guion concreto</option>
+                                          </select>
+                                      </label>
+                                      {writingDictSource === 'one_saved' && (
+                                          <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                              Guion guardado
+                                              <select
+                                                  value={writingDictScriptId}
+                                                  onChange={(e) => {
+                                                      setWritingDictScriptId(e.target.value);
+                                                      setWritingDictIdx(0);
+                                                      setWritingDictReveal(false);
+                                                  }}
+                                                  className="mt-1 w-full bg-black/45 border border-white/15 rounded-lg px-2 py-1.5 text-xs text-white font-semibold"
+                                              >
+                                                  <option value="__current__" disabled>Selecciona un guion…</option>
+                                                  {writingScriptOptions.map((s) => (
+                                                      <option key={s.id} value={s.id}>{s.title} ({s.count})</option>
+                                                  ))}
+                                              </select>
+                                          </label>
+                                      )}
+                                  </div>
+                                  <p className="text-[10px] text-rose-200/75">
+                                      Ítem {Math.min(writingDictIdx + 1, Math.max(1, writingDictationPool.length))} de {Math.max(1, writingDictationPool.length)}
+                                      {writingDictationPool[writingDictIdx % Math.max(1, writingDictationPool.length)]?.origin ? ` · ${writingDictationPool[writingDictIdx % Math.max(1, writingDictationPool.length)].origin}` : ''}
+                                  </p>
                                   <div className="flex flex-wrap gap-2 items-center">
                                       <button
                                           type="button"
                                           onClick={() => {
-                                              const line = WRITING_DICTATION_LINES[writingDictIdx % WRITING_DICTATION_LINES.length];
+                                              if (!writingDictationPool.length) return;
+                                              const line = writingDictationPool[writingDictIdx % writingDictationPool.length];
                                               window.speechSynthesis.cancel();
                                               const u = new SpeechSynthesisUtterance(line.de);
                                               u.lang = 'de-DE';
@@ -6767,7 +6876,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       <button
                                           type="button"
                                           onClick={() => {
-                                              setWritingDictIdx((i) => (i + 1) % WRITING_DICTATION_LINES.length);
+                                              if (!writingDictationPool.length) return;
+                                              setWritingDictIdx((i) => (i + 1) % writingDictationPool.length);
                                               setWritingDictReveal(false);
                                               setWritingCanvasKey((k) => k + 1);
                                           }}
@@ -6783,13 +6893,13 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           {writingDictReveal ? 'Ocultar solución' : 'Mostrar solución'}
                                       </button>
                                   </div>
-                                  {writingDictReveal && (
-                                      <div className="text-sm border border-emerald-700/40 rounded-lg p-3 bg-emerald-950/40">
-                                          <p className="text-white font-medium">
-                                              {WRITING_DICTATION_LINES[writingDictIdx % WRITING_DICTATION_LINES.length].de}
+                                  {writingDictReveal && writingDictationPool.length > 0 && (
+                                      <div className="border border-emerald-700/40 rounded-lg p-4 md:p-5 bg-emerald-950/40">
+                                          <p className="text-white font-semibold text-lg md:text-2xl leading-snug">
+                                              {writingDictationPool[writingDictIdx % writingDictationPool.length].de}
                                           </p>
-                                          <p className="text-emerald-300/80 text-xs mt-1 italic">
-                                              {WRITING_DICTATION_LINES[writingDictIdx % WRITING_DICTATION_LINES.length].es}
+                                          <p className="text-emerald-200/90 text-sm md:text-base mt-2 italic leading-relaxed">
+                                              {writingDictationPool[writingDictIdx % writingDictationPool.length].es || 'Sin traducción disponible en esta línea.'}
                                           </p>
                                       </div>
                                   )}
