@@ -1749,8 +1749,17 @@ const [placementFinished, setPlacementFinished] = useState(false);
           const rutaTabTimerRef = useRef(null);
           const [rutaTranscript, setRutaTranscript] = useState('');
           const [rutaListening, setRutaListening] = useState(false);
+          const [readingSource, setReadingSource] = useState('current_story');
+          const [readingScriptId, setReadingScriptId] = useState('__current__');
+          const [readingTextInput, setReadingTextInput] = useState('');
+          const [readingListening, setReadingListening] = useState(false);
+          const [readingTranscript, setReadingTranscript] = useState('');
+          const [readingScore, setReadingScore] = useState(null);
+          const [readingFeedback, setReadingFeedback] = useState([]);
           const [sfxEpoch, setSfxEpoch] = useState(0);
           const rutaRecRef = useRef(null);
+          const readingRecRef = useRef(null);
+          const readingFinalRef = useRef('');
           const [guionData, setGuionData] = useState(DEFAULT_GUION);
           const [activeScriptTitle, setActiveScriptTitle] = useState("Lektion 17: Kunst");
           const [isDefaultScript, setIsDefaultScript] = useState(true);
@@ -1884,7 +1893,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
           const [mullerHubTab, setMullerHubTab] = useState('voices');
 
           useEffect(() => {
-              const validTabs = new Set(['inicio', 'ruta', 'historia', 'shadowing', 'escritura', 'vocabulario', 'entrenamiento', 'bxbank', 'progreso', 'guiones', 'lexikon', 'telc', 'storybuilder', 'historiaspro', 'comunidad']);
+              const validTabs = new Set(['inicio', 'ruta', 'historia', 'lectura', 'shadowing', 'escritura', 'vocabulario', 'entrenamiento', 'bxbank', 'progreso', 'guiones', 'lexikon', 'telc', 'storybuilder', 'historiaspro', 'comunidad']);
               if (!validTabs.has(activeTab)) setActiveTab('inicio');
           }, [activeTab]);
 
@@ -2905,6 +2914,99 @@ const finishPlacementWithLevel = (finalLevel) => {
               rec.start();
           };
 
+          const readingScriptOptions = useMemo(() => {
+              return (savedScripts || []).map((s) => ({ id: String(s.id), title: s.title || 'Sin título' }));
+          }, [savedScripts]);
+
+          const readingTargetText = useMemo(() => {
+              if (readingSource === 'paste') return String(readingTextInput || '').trim();
+              if (readingSource === 'current_story') {
+                  return (guionData || []).map((s) => String(s && s.text ? s.text : '').trim()).filter(Boolean).join(' ');
+              }
+              if (readingSource === 'one_saved') {
+                  const picked = (savedScripts || []).find((s) => String(s.id) === String(readingScriptId));
+                  if (!picked) return '';
+                  try {
+                      const rows = JSON.parse(picked.data || '[]');
+                      return (rows || []).map((s) => String(s && s.text ? s.text : '').trim()).filter(Boolean).join(' ');
+                  } catch (e) { return ''; }
+              }
+              return '';
+          }, [readingSource, readingTextInput, guionData, savedScripts, readingScriptId]);
+
+          const readingTipForWord = (w) => {
+              const x = String(w || '').toLowerCase();
+              if (/[äöü]/.test(x)) return 'Atención a umlauts: ä (tipo e abierta), ö (o redondeada), ü (i con labios redondos).';
+              if (x.includes('sch')) return 'sch suena como "sh".';
+              if (x.includes('ch')) return 'ch no suena como "ch" español; en alemán suele ser más suave/gutural.';
+              if (x.includes('ei')) return 'ei suena parecido a "ai".';
+              if (x.includes('ie')) return 'ie suena como i larga.';
+              if (x.includes('eu') || x.includes('äu')) return 'eu/äu suena parecido a "oi".';
+              if (x.includes('z')) return 'z suena como "ts".';
+              if (x.includes('v')) return 'En alemán muchas veces v suena como "f".';
+              return 'Repite lento por sílabas, luego a velocidad normal.';
+          };
+
+          const runReadingCompare = (targetText, transcript) => {
+              const a = normalizeGermanSpeechText(targetText || '');
+              const b = normalizeGermanSpeechText(transcript || '');
+              if (!a || !b) { setReadingScore(null); setReadingFeedback([]); return; }
+              const aw = a.split(/\s+/).filter(Boolean);
+              const bw = b.split(/\s+/).filter(Boolean);
+              const feedback = matchGermanWordsSequential(aw, bw);
+              const ok = feedback.filter((f) => f.correct).length;
+              const pct = aw.length ? Math.round((ok / aw.length) * 100) : 0;
+              const enriched = feedback.filter((f) => !f.correct).slice(0, 18).map((f) => ({ ...f, tip: readingTipForWord(f.word) }));
+              setReadingScore(pct);
+              setReadingFeedback(enriched);
+          };
+
+          const startReadingListen = () => {
+              const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+              if (!SpeechRecognition) { alert('Para lectura en voz alta usa Chrome o Edge.'); return; }
+              try { if (readingRecRef.current) readingRecRef.current.stop(); } catch (e) {}
+              const rec = new SpeechRecognition();
+              rec.lang = 'de-DE';
+              rec.continuous = true;
+              rec.interimResults = true;
+              rec.maxAlternatives = 1;
+              readingFinalRef.current = '';
+              setReadingTranscript('');
+              setReadingScore(null);
+              setReadingFeedback([]);
+              rec.onresult = (event) => {
+                  let interim = '';
+                  for (let i = event.resultIndex; i < event.results.length; i++) {
+                      const r = event.results[i];
+                      const t = (r[0] && r[0].transcript) ? String(r[0].transcript).trim() : '';
+                      if (!t) continue;
+                      if (r.isFinal) readingFinalRef.current = mergeSpeechFinalChunk(readingFinalRef.current, t);
+                      else interim = t;
+                  }
+                  const merged = collapseStutterRepeats((readingFinalRef.current + (interim ? (' ' + interim) : '')).trim());
+                  setReadingTranscript(merged);
+              };
+              rec.onerror = () => setReadingListening(false);
+              rec.onend = () => {
+                  setReadingListening(false);
+                  runReadingCompare(readingTargetText, readingFinalRef.current || readingTranscript || '');
+              };
+              readingRecRef.current = rec;
+              setReadingListening(true);
+              try { rec.start(); } catch (e) { setReadingListening(false); }
+          };
+
+          const stopReadingListen = () => {
+              const r = readingRecRef.current;
+              if (!r) return;
+              try { r.stop(); } catch (e) {}
+          };
+          useEffect(() => {
+              if (activeTab === 'lectura') return;
+              try { if (readingRecRef.current) readingRecRef.current.stop(); } catch (e) {}
+              setReadingListening(false);
+          }, [activeTab]);
+
           const getWeeklyChartBars = () => {
               const raw = [];
               for (let i = 6; i >= 0; i--) {
@@ -3035,6 +3137,15 @@ const finishPlacementWithLevel = (finalLevel) => {
                   return { touched: clean, infinitive: clean, forms: `Prät: ${base}te | Perf: hat ${clean} (regular estimado)` };
               }
               return null;
+          };
+
+          const inferTempusContextLabel = (word) => {
+              const w = String(word || '').toLowerCase();
+              if (!w) return '';
+              if (w.startsWith('ge') && (w.endsWith('t') || w.endsWith('en'))) return 'Forma probable: Partizip II (Perfekt/Plusquamperfekt).';
+              if (/(te|test|ten|tet)$/.test(w)) return 'Forma probable: Präteritum (regular).';
+              if (/(st|t|en)$/.test(w)) return 'Forma probable: Präsens (según contexto/persona).';
+              return 'Tiempo/persona: revisa contexto de la frase.';
           };
 
           useEffect(() => {
@@ -4470,6 +4581,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   if (activeTab === 'storybuilder') return 'bg-indigo-100';
                   if (activeTab === 'historiaspro') return 'bg-emerald-50';
                   if (activeTab === 'shadowing') return 'bg-teal-50';
+                  if (activeTab === 'lectura') return 'bg-sky-50';
                   if (activeTab === 'escritura') return 'bg-stone-100';
                   if (activeTab === 'telc') return 'bg-slate-100';
                   if (activeTab === 'comunidad') return 'bg-violet-50';
@@ -4489,6 +4601,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               if (activeTab === 'storybuilder') return 'bg-indigo-950'; // Suavizado
               if (activeTab === 'historiaspro') return 'bg-emerald-950/80';
               if (activeTab === 'shadowing') return 'bg-teal-950/90';
+              if (activeTab === 'lectura') return 'bg-sky-950/90';
               if (activeTab === 'escritura') return 'bg-stone-950';
               if (fluesternMode) return 'bg-zinc-900 filter contrast-125 sepia-50'; 
               if (isReviewing || practiceActive) return 'bg-gray-900'; // Suavizado
@@ -5130,6 +5243,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   inicio: { icon: 'layout-dashboard', title: 'Inicio', desc: 'Panel rápido y continuidad', tone: 'border-indigo-500/35 bg-indigo-900/25 text-indigo-200' },
                   ruta: { icon: 'map', title: 'Ruta', desc: 'Camino A1-A2 guiado', tone: 'border-fuchsia-500/35 bg-fuchsia-900/25 text-fuchsia-200' },
                   historia: { icon: 'play', title: 'Historia', desc: 'Escucha, modos y simulación oral', tone: 'border-blue-500/35 bg-blue-900/25 text-blue-200' },
+                  lectura: { icon: 'mic', title: 'Lectura', desc: 'Leer en voz alta y comparar', tone: 'border-sky-500/35 bg-sky-900/25 text-sky-200' },
                   shadowing: { icon: 'audio-lines', title: 'Shadowing', desc: 'Fluidez y pronunciación', tone: 'border-teal-500/35 bg-teal-900/25 text-teal-200' },
                   escritura: { icon: 'pen-line', title: 'Escritura', desc: 'Canvas, dictado y OCR', tone: 'border-rose-500/35 bg-rose-900/25 text-rose-200' },
                   vocabulario: { icon: 'book-open', title: 'Vocabulario', desc: 'SRS y recall activo', tone: 'border-amber-500/35 bg-amber-900/25 text-amber-200' },
@@ -5163,6 +5277,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   inicio: 'Sugerencia: abre Entrenamiento si quieres práctica tipo examen.',
                   ruta: 'Sugerencia: completa lección + huecos + voz para cerrar ciclo.',
                   historia: 'Sugerencia: escucha, repite y luego activa Diktat para consolidar.',
+                  lectura: 'Sugerencia: lee completo, luego revisa solo las palabras en rojo.',
                   shadowing: 'Sugerencia: empieza con velocidad media y sube a normal.',
                   escritura: 'Sugerencia: usa modo dictado + OCR para detectar fallos.',
                   vocabulario: 'Sugerencia: marca Fácil solo si recuerdas sin mirar traducción.',
@@ -5203,6 +5318,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       <button onClick={()=>{setActiveTab('inicio'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'inicio' ? 'bg-indigo-600 text-white shadow-[0_0_18px_rgba(79,70,229,0.5)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="layout-dashboard" className="w-4 h-4 md:w-5 md:h-5" /> Inicio</button>
                       <button onClick={()=>{setActiveTab('ruta'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'ruta' ? 'bg-fuchsia-600 text-white shadow-[0_0_18px_rgba(192,38,211,0.45)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="map" className="w-4 h-4 md:w-5 md:h-5" /> Ruta</button>
                       <button onClick={()=>{setActiveTab('historia'); setMode('dialogue'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'historia' ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="play" className="w-4 h-4 md:w-5 md:h-5" /> Historia</button>
+                      <button onClick={()=>{setActiveTab('lectura'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'lectura' ? 'bg-sky-600 text-white shadow-[0_0_20px_rgba(14,165,233,0.45)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="mic" className="w-4 h-4 md:w-5 md:h-5" /> Lectura</button>
                       <button onClick={()=>{setActiveTab('shadowing'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'shadowing' ? 'bg-teal-600 text-white shadow-[0_0_18px_rgba(13,148,136,0.5)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="audio-lines" className="w-4 h-4 md:w-5 md:h-5" /> Shadowing</button>
                       <button onClick={()=>{setActiveTab('escritura'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'escritura' ? 'bg-rose-700 text-white shadow-[0_0_18px_rgba(190,18,60,0.45)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="pen-line" className="w-4 h-4 md:w-5 md:h-5" /> Escritura</button>
                       <button onClick={()=>{setActiveTab('vocabulario'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'vocabulario' ? 'bg-amber-600 text-white shadow-[0_0_20px_rgba(217,119,6,0.4)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="book-open" className="w-4 h-4 md:w-5 md:h-5" /> Vocab{vocabSrsDueCount > 0 ? <span className="ml-0.5 min-w-[1.1rem] px-1 rounded-full bg-white/20 text-[10px] font-black leading-none py-0.5" title="Tarjetas prioritarias SRS en la lista actual">{vocabSrsDueCount > 99 ? '99+' : vocabSrsDueCount}</span> : null}</button>
@@ -5929,6 +6045,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   <button type="button" onClick={() => { setActiveTab('inicio'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'inicio' ? 'is-active' : ''}><Icon name="layout-dashboard" className="w-4 h-4" />Inicio</button>
                   <button type="button" onClick={() => { setActiveTab('ruta'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'ruta' ? 'is-active' : ''}><Icon name="map" className="w-4 h-4" />Ruta</button>
                   <button type="button" onClick={() => { setActiveTab('historia'); setMode('dialogue'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'historia' ? 'is-active' : ''}><Icon name="play" className="w-4 h-4" />Historia</button>
+                  <button type="button" onClick={() => { setActiveTab('lectura'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'lectura' ? 'is-active' : ''}><Icon name="mic" className="w-4 h-4" />Lectura</button>
                   <button type="button" onClick={() => { setActiveTab('vocabulario'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'vocabulario' ? 'is-active' : ''}><Icon name="book-open" className="w-4 h-4" />Vocab</button>
                   <button type="button" onClick={() => { setActiveTab('entrenamiento'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'entrenamiento' ? 'is-active' : ''}><Icon name="graduation-cap" className="w-4 h-4" />Entrena</button>
                   <button type="button" onClick={() => { setActiveTab('bxbank'); setBxBankLevel('b1'); setBxCategory('mix'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'bxbank' ? 'is-active' : ''}><Icon name="target" className="w-4 h-4" />B1/B2</button>
@@ -6796,6 +6913,77 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       );
                                   })()}
                               </>
+                          )}
+                      </div>
+                  )}
+
+                  {activeTab === 'lectura' && !practiceActive && (
+                      <div className="flex-1 flex flex-col p-4 md:p-8 max-w-4xl mx-auto w-full animate-in fade-in duration-500 overflow-y-auto">
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                              <h1 className="text-2xl md:text-4xl font-black text-sky-100 flex items-center gap-2 md:gap-3">
+                                  <Icon name="mic" className="w-8 h-8 md:w-10 md:h-10" /> Lectura en voz alta
+                              </h1>
+                          </div>
+                          <p className="text-sky-50/90 text-sm md:text-base mb-4 leading-relaxed">
+                              Lee un texto completo y compara tu producción con el original. Puedes usar la historia actual, un guion guardado o pegar un texto manualmente.
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                              <label className="text-xs font-bold text-sky-200/90 uppercase tracking-wider">
+                                  Fuente
+                                  <select value={readingSource} onChange={(e) => setReadingSource(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/15 rounded-lg px-3 py-2 text-sm text-white normal-case">
+                                      <option value="current_story">Historia actual</option>
+                                      <option value="one_saved">Guion guardado</option>
+                                      <option value="paste">Texto pegado</option>
+                                  </select>
+                              </label>
+                              {readingSource === 'one_saved' && (
+                                  <label className="text-xs font-bold text-sky-200/90 uppercase tracking-wider md:col-span-2">
+                                      Guion
+                                      <select value={readingScriptId} onChange={(e) => setReadingScriptId(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/15 rounded-lg px-3 py-2 text-sm text-white normal-case">
+                                          <option value="__current__" disabled>Selecciona un guion…</option>
+                                          {readingScriptOptions.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}
+                                      </select>
+                                  </label>
+                              )}
+                          </div>
+                          {readingSource === 'paste' && (
+                              <textarea value={readingTextInput} onChange={(e) => setReadingTextInput(e.target.value)} placeholder="Pega aquí tu texto en alemán…" className="w-full h-40 bg-black/35 border border-sky-500/30 rounded-xl p-3 text-sm md:text-base text-white mb-3" />
+                          )}
+                          <div className="rounded-xl bg-black/35 border border-sky-500/25 p-3 mb-4">
+                              <p className="text-[11px] text-sky-200/80 mb-2">Texto objetivo</p>
+                              <p className="text-sm md:text-base text-white leading-relaxed whitespace-pre-wrap">{readingTargetText || 'No hay texto disponible para comparar.'}</p>
+                          </div>
+                          <div className="flex flex-wrap gap-3 items-center mb-3">
+                              <button type="button" onClick={startReadingListen} disabled={readingListening || !readingTargetText} className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 font-black text-sm">🎤 Empezar lectura</button>
+                              <button type="button" onClick={stopReadingListen} disabled={!readingListening} className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-600 disabled:opacity-40 font-black text-sm">⏹ Parar y evaluar</button>
+                              <span className={`text-xs font-bold ${readingListening ? 'text-emerald-300 animate-pulse' : 'text-gray-500'}`}>{readingListening ? 'Escuchando…' : 'Micrófono en espera'}</span>
+                          </div>
+                          {readingTranscript && (
+                              <div className="rounded-xl bg-amber-950/35 border border-amber-600/30 p-3 mb-3">
+                                  <p className="text-[11px] text-amber-200/80 mb-1">Tu lectura detectada</p>
+                                  <p className="text-sm text-amber-100">{readingTranscript}</p>
+                              </div>
+                          )}
+                          {readingScore !== null && (
+                              <div className="rounded-xl bg-sky-950/35 border border-sky-500/30 p-3 mb-3">
+                                  <div className="flex items-center gap-2">
+                                      <div className="flex-1 h-2.5 rounded-full bg-black/40 overflow-hidden">
+                                          <div className={`h-full ${readingScore >= 85 ? 'bg-emerald-500' : readingScore >= 60 ? 'bg-amber-400' : 'bg-red-500'}`} style={{ width: `${readingScore}%` }} />
+                                      </div>
+                                      <span className="text-white font-black text-sm">{readingScore}%</span>
+                                  </div>
+                              </div>
+                          )}
+                          {readingFeedback.length > 0 && (
+                              <div className="rounded-xl bg-black/35 border border-red-500/30 p-3 space-y-2">
+                                  <p className="text-red-200 font-bold text-sm">Palabras a mejorar</p>
+                                  {readingFeedback.map((f, i) => (
+                                      <div key={i} className="text-xs md:text-sm border border-white/10 rounded-lg p-2 bg-white/5">
+                                          <p className="text-red-200 font-bold">{f.word}</p>
+                                          <p className="text-gray-300 mt-0.5">{f.tip}</p>
+                                      </div>
+                                  ))}
+                              </div>
                           )}
                       </div>
                   )}
@@ -8016,6 +8204,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                                 <p className="text-[10px] md:text-xs text-sky-300 uppercase tracking-wider font-black">Verbo tocado: {tempusSelectedVerb.touched}</p>
                                                 <p className="text-white font-bold text-sm md:text-base mt-1">Infinitivo: {tempusSelectedVerb.infinitive}</p>
                                                 <p className="text-sky-100/90 text-xs md:text-sm mt-1 leading-relaxed">{tempusSelectedVerb.forms}</p>
+                                                <p className="text-sky-300/90 text-[10px] md:text-xs mt-1">{inferTempusContextLabel(tempusSelectedVerb.touched)}</p>
                                             </div>
                                         )}
                                     </div>
