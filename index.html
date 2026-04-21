@@ -1634,12 +1634,19 @@
             },
         ];
 
-        window.MULLER_PLACEMENT_Q = [
-            { q: 'Ich ___ aus Spanien.', opts: ['bin', 'habe', 'werde'], ok: 0 },
-            { q: '___ Buch liegt auf dem Tisch.', opts: ['Der', 'Die', 'Das'], ok: 2 },
-            { q: '¿Qué expresa mejor «Guten Tag»?', opts: ['Solo por la mañana', 'Saludo de día (formal/informal según contexto)', 'Buenas noches'], ok: 1 },
-            { q: 'Weil ich müde ___.', opts: ['bin', 'war', 'bin ich'], ok: 0 },
-        ];
+       // Reemplazar MULLER_PLACEMENT_Q con un banco de preguntas por nivel
+const PLACEMENT_QUESTIONS = [
+  // Nivel A1
+  { level: 'A1', q: 'Ich ___ aus Spanien.', opts: ['bin', 'habe', 'werde'], ok: 0 },
+  { level: 'A1', q: '___ Buch liegt auf dem Tisch.', opts: ['Der', 'Die', 'Das'], ok: 2 },
+  // Nivel A2
+  { level: 'A2', q: 'Letzte Woche ___ wir im Kino.', opts: ['waren', 'sind', 'haben'], ok: 0 },
+  { level: 'A2', q: 'Ich freue mich ___ das Wochenende.', opts: ['auf', 'über', 'für'], ok: 0 },
+  // Nivel B1
+  { level: 'B1', q: 'Wenn ich mehr Zeit ___, würde ich reisen.', opts: ['hätte', 'habe', 'gehabt'], ok: 0 },
+  { level: 'B1', q: 'Das ist der Mann, ___ ich gestern getroffen habe.', opts: ['den', 'der', 'dem'], ok: 0 },
+  // ... hasta 12 preguntas
+];
 
         /** Contenido orientativo TELC / marcos similares (no texto de examen oficial). */
         window.MULLER_TELC_BY_LEVEL = {
