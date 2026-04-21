@@ -2934,26 +2934,14 @@ const finishPlacementWithLevel = (finalLevel) => {
               return '';
           }, [readingSource, readingTextInput, guionData, savedScripts, readingScriptId]);
 
-          const readingKaraokeTokens = useMemo(() => {
-              const target = String(readingTargetText || '');
-              if (!target) return [];
+          const readingProgress = useMemo(() => {
+              const targetWords = normalizeGermanSpeechText(readingTargetText || '').split(/\s+/).filter(Boolean);
               const spokenWords = normalizeGermanSpeechText(readingTranscript || '').split(/\s+/).filter(Boolean);
-              const rawTokens = target.split(/(\s+)/);
-              const out = [];
-              let pos = 0;
-              rawTokens.forEach((tk) => {
-                  if (!tk) return;
-                  if (/^\s+$/.test(tk)) {
-                      out.push({ text: tk, isSpace: true, matched: false, current: false });
-                      return;
-                  }
-                  const norm = normalizeGermanSpeechText(tk);
-                  const matched = !!norm && spokenWords[pos] === norm;
-                  if (matched) pos += 1;
-                  const current = !!norm && !matched && spokenWords.length === pos;
-                  out.push({ text: tk, isSpace: false, matched, current });
-              });
-              return out;
+              if (!targetWords.length) return { matched: 0, total: 0, pct: 0 };
+              let i = 0;
+              while (i < targetWords.length && i < spokenWords.length && targetWords[i] === spokenWords[i]) i++;
+              const pct = Math.round((i / targetWords.length) * 100);
+              return { matched: i, total: targetWords.length, pct };
           }, [readingTargetText, readingTranscript]);
 
           const readingTipForWord = (w) => {
@@ -6973,28 +6961,16 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                           )}
                           <div className="rounded-xl bg-black/35 border border-sky-500/25 p-3 mb-4">
                               <p className="text-[11px] text-sky-200/80 mb-2">Texto objetivo</p>
-                              {readingTargetText ? (
-                                  <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap">
-                                      {readingKaraokeTokens.map((tk, i) => {
-                                          if (tk.isSpace) return <span key={i}>{tk.text}</span>;
-                                          const cls = tk.matched
-                                              ? 'bg-emerald-700/45 text-emerald-100 border border-emerald-400/40'
-                                              : tk.current
-                                                  ? 'bg-amber-700/35 text-amber-100 border border-amber-400/40 animate-pulse'
-                                                  : 'text-white';
-                                          return <span key={i} className={`px-0.5 rounded ${cls}`}>{tk.text}</span>;
-                                      })}
-                                  </p>
-                              ) : (
-                                  <p className="text-sm md:text-base text-white leading-relaxed whitespace-pre-wrap">No hay texto disponible para comparar.</p>
-                              )}
+                              <p className="text-sm md:text-base text-white leading-relaxed whitespace-pre-wrap">{readingTargetText || 'No hay texto disponible para comparar.'}</p>
                           </div>
                           <div className="flex flex-wrap gap-3 items-center mb-3">
                               <button type="button" onClick={startReadingListen} disabled={readingListening || !readingTargetText} className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 font-black text-sm">🎤 Empezar lectura</button>
                               <button type="button" onClick={stopReadingListen} disabled={!readingListening} className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-600 disabled:opacity-40 font-black text-sm">⏹ Parar y evaluar</button>
                               <span className={`text-xs font-bold ${readingListening ? 'text-emerald-300 animate-pulse' : 'text-gray-500'}`}>{readingListening ? 'Escuchando…' : 'Micrófono en espera'}</span>
                           </div>
-                          <p className="text-[11px] text-sky-200/75 -mt-1 mb-3">Karaoke: verde = leído correctamente, ámbar = siguiente palabra objetivo.</p>
+                          {readingListening && readingProgress.total > 0 && (
+                              <p className="text-[11px] text-sky-200/75 -mt-1 mb-3">Progreso lectura: {readingProgress.matched}/{readingProgress.total} palabras ({readingProgress.pct}%).</p>
+                          )}
                           {readingTranscript && (
                               <div className="rounded-xl bg-amber-950/35 border border-amber-600/30 p-3 mb-3">
                                   <p className="text-[11px] text-amber-200/80 mb-1">Tu lectura detectada</p>
