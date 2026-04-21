@@ -1733,10 +1733,16 @@
           const [rutaSubTab, setRutaSubTab] = useState('camino');
           const [rutaProgress, setRutaProgress] = useState(() => (typeof window.mullerRutaLoad === 'function' ? window.mullerRutaLoad() : { completed: {}, placementDone: false, suggestedLevelIdx: 0, playTimeMs: 0, lessonsCompleted: 0 }));
           const [rutaRun, setRutaRun] = useState(null);
+          // --- NUEVOS ESTADOS PARA TEST ADAPTATIVO (30 PREGUNTAS) ---
+const [placementQuestions, setPlacementQuestions] = useState([]);
+const [placementAnswers, setPlacementAnswers] = useState([]);
+const [placementIndex, setPlacementIndex] = useState(0);
+const [placementLevel, setPlacementLevel] = useState('A2');
+const [placementScore, setPlacementScore] = useState({ correct: 0, total: 0 });
+const [placementFinished, setPlacementFinished] = useState(false);
           const [rutaMentor, setRutaMentor] = useState('lena');
           const [rutaFillInput, setRutaFillInput] = useState('');
           const [rutaSpeakErr, setRutaSpeakErr] = useState('');
-          const [placementSel, setPlacementSel] = useState([null, null, null, null]);
           const [celebrationModal, setCelebrationModal] = useState(null);
           const [telcLevel, setTelcLevel] = useState('B1');
           const [diktatMotivationMsg, setDiktatMotivationMsg] = useState('');
