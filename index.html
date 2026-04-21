@@ -1946,6 +1946,18 @@ const [placementFinished, setPlacementFinished] = useState(false);
           useEffect(() => {
               let cancelled = false;
               const GIST_VERB_DB = 'https://gist.githubusercontent.com/djplaza1/239d6ac0a999c5729b3cf133627771f7/raw/gistfile1.txt';
+              const parseVerbDbPayload = (raw) => {
+                  const txt = String(raw || '').trim();
+                  if (!txt) return null;
+                  const tryParse = (s) => { try { return JSON.parse(s); } catch (e) { return null; } };
+                  let data = tryParse(txt);
+                  if (!data && txt.startsWith('{') && txt.endsWith(']')) data = tryParse(txt + '\n}');
+                  if (!data && txt.startsWith('"id"')) data = tryParse('[{' + txt + '}]');
+                  if (!data) return null;
+                  const verbs = Array.isArray(data) ? data : (Array.isArray(data.verbs) ? data.verbs : []);
+                  if (!verbs.length) return null;
+                  return { meta: data.meta || null, verbs };
+              };
               const loadVerbDb = async () => {
                   const urls = [
                       `${GIST_VERB_DB}?nocache=${Date.now()}`,
@@ -1955,11 +1967,11 @@ const [placementFinished, setPlacementFinished] = useState(false);
                       try {
                           const r = await fetch(u, { cache: 'no-cache' });
                           if (!r.ok) continue;
-                          const data = await r.json();
-                          const verbs = Array.isArray(data) ? data : (Array.isArray(data.verbs) ? data.verbs : []);
-                          if (!verbs.length) continue;
+                          const raw = await r.text();
+                          const parsed = parseVerbDbPayload(raw);
+                          if (!parsed || !parsed.verbs.length) continue;
                           if (cancelled) return;
-                          setRutaVerbDb({ meta: data.meta || null, verbs });
+                          setRutaVerbDb(parsed);
                           return;
                       } catch (e) {}
                   }
