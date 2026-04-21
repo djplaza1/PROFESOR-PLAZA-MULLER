@@ -4331,12 +4331,16 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               const [ocrErr, setOcrErr] = useState('');
               const [ocrComparePct, setOcrComparePct] = useState(null);
               const [canUndo, setCanUndo] = useState(false);
+              const currentHlPathRef = useRef([]);
+              const strokeBaseRef = useRef(null);
 
               const HL_MAP = useMemo(() => ({
                   yellow: 'rgba(250, 204, 21, 0.42)',
                   green: 'rgba(74, 222, 128, 0.42)',
                   pink: 'rgba(244, 114, 182, 0.42)',
                   orange: 'rgba(251, 146, 60, 0.42)',
+                  blue: 'rgba(96, 165, 250, 0.45)',
+                  cyan: 'rgba(34, 211, 238, 0.42)',
               }), []);
 
               const layoutCanvas = useCallback(() => {
@@ -4344,7 +4348,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   const wrap = wrapRef.current;
                   if (!canvas || !wrap) return;
                   const w = wrap.clientWidth;
-                  const h = Math.max(280, Math.min(560, Math.floor((typeof window !== 'undefined' ? window.innerHeight : 600) * 0.42)));
+                  const h = Math.max(360, Math.min(680, Math.floor((typeof window !== 'undefined' ? window.innerHeight : 700) * 0.52)));
                   const dpr = window.devicePixelRatio || 1;
                   sizeRef.current = { w, h };
                   canvas.width = w * dpr;
@@ -4474,6 +4478,11 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   movedRef.current = false;
                   const p = getPos(e);
                   lastPtRef.current = { x: p.x, y: p.y };
+                  if (writingTool === 'highlighter') {
+                      const canvas = canvasRef.current;
+                      try { strokeBaseRef.current = ctx.getImageData(0, 0, canvas.width, canvas.height); } catch(err) { strokeBaseRef.current = null; }
+                      currentHlPathRef.current = [{ x: p.x, y: p.y }];
+                  }
               };
               const moveDraw = (e) => {
                   e.preventDefault();
@@ -4484,7 +4493,20 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   const ly = lastPtRef.current.y;
                   if (Math.hypot(p.x - lx, p.y - ly) < 0.35) return;
                   movedRef.current = true;
-                  drawSegment(ctx, lx, ly, p.x, p.y, writingTool);
+                  if (writingTool === 'highlighter') {
+                      currentHlPathRef.current.push({ x: p.x, y: p.y });
+                      if (strokeBaseRef.current) { try { ctx.putImageData(strokeBaseRef.current, 0, 0); } catch(err) {} }
+                      ctx.save();
+                      applyStrokeStyle(ctx, 'highlighter');
+                      ctx.beginPath();
+                      const pts = currentHlPathRef.current;
+                      ctx.moveTo(pts[0].x, pts[0].y);
+                      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                      ctx.stroke();
+                      ctx.restore();
+                  } else {
+                      drawSegment(ctx, lx, ly, p.x, p.y, writingTool);
+                  }
                   lastPtRef.current = { x: p.x, y: p.y };
               };
               const endDraw = (e) => {
@@ -4495,6 +4517,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   }
                   drawingRef.current = false;
                   movedRef.current = false;
+                  currentHlPathRef.current = [];
+                  strokeBaseRef.current = null;
                   try { if (e.pointerId != null) canvasRef.current.releasePointerCapture(e.pointerId); } catch (err) {}
               };
 
@@ -4652,6 +4676,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       { id: 'green', bg: 'bg-green-400' },
                                       { id: 'pink', bg: 'bg-pink-400' },
                                       { id: 'orange', bg: 'bg-orange-400' },
+                                      { id: 'blue', bg: 'bg-blue-400' },
+                                      { id: 'cyan', bg: 'bg-cyan-400' },
                                   ].map((h) => (
                                       <button key={h.id} type="button" onClick={() => setHlPreset(h.id)} className={`w-8 h-5 rounded border-2 ${h.bg} ${hlPreset === h.id ? 'border-white ring-1 ring-rose-300' : 'border-white/20'}`} title={h.id} />
                                   ))}
