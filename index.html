@@ -1400,6 +1400,11 @@
         const MULLER_PDF_EXTRACT_YIELD_EVERY = 2;
         const MULLER_TTS_RATE_KEY = 'muller_tts_rate_preset_v1';
         const MULLER_PDFJS_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/legacy/build/pdf.worker.min.js';
+        const MULLER_PDF_DIDACTIC_STOPWORDS = new Set([
+            'der', 'die', 'das', 'und', 'oder', 'aber', 'denn', 'doch', 'nicht', 'ein', 'eine', 'einer', 'einem', 'einen',
+            'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr', 'man', 'mit', 'von', 'zu', 'im', 'in', 'am', 'an', 'auf', 'ist',
+            'sind', 'war', 'waren', 'hat', 'haben', 'sein', 'wie', 'auch', 'nur', 'schon', 'noch', 'bei', 'nach', 'vor'
+        ]);
 
         function mullerGetStreakTodayStats() {
             const today = new Date().toISOString().slice(0, 10);
@@ -2015,6 +2020,10 @@ const [placementFinished, setPlacementFinished] = useState(false);
           const [rutaMentor, setRutaMentor] = useState('lena');
           const [rutaFillInput, setRutaFillInput] = useState('');
           const [rutaSpeakErr, setRutaSpeakErr] = useState('');
+          const [rutaPdfPack, setRutaPdfPack] = useState(null);
+          const [rutaPdfGapIdx, setRutaPdfGapIdx] = useState(0);
+          const [rutaPdfGapInput, setRutaPdfGapInput] = useState('');
+          const [rutaPdfFeedback, setRutaPdfFeedback] = useState('');
           const [celebrationModal, setCelebrationModal] = useState(null);
           const [telcLevel, setTelcLevel] = useState('B1');
           const [diktatMotivationMsg, setDiktatMotivationMsg] = useState('');
@@ -2121,6 +2130,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
           const [bxImportText, setBxImportText] = useState('');
           const [bxImportSummary, setBxImportSummary] = useState('');
           const [bxMoveTargetCat, setBxMoveTargetCat] = useState('verbos');
+          const [pdfDidacticPack, setPdfDidacticPack] = useState(null);
           const [chromeAiText, setChromeAiText] = useState('');
           const [chromeAiOut, setChromeAiOut] = useState('');
           const [chromeAiBusy, setChromeAiBusy] = useState(false);
@@ -3845,6 +3855,155 @@ const finishPlacementWithLevel = (finalLevel) => {
               setPdfStudyBusyMsg(`Página ${page.page} enviada a Escritura TELC.`);
               setPdfStudyLastApplied(`✓ Página ${page.page} cargada en Escritura TELC`);
           }, [pdfStudyDoc]);
+
+          const runPdfDidacticAnalysis = useCallback((pageNumber) => {
+              if (!pdfStudyDoc) return;
+              const idx = Math.max(0, (Number(pageNumber) || 1) - 1);
+              const page = pdfStudyDoc.pages && pdfStudyDoc.pages[idx];
+              const txt = page && page.text ? String(page.text).trim() : '';
+              if (!txt || txt.length < 40) {
+                  setPdfStudyBusyMsg('No hay texto suficiente en esta página. Ejecuta OCR o elige otra.');
+                  return;
+              }
+              const normalized = txt.replace(/\s+/g, ' ').trim();
+              const sentenceCandidates = normalized
+                  .split(/(?<=[.!?])\s+/)
+                  .map((s) => s.trim())
+                  .filter((s) => s.length >= 28 && s.length <= 180);
+              const phrases = Array.from(new Set(sentenceCandidates)).slice(0, 8);
+              const words = (normalized.toLowerCase().match(/[a-zäöüß]{4,}/g) || [])
+                  .filter((w) => !MULLER_PDF_DIDACTIC_STOPWORDS.has(w));
+              const freq = {};
+              words.forEach((w) => { freq[w] = (freq[w] || 0) + 1; });
+              const keywords = Object.entries(freq)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 16)
+                  .map(([de, count]) => ({ de, es: '', count }));
+              const gaps = phrases.slice(0, 6).map((p, i) => {
+                  const tokens = p.match(/[A-Za-zÄÖÜäöüß]{4,}/g) || [];
+                  let answer = '';
+                  for (let t = tokens.length - 1; t >= 0; t--) {
+                      const candidate = String(tokens[t] || '').toLowerCase();
+                      if (candidate && !MULLER_PDF_DIDACTIC_STOPWORDS.has(candidate)) { answer = candidate; break; }
+                  }
+                  if (!answer && tokens[0]) answer = String(tokens[0]).toLowerCase();
+                  const prompt = answer ? p.replace(new RegExp(`\\b${answer}\\b`, 'i'), '_____') : p;
+                  return { id: `gap-${i + 1}`, prompt, answer };
+              });
+              const compQuestions = phrases.slice(0, 4).map((p, i) => ({
+                  id: `comp-${i + 1}`,
+                  q: `¿Qué idea principal expresa esta frase ${i + 1}?`,
+                  context: p
+              }));
+              const pack = {
+                  id: `pdf-did-${Date.now()}`,
+                  sourceDocId: pdfStudyDoc.id || '',
+                  sourceDocName: pdfStudyDoc.name || 'Libro PDF',
+                  page: page.page || (idx + 1),
+                  unit: page.unit || '',
+                  lesson: page.lesson || '',
+                  createdAt: new Date().toISOString(),
+                  keywords,
+                  phrases,
+                  exercises: {
+                      gaps,
+                      dictation: phrases.slice(0, 5),
+                      comprehension: compQuestions,
+                      miniTelc: phrases.slice(0, 3)
+                  }
+              };
+              setPdfDidacticPack(pack);
+              setPdfStudyBusyMsg(`Análisis didáctico listo (página ${pack.page}): ${pack.keywords.length} palabras clave y ${pack.phrases.length} frases.`);
+          }, [pdfStudyDoc]);
+
+          const sendPdfDidacticToVocab = useCallback(() => {
+              if (!pdfDidacticPack || !pdfDidacticPack.keywords || pdfDidacticPack.keywords.length === 0) return;
+              const lessonTitle = `PDF U${pdfDidacticPack.unit || '-'} L${pdfDidacticPack.lesson || '-'} · p${pdfDidacticPack.page}`;
+              const words = pdfDidacticPack.keywords.slice(0, 20).map((k) => ({ de: k.de, es: k.es || '(pendiente de traducción)', diff: 0 }));
+              setCustomVocabLessons((prev) => {
+                  const arr = Array.isArray(prev) ? prev : [];
+                  const hitIdx = arr.findIndex((l) => l && l.title === lessonTitle);
+                  let next;
+                  if (hitIdx >= 0) {
+                      const existing = arr[hitIdx];
+                      const seen = new Set((existing.words || []).map((w) => `${w.de}||${w.es}`));
+                      const mergedWords = [...(existing.words || [])];
+                      words.forEach((w) => {
+                          const key = `${w.de}||${w.es}`;
+                          if (!seen.has(key)) { seen.add(key); mergedWords.push(w); }
+                      });
+                      next = arr.map((l, i) => i === hitIdx ? { ...l, words: mergedWords } : l);
+                  } else {
+                      next = [{ id: `pdfvocab-${Date.now()}`, title: lessonTitle, words }, ...arr];
+                  }
+                  try { localStorage.setItem('mullerCustomVocab', JSON.stringify(next)); } catch (e) {}
+                  return next;
+              });
+              setPdfStudyLastApplied(`✓ Didáctica PDF enviada a Vocabulario (${words.length} términos).`);
+              setPdfStudyBusyMsg('Bloque PDF añadido a Vocabulario.');
+          }, [pdfDidacticPack]);
+
+          const sendPdfDidacticToBx = useCallback((targetLevel = 'auto') => {
+              if (!pdfDidacticPack) return;
+              const lines = [
+                  ...(pdfDidacticPack.phrases || []),
+                  ...((pdfDidacticPack.keywords || []).slice(0, 12).map((k) => k.de))
+              ].filter(Boolean);
+              if (!lines.length) return;
+              const flat = mullerBibliotecaFlatItems(lines.join('\n'));
+              if (!flat.length) return;
+              let added = 0;
+              setBxUserOverlay((prev) => {
+                  const base = normalizeBxPayload(prev);
+                  flat.forEach(({ cat, item, seg }) => {
+                      const lv = targetLevel === 'auto' ? mullerGuessBibliotecaItemLevel(item, seg) : targetLevel;
+                      const key = mullerBxItemKey(item);
+                      if ((base[lv][cat] || []).some((x) => mullerBxItemKey(x) === key)) return;
+                      base[lv][cat].push({
+                          ...item,
+                          trick: `PDF didáctico · p${pdfDidacticPack.page} · ${cat}`,
+                          _mullerUser: true,
+                          _mullerUid: 'bx_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 11),
+                          _mullerCategory: cat
+                      });
+                      added++;
+                  });
+                  try { localStorage.setItem(MULLER_BX_USER_OVERLAY_KEY, JSON.stringify(base)); } catch (e) {}
+                  return base;
+              });
+              setBxImportSummary(`PDF página ${pdfDidacticPack.page} enviado a B1/B2 · nuevas tarjetas: ${added}`);
+              setPdfStudyLastApplied(`✓ PDF didáctico enviado a Banco B1/B2 (${added}).`);
+          }, [pdfDidacticPack]);
+
+          const sendPdfDidacticToRuta = useCallback(() => {
+              if (!pdfDidacticPack) return;
+              setRutaPdfPack(pdfDidacticPack);
+              setRutaPdfGapIdx(0);
+              setRutaPdfGapInput('');
+              setRutaPdfFeedback('');
+              setRutaSubTab('pdf');
+              setActiveTab('ruta');
+              setPdfStudyLastApplied(`✓ PDF didáctico enviado a Ruta (página ${pdfDidacticPack.page}).`);
+          }, [pdfDidacticPack]);
+
+          const checkRutaPdfGap = useCallback(() => {
+              if (!rutaPdfPack || !rutaPdfPack.exercises || !Array.isArray(rutaPdfPack.exercises.gaps) || !rutaPdfPack.exercises.gaps.length) return;
+              const current = rutaPdfPack.exercises.gaps[Math.max(0, Math.min(rutaPdfPack.exercises.gaps.length - 1, rutaPdfGapIdx))];
+              if (!current) return;
+              const got = String(rutaPdfGapInput || '').trim().toLowerCase();
+              const exp = String(current.answer || '').trim().toLowerCase();
+              if (!exp) {
+                  setRutaPdfFeedback('Respuesta abierta: compara con la frase original.');
+                  return;
+              }
+              if (got === exp) {
+                  setRutaPdfFeedback('Correcto.');
+                  window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(true);
+              } else {
+                  setRutaPdfFeedback(`No exacto. Esperado: ${exp}`);
+                  window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(false);
+              }
+          }, [rutaPdfPack, rutaPdfGapIdx, rutaPdfGapInput]);
 
           const updatePdfStudyPageMeta = useCallback((pageNumber, patch = {}) => {
               if (!pdfStudyDoc) return;
@@ -8764,6 +8923,56 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       placeholder="Sin texto extraído en esta página todavía."
                                   />
                               )}
+                              {pdfStudyDoc && (
+                                  <div className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-950/25 p-3 space-y-2">
+                                      <div className="flex flex-wrap gap-2 items-center">
+                                          <p className="text-[11px] font-black text-fuchsia-200 uppercase tracking-wider">PDF didáctico (Fase B)</p>
+                                          <button
+                                              type="button"
+                                              onClick={() => runSingleSubmitAction('pdf-didactic-analyze', () => runPdfDidacticAnalysis(activePdfPageData.page || 1))}
+                                              className="px-3 py-1.5 rounded-lg border border-fuchsia-400/40 bg-fuchsia-900/50 hover:bg-fuchsia-800/60 text-[11px] font-bold text-fuchsia-100"
+                                          >
+                                              Analizar página
+                                          </button>
+                                          <button
+                                              type="button"
+                                              onClick={() => runSingleSubmitAction('pdf-didactic-to-ruta', sendPdfDidacticToRuta)}
+                                              disabled={!pdfDidacticPack}
+                                              className="px-3 py-1.5 rounded-lg border border-white/20 bg-black/45 hover:bg-black/60 disabled:opacity-45 text-[11px] font-bold text-white"
+                                          >
+                                              Enviar a Ruta
+                                          </button>
+                                          <button
+                                              type="button"
+                                              onClick={() => runSingleSubmitAction('pdf-didactic-to-bx', () => sendPdfDidacticToBx('auto'))}
+                                              disabled={!pdfDidacticPack}
+                                              className="px-3 py-1.5 rounded-lg border border-cyan-400/40 bg-cyan-900/45 hover:bg-cyan-800/55 disabled:opacity-45 text-[11px] font-bold text-cyan-100"
+                                          >
+                                              Enviar a Banco B1-B2
+                                          </button>
+                                          <button
+                                              type="button"
+                                              onClick={() => runSingleSubmitAction('pdf-didactic-to-vocab', sendPdfDidacticToVocab)}
+                                              disabled={!pdfDidacticPack}
+                                              className="px-3 py-1.5 rounded-lg border border-amber-400/40 bg-amber-900/45 hover:bg-amber-800/55 disabled:opacity-45 text-[11px] font-bold text-amber-100"
+                                          >
+                                              Enviar a Vocabulario
+                                          </button>
+                                      </div>
+                                      {pdfDidacticPack && Number(pdfDidacticPack.page || 0) === Number(activePdfPageData.page || 0) ? (
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
+                                              <div className="rounded-lg border border-fuchsia-400/25 bg-black/30 p-2">
+                                                  <p className="font-bold text-fuchsia-200 mb-1">Vocabulario clave</p>
+                                                  <p className="text-fuchsia-100/90">{(pdfDidacticPack.keywords || []).slice(0, 10).map((k) => k.de).join(', ') || '—'}</p>
+                                              </div>
+                                              <div className="rounded-lg border border-fuchsia-400/25 bg-black/30 p-2">
+                                                  <p className="font-bold text-fuchsia-200 mb-1">Frases ejemplo</p>
+                                                  <p className="text-fuchsia-100/90">{(pdfDidacticPack.phrases || []).slice(0, 2).join('  ·  ') || '—'}</p>
+                                              </div>
+                                          </div>
+                                      ) : null}
+                                  </div>
+                              )}
                           </div>
                               
                           {readingFocusMode && (
@@ -9305,6 +9514,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           { id: 'camino', label: 'Camino' },
                                           { id: 'gramatica', label: 'Gramática' },
                                           { id: 'test', label: 'Test nivel' },
+                                          { id: 'pdf', label: 'PDF Coach' },
                                       ].map((t) => (
                                           <button key={t.id} type="button" onClick={() => setRutaSubTab(t.id)} className={`px-4 py-2 rounded-xl text-sm font-bold border transition ${rutaSubTab === t.id ? 'bg-fuchsia-600 border-fuchsia-400 text-white' : 'bg-black/40 border-white/10 text-gray-400 hover:text-white'}`}>{t.label}</button>
                                       ))}
@@ -9377,6 +9587,56 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           <p className="text-xs text-gray-500">Ampliaremos con más temas y ejemplos conforme añadas contenido al camino.</p>
                                       </div>
                                   )}
+  {rutaSubTab === 'pdf' && (
+  <div className="rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/20 p-5 md:p-6 space-y-4">
+    {!rutaPdfPack ? (
+      <>
+        <p className="text-white font-bold text-lg">Ruta desde PDF (Menschen Coach)</p>
+        <p className="text-gray-300 text-sm">
+          Desde Lectura &gt; PDF estudio, usa "Analizar página" y luego "Enviar a Ruta" para traer vocabulario, frases y ejercicios.
+        </p>
+      </>
+    ) : (
+      <>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-white font-black">PDF · U{rutaPdfPack.unit || '-'} · L{rutaPdfPack.lesson || '-'} · página {rutaPdfPack.page || '-'}</p>
+          <button type="button" onClick={() => { setRutaPdfPack(null); setRutaPdfFeedback(''); setRutaPdfGapInput(''); setRutaPdfGapIdx(0); }} className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold border border-white/10">Limpiar bloque</button>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-black/30 p-3">
+          <p className="text-xs text-fuchsia-300 font-black uppercase tracking-wider mb-1">Vocabulario clave</p>
+          <p className="text-sm text-white leading-relaxed">{(rutaPdfPack.keywords || []).slice(0, 14).map((k) => k.de).join(', ') || '—'}</p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-black/30 p-3">
+          <p className="text-xs text-cyan-300 font-black uppercase tracking-wider mb-1">Frases ejemplo</p>
+          <ul className="space-y-1 text-sm text-cyan-100">
+            {(rutaPdfPack.phrases || []).slice(0, 4).map((ph, i) => (<li key={i}>• {ph}</li>))}
+          </ul>
+        </div>
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-emerald-300 font-black uppercase tracking-wider">Ejercicio huecos</p>
+            <span className="text-[11px] text-emerald-100/80">Ítem {Math.min((rutaPdfGapIdx || 0) + 1, Math.max(1, (rutaPdfPack.exercises && rutaPdfPack.exercises.gaps ? rutaPdfPack.exercises.gaps.length : 1)))}</span>
+          </div>
+          <p className="text-white font-bold">
+            {(rutaPdfPack.exercises && rutaPdfPack.exercises.gaps && rutaPdfPack.exercises.gaps[rutaPdfGapIdx] ? rutaPdfPack.exercises.gaps[rutaPdfGapIdx].prompt : 'Sin ejercicios disponibles')}
+          </p>
+          <input
+            value={rutaPdfGapInput}
+            onChange={(e) => setRutaPdfGapInput(e.target.value)}
+            onKeyDown={(e) => handleExerciseEnterSubmit(e, 'ruta-pdf-gap-check', checkRutaPdfGap)}
+            placeholder="Escribe la palabra que falta"
+            className="w-full rounded-lg bg-black/45 border border-emerald-500/35 px-3 py-2 text-white text-sm outline-none focus:border-emerald-400"
+          />
+          {rutaPdfFeedback ? <p className="text-xs text-amber-200">{rutaPdfFeedback}</p> : null}
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => runSingleSubmitAction('ruta-pdf-gap-check', checkRutaPdfGap)} className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black">Comprobar</button>
+            <button type="button" onClick={() => runSingleSubmitAction('ruta-pdf-gap-next', () => { const total = Math.max(1, (rutaPdfPack.exercises && rutaPdfPack.exercises.gaps ? rutaPdfPack.exercises.gaps.length : 1)); setRutaPdfGapIdx((i) => (i + 1) % total); setRutaPdfGapInput(''); setRutaPdfFeedback(''); })} className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-white/10">Siguiente hueco</button>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+)}
   {rutaSubTab === 'test' && (
   <div className="rounded-2xl border border-sky-500/30 bg-sky-950/30 p-5 md:p-6 space-y-4">
     {!placementQuestions.length ? (
