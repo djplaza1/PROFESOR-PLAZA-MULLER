@@ -8982,6 +8982,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           <textarea
                                               value={writingTelcTypedText}
                                               onChange={(e) => setWritingTelcTypedText(e.target.value)}
+                                              onKeyDown={(e) => handleExerciseEnterSubmit(e, 'telc-evaluate', runTelcCoachFromCurrentInput, { requireCtrlOrMeta: true })}
                                               placeholder="Escribe aquí tu carta/email TELC con teclado…"
                                               className="w-full min-h-[140px] bg-black/45 border border-white/15 rounded-xl p-3 text-sm text-white outline-none focus:border-orange-400"
                                           />
@@ -9011,11 +9012,11 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                   <div className="flex flex-wrap gap-2">
                                       <button
                                           type="button"
-                                          onClick={() => {
+                                          onClick={() => runSingleSubmitAction('telc-next-task', () => {
                                               if (!WRITING_TELC_TASKS.length) return;
                                               setWritingTelcIdx((i) => (i + 1) % WRITING_TELC_TASKS.length);
                                               setWritingCanvasKey((k) => k + 1);
-                                          }}
+                                          })}
                                           className="text-xs font-bold px-3 py-1.5 rounded-lg bg-violet-800 hover:bg-violet-700 border border-violet-500/40"
                                       >
                                           Siguiente tarea TELC
@@ -9029,7 +9030,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       </button>
                                       <button
                                           type="button"
-                                          onClick={runTelcCoachFromCurrentInput}
+                                          onClick={() => runSingleSubmitAction('telc-evaluate', runTelcCoachFromCurrentInput)}
                                           className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 border border-emerald-400/40 inline-flex items-center gap-1.5"
                                       >
                                           <Icon name="clipboard-check" className="w-3.5 h-3.5" /> Evaluar texto TELC
