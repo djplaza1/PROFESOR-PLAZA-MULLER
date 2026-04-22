@@ -1390,6 +1390,7 @@
         const MULLER_GOAL_CLAIM_KEY = 'muller_main_goal_claim_date_v1';
         const MULLER_OCR_HIST_KEY = 'muller_ocr_history_v1';
         const MULLER_PDF_STUDY_STORAGE_KEY = 'muller_pdf_study_v1';
+        const MULLER_PDF_STUDY_LIBRARY_KEY = 'muller_pdf_study_library_v1';
         const MULLER_PDF_NOTES_STORAGE_KEY = 'muller_pdf_study_notes_v1';
         const MULLER_PDF_STORED_PAGES_MAX = 80;
         const MULLER_PDF_STORED_TEXT_MAX = 3200;
@@ -2202,6 +2203,14 @@ const [placementFinished, setPlacementFinished] = useState(false);
                   return raw ? JSON.parse(raw) : {};
               } catch (e) {
                   return {};
+              }
+          });
+          const [pdfStudySavedDocs, setPdfStudySavedDocs] = useState(() => {
+              try {
+                  const raw = localStorage.getItem(MULLER_PDF_STUDY_LIBRARY_KEY);
+                  return raw ? JSON.parse(raw) : [];
+              } catch (e) {
+                  return [];
               }
           });
           const [pdfStudyBlobUrl, setPdfStudyBlobUrl] = useState('');
@@ -3805,6 +3814,63 @@ const finishPlacementWithLevel = (finalLevel) => {
                   return next;
               });
           }, []);
+          const clearPdfStudyDoc = useCallback(() => {
+              setPdfStudyFullscreen(false);
+              setPdfStudyDoc(null);
+              setPdfStudyPageIdx(0);
+              setPdfStudyErr('');
+              setPdfStudyBusyMsg('PDF eliminado del panel.');
+              setPdfStudyLastApplied('');
+              setPdfStudyNotesByPage({});
+              try { localStorage.removeItem(MULLER_PDF_STUDY_STORAGE_KEY); } catch (e) {}
+              try { localStorage.removeItem(MULLER_PDF_NOTES_STORAGE_KEY); } catch (e) {}
+              try {
+                  setPdfStudyBlobUrl((prev) => {
+                      if (prev) {
+                          try { URL.revokeObjectURL(prev); } catch (e) {}
+                      }
+                      return '';
+                  });
+              } catch (e) {}
+              pdfStudyBufferRef.current = null;
+              pdfStudyDocHandleRef.current = null;
+          }, []);
+
+          const saveCurrentPdfStudyDoc = useCallback(() => {
+              if (!pdfStudyDoc) return;
+              const pagesCount = Array.isArray(pdfStudyDoc.pages) ? pdfStudyDoc.pages.length : 0;
+              const entry = {
+                  id: pdfStudyDoc.id || `pdf-${Date.now()}`,
+                  name: pdfStudyDoc.name || 'Libro PDF',
+                  importedAt: pdfStudyDoc.importedAt || new Date().toISOString(),
+                  totalPages: pdfStudyDoc.totalPages || pagesCount,
+                  updatedAt: new Date().toISOString(),
+                  doc: pdfStudyDoc
+              };
+              setPdfStudySavedDocs((prev) => {
+                  const arr = Array.isArray(prev) ? prev : [];
+                  const withoutSame = arr.filter((x) => String(x.id || '') !== String(entry.id));
+                  const next = [entry, ...withoutSame].slice(0, 20);
+                  try { localStorage.setItem(MULLER_PDF_STUDY_LIBRARY_KEY, JSON.stringify(next)); } catch (e) {}
+                  return next;
+              });
+              setPdfStudyBusyMsg(`PDF guardado en biblioteca: ${entry.name}.`);
+          }, [pdfStudyDoc]);
+
+          const loadPdfStudyFromLibrary = useCallback((libraryId) => {
+              const arr = Array.isArray(pdfStudySavedDocs) ? pdfStudySavedDocs : [];
+              const hit = arr.find((x) => String(x.id || '') === String(libraryId));
+              if (!hit || !hit.doc) return;
+              setPdfStudyDoc(hit.doc);
+              setPdfStudyPageIdx(0);
+              setPdfStudyErr('');
+              setPdfStudyLastApplied('');
+              setPdfStudyBusyMsg(`PDF cargado desde biblioteca: ${hit.name || 'Libro PDF'}.`);
+              pdfStudyBufferRef.current = null;
+              pdfStudyDocHandleRef.current = null;
+              try { localStorage.setItem(MULLER_PDF_STUDY_STORAGE_KEY, JSON.stringify(hit.doc)); } catch (e) {}
+          }, [pdfStudySavedDocs]);
+
           const openPdfStudyFullscreen = useCallback((pageNumber) => {
               if (!pdfStudyDoc) return;
               const idx = Math.max(0, (Number(pageNumber) || 1) - 1);
@@ -8381,6 +8447,24 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       />
                                       {pdfStudyExtracting ? '⏳ Procesando PDF…' : '📄 Subir PDF'}
                                   </label>
+                                  {pdfStudySavedDocs.length > 0 && (
+                                      <select
+                                          value="__none__"
+                                          onChange={(e) => {
+                                              const id = e.target.value;
+                                              if (id && id !== '__none__') loadPdfStudyFromLibrary(id);
+                                              e.target.value = '__none__';
+                                          }}
+                                          className="bg-black/45 border border-cyan-500/35 rounded-lg px-2 py-2 text-xs text-white"
+                                      >
+                                          <option value="__none__">Biblioteca PDF…</option>
+                                          {pdfStudySavedDocs.map((d) => (
+                                              <option key={d.id} value={d.id}>
+                                                  {d.name} · {d.totalPages || 0}p
+                                              </option>
+                                          ))}
+                                      </select>
+                                  )}
                                   {pdfStudyDoc && (
                                       <>
                                           <select
@@ -8425,6 +8509,22 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                               className="px-3 py-2 rounded-lg border border-indigo-500/35 bg-indigo-900/45 hover:bg-indigo-800/55 disabled:opacity-45 text-xs font-bold text-indigo-100"
                                           >
                                               Abrir PDF completo
+                                          </button>
+                                          <button
+                                              type="button"
+                                              onClick={saveCurrentPdfStudyDoc}
+                                              disabled={pdfStudyExtracting}
+                                              className="px-3 py-2 rounded-lg border border-sky-500/35 bg-sky-900/45 hover:bg-sky-800/55 disabled:opacity-45 text-xs font-bold text-sky-100"
+                                          >
+                                              Guardar PDF
+                                          </button>
+                                          <button
+                                              type="button"
+                                              onClick={clearPdfStudyDoc}
+                                              disabled={pdfStudyExtracting || pdfStudyOcrBusy}
+                                              className="px-3 py-2 rounded-lg border border-red-500/35 bg-red-900/45 hover:bg-red-800/55 disabled:opacity-45 text-xs font-bold text-red-100"
+                                          >
+                                              Quitar PDF
                                           </button>
                                       </>
                                   )}
