@@ -12,8 +12,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="PROFESOR PLAZA MÜLLER" />
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" type="image/jpeg" href="./icons/profesor-plaza-muller-logo.jpg" />
-    <link rel="apple-touch-icon" href="./icons/profesor-plaza-muller-logo.jpg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -1392,6 +1393,7 @@
         const MULLER_PDF_STUDY_STORAGE_KEY = 'muller_pdf_study_v1';
         const MULLER_PDF_STUDY_LIBRARY_KEY = 'muller_pdf_study_library_v1';
         const MULLER_PDF_NOTES_STORAGE_KEY = 'muller_pdf_study_notes_v1';
+        const MULLER_PDF_NOTES_LEGACY_DOC_ID = '__legacy__';
         const MULLER_PDF_STORED_PAGES_MAX = 80;
         const MULLER_PDF_STORED_TEXT_MAX = 3200;
         const MULLER_PDF_OCR_RETRY_MAX = 1;
@@ -2197,10 +2199,18 @@ const [placementFinished, setPlacementFinished] = useState(false);
           const [pdfStudyLastApplied, setPdfStudyLastApplied] = useState('');
           const [pdfStudyFullscreen, setPdfStudyFullscreen] = useState(false);
           const [pdfStudyInkNonce, setPdfStudyInkNonce] = useState(0);
+          const [pdfStudyOcrBatching, setPdfStudyOcrBatching] = useState(false);
           const [pdfStudyNotesByPage, setPdfStudyNotesByPage] = useState(() => {
               try {
                   const raw = localStorage.getItem(MULLER_PDF_NOTES_STORAGE_KEY);
-                  return raw ? JSON.parse(raw) : {};
+                  const parsed = raw ? JSON.parse(raw) : {};
+                  if (!parsed || typeof parsed !== 'object') return {};
+                  const values = Object.values(parsed);
+                  const looksLegacyFlat = values.length > 0 && values.every((v) => v && typeof v === 'object' && ('drawing' in v || 'typed' in v || 'updatedAt' in v));
+                  if (looksLegacyFlat) {
+                      return { [MULLER_PDF_NOTES_LEGACY_DOC_ID]: parsed };
+                  }
+                  return parsed;
               } catch (e) {
                   return {};
               }
@@ -2777,6 +2787,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
           const submitKeyLockRef = useRef({});
           const pdfStudyBufferRef = useRef(null);
           const pdfStudyDocHandleRef = useRef(null);
+          const pdfStudyOcrAbortRef = useRef(false);
 
           /* Tras cada commit React los <i data-lucide> se restauran; hay que volver a pintar SVG en todo el documento */
           useLayoutEffect(() => {
@@ -3859,15 +3870,26 @@ const finishPlacementWithLevel = (finalLevel) => {
               const idx = Math.max(0, Math.min(pdfStudyDoc.pages.length - 1, pdfStudyPageIdx));
               return pdfStudyDoc.pages[idx] || {};
           }, [pdfStudyDoc, pdfStudyPageIdx]);
+          const activePdfNotesDocId = useMemo(() => {
+              const id = pdfStudyDoc && pdfStudyDoc.id ? String(pdfStudyDoc.id) : '';
+              if (id) return id;
+              return MULLER_PDF_NOTES_LEGACY_DOC_ID;
+          }, [pdfStudyDoc]);
           const activePdfPageNotes = useMemo(() => {
               const page = activePdfPageData && activePdfPageData.page ? Number(activePdfPageData.page) : 0;
               if (!page || !pdfStudyNotesByPage || typeof pdfStudyNotesByPage !== 'object') return { drawing: '', typed: '' };
-              const entry = pdfStudyNotesByPage[String(page)] || {};
+              const notesByDoc = pdfStudyNotesByPage[activePdfNotesDocId] && typeof pdfStudyNotesByPage[activePdfNotesDocId] === 'object'
+                  ? pdfStudyNotesByPage[activePdfNotesDocId]
+                  : {};
+              const legacyByDoc = pdfStudyNotesByPage[MULLER_PDF_NOTES_LEGACY_DOC_ID] && typeof pdfStudyNotesByPage[MULLER_PDF_NOTES_LEGACY_DOC_ID] === 'object'
+                  ? pdfStudyNotesByPage[MULLER_PDF_NOTES_LEGACY_DOC_ID]
+                  : {};
+              const entry = notesByDoc[String(page)] || legacyByDoc[String(page)] || {};
               return {
                   drawing: typeof entry.drawing === 'string' ? entry.drawing : '',
                   typed: typeof entry.typed === 'string' ? entry.typed : ''
               };
-          }, [activePdfPageData, pdfStudyNotesByPage]);
+          }, [activePdfPageData, pdfStudyNotesByPage, activePdfNotesDocId]);
           const pdfStudyCanvasPadKey = useMemo(() => {
               const basePage = Math.max(1, Number(activePdfPageData && activePdfPageData.page ? activePdfPageData.page : 1));
               const nonce = Math.max(0, Number(pdfStudyInkNonce) || 0);
@@ -3878,21 +3900,60 @@ const finishPlacementWithLevel = (finalLevel) => {
               const safePage = Math.max(1, Number(pageNumber) || 1);
               setPdfStudyNotesByPage((prev) => {
                   const base = prev && typeof prev === 'object' ? prev : {};
+                  const docId = activePdfNotesDocId;
+                  const byDoc = base[docId] && typeof base[docId] === 'object' ? base[docId] : {};
                   const key = String(safePage);
-                  const current = base[key] && typeof base[key] === 'object' ? base[key] : {};
+                  const current = byDoc[key] && typeof byDoc[key] === 'object' ? byDoc[key] : {};
                   const next = {
                       ...base,
-                      [key]: {
-                          ...current,
-                          drawing: patch && typeof patch.drawing === 'string' ? patch.drawing : (typeof current.drawing === 'string' ? current.drawing : ''),
-                          typed: patch && typeof patch.typed === 'string' ? patch.typed : (typeof current.typed === 'string' ? current.typed : ''),
-                          updatedAt: new Date().toISOString()
+                      [docId]: {
+                          ...byDoc,
+                          [key]: {
+                              ...current,
+                              drawing: patch && typeof patch.drawing === 'string' ? patch.drawing : (typeof current.drawing === 'string' ? current.drawing : ''),
+                              typed: patch && typeof patch.typed === 'string' ? patch.typed : (typeof current.typed === 'string' ? current.typed : ''),
+                              updatedAt: new Date().toISOString()
+                          }
                       }
                   };
                   try { localStorage.setItem(MULLER_PDF_NOTES_STORAGE_KEY, JSON.stringify(next)); } catch (e) {}
                   return next;
               });
-          }, []);
+          }, [activePdfNotesDocId]);
+          const runPdfOcrBatch = useCallback(async () => {
+              if (!pdfStudyDoc || pdfStudyOcrBusy || pdfStudyExtracting || pdfStudyOcrBatching) return;
+              const pages = Array.isArray(pdfStudyDoc.pages) ? pdfStudyDoc.pages : [];
+              if (!pages.length) return;
+              const startPage = Math.max(1, Number(activePdfPageData.page) || 1);
+              const fromCurrent = pages.filter((p) => Number(p.page) >= startPage);
+              const wrap = [...fromCurrent, ...pages.filter((p) => Number(p.page) < startPage)];
+              const targets = wrap
+                  .filter((p) => p && Number(p.page) > 0 && (!p.text || String(p.text).trim().length < 40 || p.ocrPending))
+                  .slice(0, 12)
+                  .map((p) => Number(p.page));
+              if (!targets.length) {
+                  setPdfStudyBusyMsg('No hay páginas pendientes de OCR por lotes.');
+                  return;
+              }
+              pdfStudyOcrAbortRef.current = false;
+              setPdfStudyOcrBatching(true);
+              try {
+                  for (let i = 0; i < targets.length; i++) {
+                      if (pdfStudyOcrAbortRef.current) {
+                          setPdfStudyBusyMsg(`OCR por lotes detenido (${i}/${targets.length}).`);
+                          break;
+                      }
+                      const pg = targets[i];
+                      setPdfStudyBusyMsg(`OCR por lotes ${i + 1}/${targets.length} · página ${pg}…`);
+                      await runPdfPageOcr(pg);
+                      if (((i + 1) % 2) === 0) await new Promise((resolve) => setTimeout(resolve, 0));
+                  }
+                  if (!pdfStudyOcrAbortRef.current) setPdfStudyBusyMsg(`OCR por lotes completado (${targets.length} páginas).`);
+              } finally {
+                  setPdfStudyOcrBatching(false);
+                  pdfStudyOcrAbortRef.current = false;
+              }
+          }, [pdfStudyDoc, pdfStudyOcrBusy, pdfStudyExtracting, pdfStudyOcrBatching, activePdfPageData, runPdfPageOcr]);
           const clearPdfStudyDoc = useCallback(() => {
               setPdfStudyFullscreen(false);
               setPdfStudyDoc(null);
@@ -3900,9 +3961,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               setPdfStudyErr('');
               setPdfStudyBusyMsg('PDF eliminado del panel.');
               setPdfStudyLastApplied('');
-              setPdfStudyNotesByPage({});
               try { localStorage.removeItem(MULLER_PDF_STUDY_STORAGE_KEY); } catch (e) {}
-              try { localStorage.removeItem(MULLER_PDF_NOTES_STORAGE_KEY); } catch (e) {}
               try {
                   setPdfStudyBlobUrl((prev) => {
                       if (prev) {
@@ -3913,6 +3972,8 @@ const finishPlacementWithLevel = (finalLevel) => {
               } catch (e) {}
               pdfStudyBufferRef.current = null;
               pdfStudyDocHandleRef.current = null;
+              pdfStudyOcrAbortRef.current = true;
+              setPdfStudyOcrBatching(false);
           }, []);
 
           const saveCurrentPdfStudyDoc = useCallback(() => {
@@ -3947,6 +4008,8 @@ const finishPlacementWithLevel = (finalLevel) => {
               setPdfStudyBusyMsg(`PDF cargado desde biblioteca: ${hit.name || 'Libro PDF'}.`);
               pdfStudyBufferRef.current = null;
               pdfStudyDocHandleRef.current = null;
+              pdfStudyOcrAbortRef.current = true;
+              setPdfStudyOcrBatching(false);
               try { localStorage.setItem(MULLER_PDF_STUDY_STORAGE_KEY, JSON.stringify(hit.doc)); } catch (e) {}
           }, [pdfStudySavedDocs]);
 
@@ -8605,6 +8668,22 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                           </button>
                                           <button
                                               type="button"
+                                              onClick={runPdfOcrBatch}
+                                              disabled={pdfStudyExtracting || pdfStudyOcrBusy || pdfStudyOcrBatching}
+                                              className="px-3 py-2 rounded-lg border border-fuchsia-500/35 bg-fuchsia-900/40 hover:bg-fuchsia-800/50 disabled:opacity-45 text-xs font-bold text-fuchsia-100"
+                                          >
+                                              {pdfStudyOcrBatching ? 'OCR lotes…' : 'OCR 12 páginas'}
+                                          </button>
+                                          <button
+                                              type="button"
+                                              onClick={() => { pdfStudyOcrAbortRef.current = true; }}
+                                              disabled={!pdfStudyOcrBatching}
+                                              className="px-3 py-2 rounded-lg border border-gray-500/35 bg-gray-900/45 hover:bg-gray-800/55 disabled:opacity-45 text-xs font-bold text-gray-100"
+                                          >
+                                              Detener OCR
+                                          </button>
+                                          <button
+                                              type="button"
                                               onClick={() => applyPdfStudyTextToReading(activePdfPageData.page || 1)}
                                               disabled={pdfStudyExtracting}
                                               className="px-3 py-2 rounded-lg border border-emerald-500/35 bg-emerald-900/40 hover:bg-emerald-800/50 disabled:opacity-45 text-xs font-bold text-emerald-100"
@@ -10331,6 +10410,16 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       </div>
                   </div>
               )}
+              {pdfStudyDoc && !pdfStudyFullscreen ? (
+                  <button
+                      type="button"
+                      onClick={() => openPdfStudyFullscreen(activePdfPageData.page || 1)}
+                      className="fixed bottom-20 right-4 z-[110] px-3 py-2 rounded-xl border border-cyan-400/45 bg-cyan-900/75 hover:bg-cyan-800/80 text-cyan-100 text-xs font-black shadow-xl backdrop-blur"
+                      title="Abrir PDF Coach desde cualquier pestaña"
+                  >
+                      PDF Coach
+                  </button>
+              ) : null}
               {pdfStudyFullscreen && pdfStudyDoc ? (
                   <div className="fixed inset-0 z-[120] bg-black/95 flex flex-col">
                       <div className="flex items-center justify-between gap-3 px-3 md:px-5 py-3 border-b border-white/10 bg-slate-950/95">
@@ -10381,6 +10470,22 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                                       className="px-3 py-1.5 rounded-lg border border-amber-500/40 bg-amber-900/45 hover:bg-amber-800/55 disabled:opacity-45 text-xs font-bold text-amber-100"
                                   >
                                       {pdfStudyOcrBusy ? 'OCR…' : 'OCR página'}
+                                  </button>
+                                  <button
+                                      type="button"
+                                      onClick={runPdfOcrBatch}
+                                      disabled={pdfStudyExtracting || pdfStudyOcrBusy || pdfStudyOcrBatching}
+                                      className="px-3 py-1.5 rounded-lg border border-fuchsia-500/40 bg-fuchsia-900/45 hover:bg-fuchsia-800/55 disabled:opacity-45 text-xs font-bold text-fuchsia-100"
+                                  >
+                                      {pdfStudyOcrBatching ? 'OCR lotes…' : 'OCR 12 páginas'}
+                                  </button>
+                                  <button
+                                      type="button"
+                                      onClick={() => { pdfStudyOcrAbortRef.current = true; }}
+                                      disabled={!pdfStudyOcrBatching}
+                                      className="px-3 py-1.5 rounded-lg border border-gray-500/35 bg-gray-900/55 hover:bg-gray-800/60 disabled:opacity-45 text-xs font-bold text-gray-100"
+                                  >
+                                      Detener OCR
                                   </button>
                               </div>
                               {pdfStudyBlobUrl ? (
