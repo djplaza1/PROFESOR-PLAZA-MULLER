@@ -1,7 +1,7 @@
 {
-  "name": "Müller — Entrenador alemán TELC",
-  "short_name": "Müller",
-  "description": "Historia, vocabulario, B1/B2, progreso TELC.",
+  "name": "PROFESOR PLAZA MÜLLER",
+  "short_name": "PROFESOR PLAZA",
+  "description": "PROFESOR PLAZA MÜLLER",
   "lang": "es",
   "start_url": "./",
   "scope": "./",
@@ -9,7 +9,7 @@
   "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait-primary",
   "background_color": "#020617",
-  "theme_color": "#581c87",
+  "theme_color": "#111111",
   "categories": ["education", "productivity"],
   "icons": [
     {
