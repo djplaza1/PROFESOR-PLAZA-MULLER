@@ -403,9 +403,64 @@
                 justify-content: flex-end;
             }
         }
+        .muller-preboot {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 20% 10%, rgba(88,28,135,0.35), rgba(0,0,0,0.94) 45%);
+            color: #e2e8f0;
+            transition: opacity 220ms ease;
+        }
+        .muller-preboot.is-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .muller-preboot-card {
+            width: min(92vw, 540px);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 16px;
+            background: rgba(2,6,23,0.72);
+            padding: 18px 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+            text-align: center;
+        }
+        .muller-preboot-title {
+            margin: 0;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            line-height: 1.15;
+            font-size: clamp(1.15rem, 4.7vw, 2.05rem);
+            color: #f8fafc;
+            text-shadow: 0 2px 14px rgba(245, 158, 11, 0.35);
+        }
+        .muller-preboot-spin {
+            width: 22px;
+            height: 22px;
+            margin: 0 auto 10px;
+            border-radius: 9999px;
+            border: 2px solid rgba(255,255,255,0.25);
+            border-top-color: #f59e0b;
+            animation: mullerPrebootSpin 0.9s linear infinite;
+        }
+        @keyframes mullerPrebootSpin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <div id="muller-preboot" class="muller-preboot" role="status" aria-live="polite">
+        <div class="muller-preboot-card">
+            <div class="muller-preboot-spin"></div>
+            <p class="muller-preboot-title">CARGANDO PROFESOR PLAZA MÜLLER</p>
+            <p style="margin:8px 0 0;font-size:12px;color:#cbd5e1;">
+                La app tiene bastante contenido (OCR, PDF, rutas y bancos B1-B2) y se está inicializando.
+            </p>
+        </div>
+    </div>
     <div id="root"></div>
 
     <script type="text/babel">
@@ -11165,6 +11220,14 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
             );
         }
 
+      const hidePreboot = () => {
+        const el = document.getElementById('muller-preboot');
+        if (!el) return;
+        el.classList.add('is-hidden');
+        window.setTimeout(() => {
+          try { if (el && el.parentNode) el.parentNode.removeChild(el); } catch (e) {}
+        }, 260);
+      };
       const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(
             <MullerErrorBoundary>
@@ -11175,6 +11238,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                 </>
             </MullerErrorBoundary>
         );
+      window.requestAnimationFrame(() => window.requestAnimationFrame(hidePreboot));
 // ========== MÓDULO COMPLETO Y DEFINITIVO (4 PESTAÑAS + AUDIOLIBRO REAL) ==========
 // No modifica nada del código original, solo añade funcionalidad.
 
