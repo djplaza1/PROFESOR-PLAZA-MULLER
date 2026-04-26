@@ -1,20 +1,30 @@
 function InicioPanel(props) {
+    const noop = () => {};
+    const safeHealth = {
+        ok: false,
+        micOk: false,
+        micLabel: 'No disponible',
+        voiceCount: 0,
+        savedScriptsCount: 0,
+        storyScenesCount: 0,
+        listeningBusy: false,
+    };
     const {
-        healthSnapshot,
-        showSelfCheckPanel,
-        setShowSelfCheckPanel,
-        getSelfCheckItems,
-        vocabSrsDueCount,
-        setActiveTab,
-        setMode,
-        stopAudio,
-        setPracticeActive,
-        setVocabDueFilterOnly,
-        setBxBankLevel,
-        setBxCategory,
-        setShowMullerHub,
-        setMullerHubTab,
-        setTourStep,
+        healthSnapshot = safeHealth,
+        showSelfCheckPanel = false,
+        setShowSelfCheckPanel = noop,
+        getSelfCheckItems = () => [],
+        vocabSrsDueCount = 0,
+        setActiveTab = props && props.go ? props.go : noop,
+        setMode = noop,
+        stopAudio = noop,
+        setPracticeActive = noop,
+        setVocabDueFilterOnly = noop,
+        setBxBankLevel = noop,
+        setBxCategory = noop,
+        setShowMullerHub = noop,
+        setMullerHubTab = noop,
+        setTourStep = noop,
     } = props;
     return (
                       <div className="flex-1 flex flex-col overflow-y-auto hide-scrollbar p-4 md:p-8 max-w-5xl mx-auto w-full animate-in fade-in duration-500">
