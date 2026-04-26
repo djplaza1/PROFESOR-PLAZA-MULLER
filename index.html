@@ -72,8 +72,11 @@
     <script type="text/babel" src="src/features/ruta/ruta-panel.jsx"></script>
     <script type="text/babel" src="src/features/ruta/ruta-data.jsx"></script>
     <script type="text/babel" src="src/features/vocab-lexikon/vocab-srs.jsx"></script>
+    <script type="text/babel" src="src/features/vocab-lexikon/vocab-srs-panel.jsx"></script>
     <script type="text/babel" src="src/features/vocab-lexikon/bx-core.jsx"></script>
     <script type="text/babel" src="src/features/biblioteca/biblioteca-helpers.jsx"></script>
+    <script type="text/babel" src="src/features/biblioteca/biblioteca-panel.jsx"></script>
+    <script type="text/babel" src="src/features/telc/telc-levels-panel.jsx"></script>
     <script type="text/babel" src="src/features/historia/default-guion.jsx"></script>
     <script type="text/babel" src="src/features/historia/tempus-dict.jsx"></script>
     <script type="text/babel" src="src/features/historia/oral-b1-questions.jsx"></script>
@@ -90,6 +93,7 @@
     <script type="text/babel" src="src/ui/tablet-writing-canvas.jsx"></script>
     <script type="text/babel" src="src/ui/handwriting-pad.jsx"></script>
     <script type="text/babel" src="src/hooks/TelcExamHud.jsx"></script>
+    <script type="text/babel" src="src/app-floating.jsx"></script>
 
     <style>
         html {
@@ -310,7 +314,7 @@
             color: var(--muller-hc-fg) !important;
             border-color: var(--muller-hc-border) !important;
         }
-        .muller-theme-hc .text-white { color: var(--muller-hc-fg) !important; 
+        .muller-theme-hc .text-white { color: var(--muller-hc-fg) !important; }
         .muller-theme-hc .text-gray-400 { color: #e5e5e5 !important; }
         .muller-pwa-banner {
             position: fixed;
@@ -465,21 +469,16 @@
             pointer-events: none;
         }
         .muller-preboot-card {
-            width: min(92vw, 760px);
-            border: 1px solid rgba(255,255,255,0.16);
-            border-radius: 20px;
-            background: rgba(2,6,23,0.74);
-            padding: 28px 22px;
-            box-shadow: 0 24px 48px rgba(0,0,0,0.48);
+            width: min(94vw, 780px);
+            padding: 18px 14px;
             text-align: center;
         }
         .muller-preboot-logo {
-            width: clamp(160px, 40vw, 320px);
+            width: clamp(200px, 48vw, 420px);
             height: auto;
             display: block;
-            margin: 0 auto 14px;
-            border-radius: 14px;
-            box-shadow: 0 14px 34px rgba(0,0,0,0.45);
+            margin: 0 auto 18px;
+            object-fit: contain;
         }
         .muller-preboot-title {
             margin: 0 0 10px;
@@ -517,7 +516,7 @@
     <div id="muller-preboot" class="muller-preboot" role="status" aria-live="polite">
         <div class="muller-preboot-card">
             <div class="muller-preboot-spin"></div>
-            <img class="muller-preboot-logo" src="icons/profesor-plaza-muller-logo.jpg" alt="Logo Profesor Plaza Muller" />
+            <img class="muller-preboot-logo" src="icons/icon-512.png" alt="Logo Profesor Plaza Muller" />
             <p class="muller-preboot-title">CARGANDO PROFESOR PLAZA MÃœLLER</p>
             <p class="muller-preboot-subtitle">
                 La app tiene bastante contenido (OCR, PDF, rutas y bancos B1-B2) y se estÃ¡ inicializando.
