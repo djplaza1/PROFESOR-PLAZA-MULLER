@@ -7065,8 +7065,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   </div>
               )}
 
-              <div className="muller-bottom-tabs-cluster lg:hidden" role="navigation" aria-label="Navegación principal móvil (dos filas)">
-                  <nav className="muller-nav-row muller-mobile-bottom-nav" aria-label="Pestañas 1">
+              <nav className="muller-nav-row muller-mobile-bottom-nav lg:hidden" aria-label="Navegación inferior fija, scroll horizontal">
                   <button type="button" onClick={() => { setActiveTab('inicio'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'inicio' ? 'is-active' : ''}><Icon name="layout-dashboard" className="w-4 h-4" />Inicio</button>
                   <button type="button" onClick={() => { setActiveTab('ruta'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'ruta' ? 'is-active' : ''}><Icon name="map" className="w-4 h-4" />Ruta</button>
                   <button type="button" onClick={() => { setActiveTab('historia'); setMode('dialogue'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'historia' ? 'is-active' : ''}><Icon name="play" className="w-4 h-4" />Historia</button>
@@ -7074,8 +7073,6 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   <button type="button" onClick={() => { setActiveTab('vocabulario'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'vocabulario' ? 'is-active' : ''}><Icon name="book-open" className="w-4 h-4" />Vocab</button>
                   <button type="button" onClick={() => { setActiveTab('entrenamiento'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'entrenamiento' ? 'is-active' : ''}><Icon name="graduation-cap" className="w-4 h-4" />Entrena</button>
                   <button type="button" onClick={() => { setActiveTab('bxbank'); setBxBankLevel('b1'); setBxCategory('mix'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'bxbank' ? 'is-active' : ''}><Icon name="target" className="w-4 h-4" />B1/B2</button>
-                  </nav>
-                  <nav className="muller-nav-row muller-mobile-bottom-nav muller-mobile-bottom-nav--row2" aria-label="Pestañas 2">
                   <button type="button" onClick={() => { setActiveTab('progreso'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'progreso' ? 'is-active' : ''}><Icon name="bar-chart" className="w-4 h-4" />Progreso</button>
                   <button type="button" onClick={() => { setActiveTab('guiones'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'guiones' ? 'is-active' : ''}><Icon name="file-text" className="w-4 h-4" />Biblioteca</button>
                   <button type="button" onClick={() => { setActiveTab('lexikon'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'lexikon' ? 'is-active' : ''}><Icon name="library" className="w-4 h-4" />Lexikon</button>
@@ -7083,8 +7080,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   <button type="button" onClick={() => { setActiveTab('storybuilder'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'storybuilder' ? 'is-active' : ''}><Icon name="sparkles" className="w-4 h-4" />IA</button>
                   <button type="button" onClick={() => { setActiveTab('historiaspro'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'historiaspro' ? 'is-active' : ''}><Icon name="feather" className="w-4 h-4" />Pro</button>
                   <button type="button" onClick={() => { setActiveTab('comunidad'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'comunidad' ? 'is-active' : ''}><Icon name="trophy" className="w-4 h-4" />Comunidad</button>
-                  </nav>
-              </div>
+              </nav>
 
               {/* CONTENIDO PRINCIPAL */}
               <div className={`muller-app-main flex-1 overflow-y-auto relative flex flex-col hide-scrollbar pt-[var(--muller-mobile-header-h)] pb-[calc(var(--muller-mobile-bottom-nav-h)+max(0.5rem,env(safe-area-inset-bottom,0px)))] ${activeTab === 'historia' && mode !== 'quiz' && mode !== 'interview' && !practiceActive ? 'muller-main-historia-pb' : ''} ${uiTheme === 'light' ? 'text-slate-900' : ''}`}>
