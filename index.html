@@ -754,8 +754,38 @@
     })();
     </script>
 
-    <!-- App completa (un solo bundle; NO usar app-init.jsx en producción: es solo carcasa modular incompleta) -->
-    <script type="text/babel" src="src/app-bundled-from-user-index.jsx"></script>
+    <!-- App completa: Babel.transform con compact:true evita warning 500KB de Babel -->
+    <script>
+      (function() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'src/app-bundled-from-user-index.jsx', true);
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            var code = xhr.responseText;
+            try {
+              var result = Babel.transform(code, {
+                presets: ['react', 'env'],
+                compact: true,
+                comments: false,
+                minified: true
+              });
+              var script = document.createElement('script');
+              script.type = 'text/javascript';
+              script.textContent = result.code;
+              document.body.appendChild(script);
+            } catch (err) {
+              console.error('Babel transform failed:', err);
+            }
+          } else {
+            console.error('Failed to load bundle:', xhr.status);
+          }
+        };
+        xhr.onerror = function() {
+          console.error('Network error loading bundle');
+        };
+        xhr.send();
+      })();
+    </script>
 
     <script>
         if ('serviceWorker' in navigator) {
