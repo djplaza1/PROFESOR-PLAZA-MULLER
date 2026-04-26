@@ -469,10 +469,10 @@
             box-shadow: 0 -2px 12px rgba(0,0,0,0.15);
         }
 
-        /* ---- ZONA CENTRAL: TODO BLANCO, LOGO CIRCULAR CON FONDO NEGRO REDONDO IZQUIERDA + TÍTULO CON MARCO DERECHA ---- */
+        /* ---- ZONA CENTRAL: BLANCA, MUY ESTRECHA (16%), LOGO GIGANTE CASI TOCANDO BANDERAS ---- */
         .muller-preboot-mid {
-            flex: 0 1 26%;
-            min-height: clamp(100px, 26vh, 220px);
+            flex: 0 1 16%;
+            min-height: clamp(60px, 16vh, 160px);
             display: flex;
             flex-direction: row;
             align-items: stretch;
@@ -487,25 +487,25 @@
             box-sizing: border-box;
         }
 
-        /* Lado izquierdo: fondo blanco + logo circular con fondo negro redondo (sin marcos) */
+        /* Lado izquierdo: rellena toda la altura, padding mínimo */
         .muller-preboot-mid-left {
             flex: 0 0 auto;
+            height: 100%;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             background: #ffffff;
-            padding: clamp(0.4rem, 1vw, 0.75rem);
+            padding: clamp(2px, 0.3vh, 6px);
             box-sizing: border-box;
             position: relative;
             overflow: visible;
         }
 
-        /* Logo: botón cuadrado? NO. Es un círculo perfecto con fondo negro detrás, sin marcos ni bordes */
+        /* Logo: círculo perfecto SIN marcos, llena toda la altura disponible */
         .muller-preboot-logo-btn {
             -webkit-tap-highlight-color: transparent;
             display: block;
-            margin: 0 auto;
+            margin: 0;
             padding: 0;
             border: none;
             border-radius: 50%;
@@ -517,10 +517,12 @@
             position: relative;
             z-index: 3;
             outline: none;
-            width: min(20vw, 22vh, 14rem);
-            height: min(20vw, 22vh, 14rem);
-            min-width: 80px;
-            min-height: 80px;
+            height: 100%;
+            aspect-ratio: 1 / 1;
+            max-height: 20vh;
+            max-width: 20vh;
+            min-width: 55px;
+            min-height: 55px;
             overflow: hidden;
         }
         .muller-preboot-logo-btn:hover {
