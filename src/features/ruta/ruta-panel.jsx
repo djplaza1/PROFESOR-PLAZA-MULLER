@@ -371,3 +371,4 @@ function RutaPanel(props) {
                       </div>
                     );
 }
+window.RutaPanel = RutaPanel;
