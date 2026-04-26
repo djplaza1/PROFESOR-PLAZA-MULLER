@@ -8,6 +8,7 @@ const MissingPanel = ({ name }) => React.createElement(
 );
 
 const getCmp = (name) => window[name] || ((props) => React.createElement(MissingPanel, { name, ...props }));
+const getBoundaryCmp = () => window.MullerErrorBoundary || React.Fragment;
 
 // ====== COMPONENTE PRINCIPAL APP ======
 function App() {
@@ -107,19 +108,36 @@ const hidePreboot = () => {
 };
 
 // ====== RENDER ======
-document.addEventListener('DOMContentLoaded', () => {
-    const ErrorBoundaryCmp = getCmp('MullerErrorBoundary');
+const bootApp = () => {
+    const ErrorBoundaryCmp = getBoundaryCmp();
     const FloatingButtonsCmp = getCmp('FloatingButtons');
-    const AdvancedPracticePanelFinalCmp = getCmp('AdvancedPracticePanelFinal');
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(
-        React.createElement(ErrorBoundaryCmp, null,
-            React.createElement(React.Fragment, null,
-        React.createElement(App, null),
-        React.createElement(FloatingButtonsCmp, null)
+    try {
+        const rootNode = document.getElementById('root');
+        if (!rootNode) return;
+        const root = ReactDOM.createRoot(rootNode);
+        root.render(
+            React.createElement(ErrorBoundaryCmp, null,
+                React.createElement(React.Fragment, null,
+                    React.createElement(App, null),
+                    React.createElement(FloatingButtonsCmp, null)
+                )
             )
-        )
-    );
-    window.requestAnimationFrame(() => window.requestAnimationFrame(hidePreboot));
-});
+        );
+    } catch (err) {
+        try {
+            const rootNode = document.getElementById('root');
+            if (rootNode) {
+                rootNode.innerHTML = '<div style="min-height:100vh;background:#020617;color:#fff;display:flex;align-items:center;justify-content:center;padding:16px;text-align:center;font-family:Outfit,system-ui">Error de arranque. Revisa consola (F12).</div>';
+            }
+        } catch (e) {}
+    } finally {
+        window.requestAnimationFrame(() => window.requestAnimationFrame(hidePreboot));
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootApp, { once: true });
+} else {
+    bootApp();
+}
