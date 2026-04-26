@@ -508,7 +508,7 @@
             border: none;
             border-radius: 50%;
             background: #000000;
-            box-shadow: none !important;
+            box-shadow: none;
             line-height: 0;
             cursor: pointer;
             transition: transform 180ms ease, opacity 180ms ease;
@@ -701,7 +701,10 @@
     <script>
     (function () {
         var hintTid;
+        var prebootDismissed = false;
         function dismissPreboot() {
+            if (prebootDismissed) return;
+            prebootDismissed = true;
             if (typeof window.mullerDismissPreboot === 'function') {
                 try { window.mullerDismissPreboot(); } catch (e) {}
                 return;
@@ -713,18 +716,67 @@
                 try { if (el && el.parentNode) el.parentNode.removeChild(el); } catch (e) {}
             }, 320);
         }
+        function speakGermanAndDismiss() {
+            if (hintTid) { try { clearTimeout(hintTid); } catch (e) {} }
+            var phrase = 'Bist du bereit, deine Ziele zu erreichen?';
+            if ('speechSynthesis' in window) {
+                var utter = new SpeechSynthesisUtterance(phrase);
+                utter.lang = 'de-DE';
+                utter.rate = 0.9;
+                utter.pitch = 1.0;
+                var voices = speechSynthesis.getVoices();
+                // Buscar voz nativa alemana de alta calidad
+                var bestVoice = null;
+                for (var i = 0; i < voices.length; i++) {
+                    if (voices[i].lang === 'de-DE' && voices[i].localService) {
+                        bestVoice = voices[i];
+                        break;
+                    }
+                }
+                if (!bestVoice) {
+                    for (var j = 0; j < voices.length; j++) {
+                        if (voices[j].lang.startsWith('de')) {
+                            bestVoice = voices[j];
+                            break;
+                        }
+                    }
+                }
+                if (bestVoice) utter.voice = bestVoice;
+                utter.onend = function () { dismissPreboot(); };
+                utter.onerror = function () { dismissPreboot(); };
+                // Si las voces no están listas, intentar cargarlas y luego hablar
+                if (voices.length === 0) {
+                    speechSynthesis.onvoiceschanged = function () {
+                        var v2 = speechSynthesis.getVoices();
+                        var bv = null;
+                        for (var k = 0; k < v2.length; k++) {
+                            if (v2[k].lang === 'de-DE' && v2[k].localService) { bv = v2[k]; break; }
+                        }
+                        if (!bv) {
+                            for (var l = 0; l < v2.length; l++) {
+                                if (v2[l].lang.startsWith('de')) { bv = v2[l]; break; }
+                            }
+                        }
+                        if (bv) utter.voice = bv;
+                        speechSynthesis.speak(utter);
+                    };
+                } else {
+                    speechSynthesis.speak(utter);
+                }
+            } else {
+                dismissPreboot();
+            }
+        }
         function setupPreboot() {
             var btn = document.getElementById('muller-preboot-logo-btn');
             if (btn) {
                 btn.addEventListener('click', function () {
-                    if (hintTid) { try { clearTimeout(hintTid); } catch (e) {} }
-                    dismissPreboot();
+                    speakGermanAndDismiss();
                 });
                 btn.addEventListener('keydown', function (e) {
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        if (hintTid) { try { clearTimeout(hintTid); } catch (e) {} }
-                        dismissPreboot();
+                        speakGermanAndDismiss();
                     }
                 });
             }
