@@ -6514,23 +6514,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       )}
                   </div>
                   </div>
-
-                      <div className="muller-nav-row gap-1.5 md:gap-2 bg-zinc-950/85 p-1 md:p-1.5 rounded-2xl ring-1 ring-white/[0.1] w-full min-w-0 touch-manipulation">
-                      {activeTab === 'bxbank' ? (
-                          <div className="flex items-center gap-1 rounded-xl bg-black/30 border border-white/10 px-1.5 py-1">
-                              <button type="button" onClick={() => setBxBankLevel('b1')} className={`px-2.5 py-1 rounded-lg text-[11px] font-black ${bxBankLevel === 'b1' ? 'bg-emerald-600 text-white' : 'text-gray-300 hover:text-white'}`}>B1</button>
-                              <button type="button" onClick={() => setBxBankLevel('b2')} className={`px-2.5 py-1 rounded-lg text-[11px] font-black ${bxBankLevel === 'b2' ? 'bg-sky-600 text-white' : 'text-gray-300 hover:text-white'}`}>B2</button>
-                          </div>
-                      ) : null}
-                      <button onClick={()=>{setActiveTab('progreso'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'progreso' ? 'bg-yellow-600 text-white shadow-[0_0_18px_rgba(202,138,4,0.35)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="bar-chart" className="w-4 h-4 md:w-5 md:h-5" /> Progreso</button>
-                      <button onClick={()=>{setActiveTab('guiones'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'guiones' ? 'bg-purple-600 text-white shadow-[0_0_18px_rgba(147,51,234,0.45)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="file-text" className="w-4 h-4 md:w-5 md:h-5" /> Biblioteca</button>
-                      <button type="button" onClick={()=>{setActiveTab('lexikon'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'lexikon' ? 'bg-cyan-700 text-white shadow-[0_0_16px_rgba(14,116,144,0.5)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="library" className="w-4 h-4 md:w-5 md:h-5" /> Lexikon</button>
-                      <button onClick={()=>{setActiveTab('telc'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'telc' ? 'bg-orange-700 text-white shadow-[0_0_16px_rgba(194,65,12,0.5)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="clipboard-check" className="w-4 h-4 md:w-5 md:h-5" /> TELC</button>
-                      <button onClick={()=>{setActiveTab('storybuilder'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'storybuilder' ? 'bg-fuchsia-600 text-white shadow-[0_0_18px_rgba(192,38,211,0.45)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="sparkles" className="w-4 h-4 md:w-5 md:h-5" /> IA</button>
-                      <button onClick={()=>{setActiveTab('historiaspro'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'historiaspro' ? 'bg-emerald-600 text-white shadow-[0_0_18px_rgba(16,185,129,0.45)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="feather" className="w-4 h-4 md:w-5 md:h-5" /> Historias Pro</button>
-                      <button onClick={()=>{setActiveTab('comunidad'); stopAudio(); setPracticeActive(null);}} className={`flex items-center gap-2 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl font-black text-[13px] md:text-sm min-h-[3rem] transition border ${activeTab === 'comunidad' ? 'bg-violet-600 text-white shadow-[0_0_18px_rgba(124,58,237,0.5)] ring-1 ring-white/25 border-white/20' : 'text-gray-300 hover:text-white whitespace-nowrap bg-white/[0.02] hover:bg-white/[0.08] border-white/0 hover:border-white/20'}`}><Icon nav name="trophy" className="w-4 h-4 md:w-5 md:h-5" /> Comunidad</button>
-                      </div>
-                  </div>
+              </div>
               </div>
 
               <div className="w-full border-b border-white/[0.08] bg-black/35 backdrop-blur-md px-3 md:px-4 py-2 md:py-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -7065,20 +7049,19 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   </div>
               )}
 
-              <nav className="muller-nav-row muller-mobile-bottom-nav lg:hidden" aria-label="Navegación inferior fija, scroll horizontal">
-                  <button type="button" onClick={() => { setActiveTab('inicio'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'inicio' ? 'is-active' : ''}><Icon name="layout-dashboard" className="w-4 h-4" />Inicio</button>
-                  <button type="button" onClick={() => { setActiveTab('ruta'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'ruta' ? 'is-active' : ''}><Icon name="map" className="w-4 h-4" />Ruta</button>
-                  <button type="button" onClick={() => { setActiveTab('historia'); setMode('dialogue'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'historia' ? 'is-active' : ''}><Icon name="play" className="w-4 h-4" />Historia</button>
-                  <button type="button" onClick={() => { setActiveTab('lectura'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'lectura' ? 'is-active' : ''}><Icon name="mic" className="w-4 h-4" />Lectura</button>
-                  <button type="button" onClick={() => { setActiveTab('vocabulario'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'vocabulario' ? 'is-active' : ''}><Icon name="book-open" className="w-4 h-4" />Vocab</button>
-                  <button type="button" onClick={() => { setActiveTab('entrenamiento'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'entrenamiento' ? 'is-active' : ''}><Icon name="graduation-cap" className="w-4 h-4" />Entrena</button>
-                  <button type="button" onClick={() => { setActiveTab('bxbank'); setBxBankLevel('b1'); setBxCategory('mix'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'bxbank' ? 'is-active' : ''}><Icon name="target" className="w-4 h-4" />B1/B2</button>
+              <nav className="muller-nav-row muller-mobile-bottom-nav muller-bottom-secondary-nav" aria-label="Herramientas, segunda fila fija, scroll horizontal">
+                  {activeTab === 'bxbank' ? (
+                      <div className="muller-bxbank-btns" aria-label="Cambio de banco B1 o B2">
+                          <button type="button" onClick={() => { setBxBankLevel('b1'); setActiveTab('bxbank'); setBxCategory('mix'); stopAudio(); setPracticeActive(null); }} className={bxBankLevel === 'b1' ? 'is-active' : ''}><Icon name="target" className="w-3.5 h-3.5" />B1</button>
+                          <button type="button" onClick={() => { setBxBankLevel('b2'); setActiveTab('bxbank'); setBxCategory('mix'); stopAudio(); setPracticeActive(null); }} className={bxBankLevel === 'b2' ? 'is-active' : ''}><Icon name="layers" className="w-3.5 h-3.5" />B2</button>
+                      </div>
+                  ) : null}
                   <button type="button" onClick={() => { setActiveTab('progreso'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'progreso' ? 'is-active' : ''}><Icon name="bar-chart" className="w-4 h-4" />Progreso</button>
                   <button type="button" onClick={() => { setActiveTab('guiones'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'guiones' ? 'is-active' : ''}><Icon name="file-text" className="w-4 h-4" />Biblioteca</button>
                   <button type="button" onClick={() => { setActiveTab('lexikon'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'lexikon' ? 'is-active' : ''}><Icon name="library" className="w-4 h-4" />Lexikon</button>
                   <button type="button" onClick={() => { setActiveTab('telc'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'telc' ? 'is-active' : ''}><Icon name="clipboard-check" className="w-4 h-4" />TELC</button>
                   <button type="button" onClick={() => { setActiveTab('storybuilder'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'storybuilder' ? 'is-active' : ''}><Icon name="sparkles" className="w-4 h-4" />IA</button>
-                  <button type="button" onClick={() => { setActiveTab('historiaspro'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'historiaspro' ? 'is-active' : ''}><Icon name="feather" className="w-4 h-4" />Pro</button>
+                  <button type="button" onClick={() => { setActiveTab('historiaspro'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'historiaspro' ? 'is-active' : ''}><Icon name="feather" className="w-4 h-4" />Maestros Pro</button>
                   <button type="button" onClick={() => { setActiveTab('comunidad'); stopAudio(); setPracticeActive(null); }} className={activeTab === 'comunidad' ? 'is-active' : ''}><Icon name="trophy" className="w-4 h-4" />Comunidad</button>
               </nav>
 
