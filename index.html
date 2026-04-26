@@ -1,5 +1,4 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -130,7 +129,7 @@
         .lucide-wrapper .fill-current svg { fill: currentColor; stroke: none; }
         button.muller-icon-nav .lucide-wrapper,
         button.muller-icon-nav i[data-lucide] { color: #fff; }
-        /* Mic â€œmantÃ©n pulsadoâ€ en Shadowing: anillo claro + trazo mÃ¡s grueso para que el icono no se pierda sobre el verde */
+        /* Mic "mantén pulsado" en Shadowing: anillo claro + trazo más grueso para que el icono no se pierda sobre el verde */
         button.muller-mic-hold-btn {
             position: relative;
             background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22) 0%, transparent 52%),
@@ -294,7 +293,7 @@
             cursor: crosshair;
             background: transparent;
         }
-        /* Temas UI: se aplican en el contenedor raÃ­z de la app */
+        /* Temas UI: se aplican en el contenedor raíz de la app */
         .muller-theme-light {
             --muller-surface: #f1f5f9;
             --muller-ink: #0f172a;
@@ -431,7 +430,7 @@
             border: 0;
             box-shadow: none;
         }
-        /* Tema claro: el scroll principal tiene fondo claro pero muchos bloques siguen con text-white â†’ forzamos tinta oscura salvo botones/badges con fondo de color */
+        /* Tema claro: el scroll principal tiene fondo claro pero muchos bloques siguen con text-white → forzamos tinta oscura salvo botones/badges con fondo de color */
         .muller-theme-light .muller-app-main {
             color: #0f172a;
         }
@@ -481,6 +480,8 @@
         @media (max-width: 640px) {
             .muller-nav-row { gap: 0.32rem; }
         }
+
+        /* ==================== SPLASH / PREBOOT ==================== */
         .muller-preboot {
             position: fixed;
             inset: 0;
@@ -499,7 +500,7 @@
             pointer-events: none;
             visibility: hidden;
         }
-        /* Bandas de color dominantes y separadores más finos — proporciones flex */
+        /* Bandas de color */
         .muller-preboot-de,
         .muller-preboot-es {
             flex: 3;
@@ -524,63 +525,118 @@
             width: 100%;
             background: #ffffff;
         }
+        /* Zona blanca central: fondo negro para fusionar con logo JPG */
         .muller-preboot-mid {
             flex: 2;
             min-height: 0;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
+            justify-content: center;
             width: 100%;
             max-width: 100vw;
             position: relative;
             z-index: 2;
             overflow: visible;
-            padding: 0;
+            padding: 0.3rem 0.5rem;
             background: #000000;
             box-shadow: none;
+            box-sizing: border-box;
         }
-        .muller-preboot-title-bar {
-            width: 100%;
-            background: #ffffff;
+        /* Left: logo */
+        .muller-preboot-mid-left {
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: clamp(0.3rem, 1vw, 0.6rem) 0.5rem;
-            flex-shrink: 0;
+        }
+        .muller-preboot-logo-btn {
+            -webkit-tap-highlight-color: transparent;
+            display: block;
+            margin: 0;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+            background: none !important;
+            border-radius: 0;
+            box-shadow: none !important;
+            line-height: 0;
+            transition: transform 180ms ease, opacity 180ms ease;
+        }
+        .muller-preboot-logo-btn:hover {
+            transform: scale(1.02);
+        }
+        .muller-preboot-logo-btn:focus-visible {
+            outline: 2px solid #6366f1;
+            outline-offset: 3px;
+            border-radius: 0.25rem;
+        }
+        .muller-preboot-logo-btn img {
+            display: block;
+            width: min(30vw, 22vh, 12rem);
+            max-width: 12rem;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            object-position: center;
+            background: transparent !important;
+            border: 0;
+            border-radius: 50%;
+            box-shadow: none;
+            filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.5));
+            transition: transform 0.4s ease, filter 0.4s ease;
+            animation: preboot-glow-pulse 2.4s infinite ease-in-out;
+        }
+        @keyframes preboot-glow-pulse {
+            0%, 100% { filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.4)); }
+            50% { filter: drop-shadow(0 0 24px rgba(212, 175, 55, 0.8)); }
+        }
+        .muller-preboot-logo-btn.preboot-idle-hint {
+            animation: golden-blink 0.8s ease-in-out 3;
+        }
+        @keyframes golden-blink {
+            0%, 100% { filter: drop-shadow(0 0 12px gold) brightness(1); }
+            50% { filter: drop-shadow(0 0 40px gold) brightness(1.25); }
+        }
+        /* Right: título enorme + CTA */
+        .muller-preboot-mid-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            min-width: 0;
+            padding-left: clamp(0.5rem, 2vw, 1.5rem);
+            padding-right: clamp(0.2rem, 1vw, 0.5rem);
+            gap: 0.1rem;
         }
         .muller-preboot-hero-title {
             margin: 0;
             font-family: 'Outfit', system-ui, sans-serif;
             font-weight: 800;
-            font-size: clamp(1.2rem, 6.2vw, 2.1rem);
+            font-size: clamp(1.8rem, 8vw, 3.8rem);
             letter-spacing: 0.02em;
             line-height: 1.0;
-            text-align: center;
+            text-align: left;
             text-transform: uppercase;
-            color: #0f172a;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.9);
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
             width: 100%;
             box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
         }
-        .muller-preboot-mid-inner {
-            flex: 1;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            gap: clamp(0.6rem, 2.5vw, 2rem);
-            width: 100%;
-            max-width: 100%;
-            padding: clamp(0.5rem, 2vw, 1.5rem) 0.5rem;
-            min-height: 0;
+        .muller-preboot-hero-title .muller-preboot-uml {
+            letter-spacing: 0.04em;
         }
         .muller-preboot-cta-wrap {
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: center;
-            gap: 0.1rem;
-            flex-shrink: 0;
+            flex-direction: row;
+            align-items: center;
+            gap: 0;
+            margin: 0;
+            min-height: 0;
         }
         .muller-preboot-cta {
             display: flex;
@@ -625,63 +681,13 @@
             0%, 100% { transform: translateX(0); }
             50% { transform: translateX(-0.2rem); }
         }
-        @media (min-width: 480px) {
-            .muller-preboot-hero-title { font-size: clamp(1.35rem, 5.2vw, 2.35rem); }
+        @media (max-width: 480px) {
+            .muller-preboot-hero-title { font-size: clamp(1.2rem, 6.5vw, 1.8rem); }
+            .muller-preboot-logo-btn img { width: min(28vw, 20vh, 8rem); max-width: 8rem; }
         }
         @media (min-width: 768px) {
-            .muller-preboot-hero-title { font-size: clamp(1.5rem, 3.6vw, 2.8rem); }
-        }
-        .muller-preboot-hero-title .muller-preboot-uml {
-            letter-spacing: 0.04em;
-        }
-        .muller-preboot-logo-btn {
-            -webkit-tap-highlight-color: transparent;
-            display: block;
-            margin: 0.1rem 0 0;
-            padding: 0;
-            border: none;
-            cursor: pointer;
-            background: none !important;
-            border-radius: 0;
-            box-shadow: none !important;
-            line-height: 0;
-            transition: transform 180ms ease, opacity 180ms ease;
-        }
-        .muller-preboot-logo-btn:hover {
-            transform: scale(1.02);
-        }
-        .muller-preboot-logo-btn:focus-visible {
-            outline: 2px solid #6366f1;
-            outline-offset: 3px;
-            border-radius: 0.25rem;
-        }
-        /* Logo con glow pulsante elegante y animación suave */
-        .muller-preboot-logo-btn img {
-            display: block;
-            width: min(92vw, 26rem);
-            max-height: min(38vh, 20rem);
-            height: auto;
-            object-fit: cover;
-            object-position: center;
-            background: transparent !important;
-            border: 0;
-            border-radius: 50%;
-            box-shadow: none;
-            filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.5));
-            transition: transform 0.4s ease, filter 0.4s ease;
-            animation: preboot-glow-pulse 2.4s infinite ease-in-out;
-        }
-        @keyframes preboot-glow-pulse {
-            0%, 100% { filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.4)); }
-            50% { filter: drop-shadow(0 0 24px rgba(212, 175, 55, 0.8)); }
-        }
-        /* Golden blink tras 3s de inactividad - solo contorno del logo */
-        .muller-preboot-logo-btn.preboot-idle-hint {
-            animation: golden-blink 0.8s ease-in-out 3;
-        }
-        @keyframes golden-blink {
-            0%, 100% { filter: drop-shadow(0 0 12px gold); }
-            50% { filter: drop-shadow(0 0 32px gold) brightness(1.15); }
+            .muller-preboot-hero-title { font-size: clamp(2.5rem, 5vw, 4.5rem); }
+            .muller-preboot-logo-btn img { width: min(22vw, 24vh, 14rem); max-width: 14rem; }
         }
     </style>
 </head>
@@ -690,13 +696,13 @@
         <div class="muller-preboot-de" aria-hidden="true"></div>
         <div class="muller-preboot-seam" aria-hidden="true"></div>
         <div class="muller-preboot-mid">
-            <div class="muller-preboot-title-bar">
-                <h1 id="muller-preboot-hero" class="muller-preboot-hero-title">PROFESOR PLAZA <span class="muller-preboot-uml" lang="de">MÜLLER</span></h1>
+            <div class="muller-preboot-mid-left">
+                <button type="button" id="muller-preboot-logo-btn" class="muller-preboot-logo-btn" title="Pulsa el logo para entrar" aria-label="Pulsa en el logo para abrir la aplicación">
+                    <img src="icons/profesor-plaza-muller-logo.jpg" alt="" width="600" height="600" loading="eager" fetchpriority="high" decoding="async" class="muller-preboot-logo-img" />
+                </button>
             </div>
-            <div class="muller-preboot-mid-inner">
-                    <button type="button" id="muller-preboot-logo-btn" class="muller-preboot-logo-btn" title="Pulsa el logo para entrar" aria-label="Pulsa en el logo para abrir la aplicación">
-                        <img src="icons/profesor-plaza-muller-logo.jpg" alt="" width="600" height="600" loading="eager" fetchpriority="high" decoding="async" class="muller-preboot-logo-img" />
-                    </button>
+            <div class="muller-preboot-mid-right">
+                <h1 id="muller-preboot-hero" class="muller-preboot-hero-title">PROFESOR PLAZA <span class="muller-preboot-uml" lang="de">MÜLLER</span></h1>
                 <div class="muller-preboot-cta-wrap">
                     <div id="muller-preboot-hint" class="muller-preboot-cta" role="status" aria-live="polite" aria-hidden="true">
                         <span class="muller-preboot-cta-arrow" aria-hidden="true">←</span>
@@ -736,9 +742,7 @@
             hintTid = setTimeout(function () {
                 var wrap = document.getElementById('muller-preboot');
                 if (!wrap || wrap.classList.contains('is-hidden')) return;
-                if (wrap) wrap.classList.add('muller-preboot--blink');
                 if (btn) {
-                    btn.classList.add('muller-preboot-logo--blink');
                     btn.classList.add('preboot-idle-hint');
                 }
                 var h = document.getElementById('muller-preboot-hint');
@@ -770,4 +774,3 @@
     </script>
 </body>
 </html>
-
