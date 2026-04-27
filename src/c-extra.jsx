@@ -1,20 +1,20 @@
-﻿// ========== MÃ“DULO COMPLETO Y DEFINITIVO (4 PESTAÃ‘AS + AUDIOLIBRO REAL) ==========
-// No modifica nada del cÃ³digo original, solo aÃ±ade funcionalidad.
+�// ========== M�DULO COMPLETO Y DEFINITIVO (4 PESTA�AS + AUDIOLIBRO REAL) ==========
+// No modifica nada del código original, solo añade funcionalidad.
 
 // -------------------- DATOS DE RESPALDO --------------------
 const DEFAULT_PLURALS = [
     { singular: "der Tisch", plural: "die Tische", regla: "+e" },
     { singular: "die Lampe", plural: "die Lampen", regla: "+n" },
-    { singular: "das Buch", plural: "die BÃ¼cher", regla: "Â¨+er" }
+    { singular: "das Buch", plural: "die Bücher", regla: "¨+er" }
 ];
 const DEFAULT_VERBPREP = [
     { verbo: "warten", preposicion: "auf", ejemplo: "Ich warte auf den Bus." },
-    { verbo: "sich interessieren", preposicion: "fÃ¼r", ejemplo: "Ich interessiere mich fÃ¼r Kunst." },
+    { verbo: "sich interessieren", preposicion: "für", ejemplo: "Ich interessiere mich für Kunst." },
     { verbo: "denken", preposicion: "an", ejemplo: "Ich denke an dich." }
 ];
 const DEFAULT_PREPOSITIONS = [
     { preposicion: "aus", caso: "Dativ", ejemplo: "Ich komme aus Spanien." },
-    { preposicion: "fÃ¼r", caso: "Akkusativ", ejemplo: "Das Geschenk ist fÃ¼r dich." },
+    { preposicion: "für", caso: "Akkusativ", ejemplo: "Das Geschenk ist für dich." },
     { preposicion: "in", caso: "Wechsel", ejemplo: "Ich bin in der Stadt (Dativ) / Ich gehe in die Stadt (Akkusativ)." }
 ];
 
@@ -24,13 +24,13 @@ function extractPluralsFromGuion(guionData, scriptTitle) {
     let existing = JSON.parse(localStorage.getItem('muller_extracted_plurals') || '[]');
     guionData.forEach(scene => {
         const text = scene.text;
-        const matches = text.match(/\bdie\s+([A-ZÃ„Ã–Ãœ][a-zÃ¤Ã¶Ã¼ÃŸ]+(?:e|er|en|n|s)?)\b/g) || [];
+        const matches = text.match(/\bdie\s+([A-Z���S][a-zäöü�x]+(?:e|er|en|n|s)?)\b/g) || [];
         matches.forEach(m => {
             const plural = m.replace('die ', '');
-            let singular = plural.replace(/[Ã¤Ã¶Ã¼]/g, c => ({'Ã¤':'a','Ã¶':'o','Ã¼':'u'}[c]));
+            let singular = plural.replace(/[äöü]/g, c => ({'ä':'a','ö':'o','ü':'u'}[c]));
             singular = singular.replace(/(e|er|n|en|s)$/, '');
             if (singular && !existing.find(p => p.plural === plural)) {
-                existing.push({ singular, plural, example: text, scriptTitle, regla: 'extraÃ­do' });
+                existing.push({ singular, plural, example: text, scriptTitle, regla: 'extraído' });
             }
         });
     });
@@ -72,7 +72,7 @@ function extractArticlesFromGuionFinal(guionData, scriptTitle) {
     if (!guionData || !Array.isArray(guionData)) return;
     const corrections = JSON.parse(localStorage.getItem('muller_article_corrections') || '{}');
     let existing = JSON.parse(localStorage.getItem('muller_extracted_articles') || '[]');
-    const regex = /\b(Der|Die|Das|Ein|Eine)\s+([A-ZÃ„Ã–Ãœ][a-zÃ¤Ã¶Ã¼ÃŸ]+)\s+(ist|sind|hat|haben|kann|muss|will|mÃ¶chte|kommt|geht|steht|liegt|sitzt|arbeitet|spricht|denkt|findet|glaubt|weiÃŸ|sieht|hÃ¶rt|fÃ¤hrt|lÃ¤uft|bringt|nimmt|gibt|hilft|trifft|schlÃ¤ft|wÃ¤scht|trÃ¤gt|verliert|schreibt|liest|kennt|nennt)\b/gi;
+    const regex = /\b(Der|Die|Das|Ein|Eine)\s+([A-Z���S][a-zäöü�x]+)\s+(ist|sind|hat|haben|kann|muss|will|möchte|kommt|geht|steht|liegt|sitzt|arbeitet|spricht|denkt|findet|glaubt|wei�x|sieht|hört|fährt|läuft|bringt|nimmt|gibt|hilft|trifft|schläft|wäscht|trägt|verliert|schreibt|liest|kennt|nennt)\b/gi;
     guionData.forEach(scene => {
         const text = scene.text || '';
         let match;
@@ -106,7 +106,7 @@ function extractArticlesFromGuionFinal(guionData, scriptTitle) {
 
 
 // ============================================================================
-// ðŸ“ SISTEMA DE ENTRENAMIENTO AVANZADO - LOGICA MÃœLLER (SRS + MEMORIA)
+// �x� SISTEMA DE ENTRENAMIENTO AVANZADO - LOGICA M�SLLER (SRS + MEMORIA)
 // ============================================================================
 
 const ADVANCED_PROGRESS_KEY = 'muller_advanced_progress';
@@ -152,16 +152,16 @@ function saveDailyActivity(activity) {
 const ACHIEVEMENTS_KEY = 'muller_achievements';
 
 const ACHIEVEMENT_DEFS = [
-    { id: 'telc_first', icon: 'ðŸ“Œ', title: 'Erste Schritte', desc: '10 intentos en entrenamiento avanzado', test: (d) => d.totalAttempts >= 10 },
-    { id: 'telc_steady', icon: 'ðŸ’ª', title: 'Konstant', desc: '50 intentos acumulados', test: (d) => d.totalAttempts >= 50 },
-    { id: 'telc_marathon', icon: 'ðŸƒ', title: 'Ausdauer', desc: '200 intentos acumulados', test: (d) => d.totalAttempts >= 200 },
-    { id: 'telc_daily', icon: 'âœ…', title: 'Tagesziel', desc: 'Completaste el objetivo diario', test: (d) => d.todayAttempts >= d.dailyGoal && d.dailyGoal > 0 },
-    { id: 'telc_streak3', icon: 'ðŸ”¥', title: 'Serie 3', desc: 'Racha de 3 dÃ­as seguidos', test: (d) => d.streakDays >= 3 },
-    { id: 'telc_streak7', icon: 'ðŸ”¥', title: 'Serie 7', desc: 'Racha de 7 dÃ­as seguidos', test: (d) => d.streakDays >= 7 },
-    { id: 'telc_streak30', icon: 'ðŸ†', title: 'Serie 30', desc: 'Racha de 30 dÃ­as seguidos', test: (d) => d.streakDays >= 30 },
-    { id: 'telc_precision', icon: 'ðŸŽ¯', title: 'PrÃ¤zision', desc: 'â‰¥85% precisiÃ³n con â‰¥40 intentos', test: (d) => d.totalAttempts >= 40 && d.accuracy >= 85 },
-    { id: 'telc_three_pillars', icon: 'âš¡', title: 'Drei SÃ¤ulen', desc: 'Has practicado ArtÃ­culos, Verbos+Prep y Preposiciones', test: (d) => d.art.total > 0 && d.verb.total > 0 && d.prep.total > 0 },
-    { id: 'telc_weak_zero', icon: 'ðŸ›¡ï¸', title: 'SchwÃ¤chen im Griff', desc: '0 tarjetas dÃ©biles con â‰¥80 intentos', test: (d) => d.totalAttempts >= 80 && d.weak === 0 }
+    { id: 'telc_first', icon: '�xR', title: 'Erste Schritte', desc: '10 intentos en entrenamiento avanzado', test: (d) => d.totalAttempts >= 10 },
+    { id: 'telc_steady', icon: '�x�', title: 'Konstant', desc: '50 intentos acumulados', test: (d) => d.totalAttempts >= 50 },
+    { id: 'telc_marathon', icon: '�x��', title: 'Ausdauer', desc: '200 intentos acumulados', test: (d) => d.totalAttempts >= 200 },
+    { id: 'telc_daily', icon: '�S&', title: 'Tagesziel', desc: 'Completaste el objetivo diario', test: (d) => d.todayAttempts >= d.dailyGoal && d.dailyGoal > 0 },
+    { id: 'telc_streak3', icon: '�x�', title: 'Serie 3', desc: 'Racha de 3 días seguidos', test: (d) => d.streakDays >= 3 },
+    { id: 'telc_streak7', icon: '�x�', title: 'Serie 7', desc: 'Racha de 7 días seguidos', test: (d) => d.streakDays >= 7 },
+    { id: 'telc_streak30', icon: '�x� ', title: 'Serie 30', desc: 'Racha de 30 días seguidos', test: (d) => d.streakDays >= 30 },
+    { id: 'telc_precision', icon: '�x}�', title: 'Präzision', desc: '�0�85% precisión con �0�40 intentos', test: (d) => d.totalAttempts >= 40 && d.accuracy >= 85 },
+    { id: 'telc_three_pillars', icon: '�a�', title: 'Drei Säulen', desc: 'Has practicado Artículos, Verbos+Prep y Preposiciones', test: (d) => d.art.total > 0 && d.verb.total > 0 && d.prep.total > 0 },
+    { id: 'telc_weak_zero', icon: '�x:�️', title: 'Schwächen im Griff', desc: '0 tarjetas débiles con �0�80 intentos', test: (d) => d.totalAttempts >= 80 && d.weak === 0 }
 ];
 
 function getAchievementsUnlocked() {
@@ -228,22 +228,22 @@ function getCardTip(type, item) {
         if (noun.endsWith('er') || noun.endsWith('ling') || noun.endsWith('ismus')) {
             return "Truco: muchos sustantivos en -er/-ling/-ismus son DER.";
         }
-        return "Truco: aprende cada palabra junto a su artÃ­culo (DER/DIE/DAS) como un bloque. En TELC, el gÃ©nero marca concordancia en la frase entera.";
+        return "Truco: aprende cada palabra junto a su artículo (DER/DIE/DAS) como un bloque. En TELC, el género marca concordancia en la frase entera.";
     }
     const prep = (item.answer || '').toLowerCase();
     const tips = {
-        'fÃ¼r': "'FÃ¼r' rige Akkusativ (objetivo/duraciÃ³n). Muy frecuente en redacciÃ³n y cloze TELC.",
-        'mit': "'Mit' + Dativ: compaÃ±Ã­a/medio. Error tÃ­pico: confundir con Akkusativ.",
-        'auf': "En verbos fijos, 'auf' suele Akk. (objetivo/respuesta). Memoriza la colocaciÃ³n completa.",
-        'bei': "'Bei' + Dativ: lugar abstracto/situaciÃ³n (bei der Arbeit).",
-        'nach': "'Nach' + Dativ: direcciÃ³n con nombres de ciudad/paÃ­s; tiempo despuÃ©s de un hecho.",
+        'für': "'Für' rige Akkusativ (objetivo/duración). Muy frecuente en redacción y cloze TELC.",
+        'mit': "'Mit' + Dativ: compañía/medio. Error típico: confundir con Akkusativ.",
+        'auf': "En verbos fijos, 'auf' suele Akk. (objetivo/respuesta). Memoriza la colocación completa.",
+        'bei': "'Bei' + Dativ: lugar abstracto/situación (bei der Arbeit).",
+        'nach': "'Nach' + Dativ: dirección con nombres de ciudad/país; tiempo después de un hecho.",
         'von': "'Von' + Dativ: origen/partitivo; en TELC aparece mucho en textos informativos."
     };
-    const base = item.trick || item.tipp || tips[prep] || "Fija verbo + preposiciÃ³n + caso como una unidad; en el examen no hay tiempo para deducirlo.";
+    const base = item.trick || item.tipp || tips[prep] || "Fija verbo + preposición + caso como una unidad; en el examen no hay tiempo para deducirlo.";
     return base + " (TELC: prioriza colocaciones frecuentes en B1/B2.)";
 }
 
-/** Si no pasas maxItems, se usan todas las tarjetas (sin tope 120). El examen mixto pasa un lÃ­mite explÃ­cito (p. ej. 55). */
+/** Si no pasas maxItems, se usan todas las tarjetas (sin tope 120). El examen mixto pasa un límite explícito (p. ej. 55). */
 function buildAdaptiveQueue(items, progress, getId, maxItems) {
     const weighted = items.map((item) => {
         const id = getId(item);
@@ -322,7 +322,7 @@ function normalizeArticulosDataset(raw) {
     });
 }
 
-/** Â¿La tarjeta cuenta para el mazo A1/A2/B1â€¦ o MIXTO? */
+/** ¿La tarjeta cuenta para el mazo A1/A2/B1⬦ o MIXTO? */
 function articleItemMatchesLevel(item, selectedMode) {
     if (selectedMode === 'MIXTO') return true;
     const lv = Array.isArray(item.levels) && item.levels.length ? item.levels : (item.level ? [item.level] : []);
@@ -377,7 +377,7 @@ function TelcExamHud({ examCtx, onUseTranslationHint, answered, translationVisib
         <div className={`mb-4 rounded-xl border p-3 text-left transition-all ${urgent ? 'border-amber-500/70 bg-amber-950/25 shadow-[0_0_20px_rgba(245,158,11,0.12)]' : softOver ? 'border-rose-600/55 bg-rose-950/35' : 'border-slate-600/45 bg-black/35'}`}>
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <p className={`text-[11px] font-bold uppercase tracking-widest ${softOver ? 'text-rose-300' : urgent ? 'text-amber-300' : 'text-slate-400'}`}>
-                    {softOver ? 'Tiempo guÃ­a agotado â€” puedes seguir' : urgent ? 'Ãšltimos minutos (ritmo TELC)' : 'Modo examen TELC'}
+                    {softOver ? 'Tiempo guía agotado � puedes seguir' : urgent ? '�altimos minutos (ritmo TELC)' : 'Modo examen TELC'}
                 </p>
                 <span className="font-mono text-sm text-white tabular-nums">{softOver ? '0:00' : `${mm}:${ss < 10 ? '0' : ''}${ss}`}</span>
             </div>
@@ -385,13 +385,13 @@ function TelcExamHud({ examCtx, onUseTranslationHint, answered, translationVisib
                 <div className={`h-full rounded-full transition-all duration-1000 ${softOver ? 'bg-rose-500/90' : urgent ? 'bg-amber-500' : 'bg-cyan-500/90'}`} style={{ width: `${softOver ? 100 : pct}%` }} />
             </div>
             <div className="flex flex-wrap items-center gap-2 justify-between">
-                <p className="text-xs text-slate-400">Pistas para traducciÃ³n: <span className="text-cyan-300 font-bold">{hintsLeft}</span> / {examCtx.hintsTotal}</p>
+                <p className="text-xs text-slate-400">Pistas para traducción: <span className="text-cyan-300 font-bold">{hintsLeft}</span> / {examCtx.hintsTotal}</p>
                 <button type="button" onClick={() => canHint && onUseTranslationHint && onUseTranslationHint()} disabled={!canHint}
                     className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition ${!canHint ? 'opacity-40 border-slate-700 text-slate-500 cursor-not-allowed' : 'border-cyan-600/60 text-cyan-200 hover:bg-cyan-900/40'}`}>
-                    âˆ’1 pista: mostrar traducciÃ³n
+                    ��1 pista: mostrar traducción
                 </button>
             </div>
-            <p className="text-[10px] text-slate-500 mt-2 leading-snug">El cronÃ³metro es orientativo (estilo TELC): no corta la sesiÃ³n. Usa las pistas con moderaciÃ³n, como en un examen real.</p>
+            <p className="text-[10px] text-slate-500 mt-2 leading-snug">El cronómetro es orientativo (estilo TELC): no corta la sesión. Usa las pistas con moderación, como en un examen real.</p>
         </div>
     );
 }
@@ -406,7 +406,7 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
     const [showTranslation, setShowTranslation] = React.useState(false);
     const examLoadRef = React.useRef(false);
 
-    // ðŸ§  Persistencia de palabras dominadas (Cerebro de Oro)
+    // �x�� Persistencia de palabras dominadas (Cerebro de Oro)
     const [masteredArticles, setMasteredArticles] = React.useState(() => {
         const saved = localStorage.getItem('muller_mastered_articles');
         return saved ? JSON.parse(saved) : [];
@@ -422,11 +422,11 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
             if (selectedMode !== 'MIXTO' && selectedMode !== 'historia') {
                 filtered = data.filter((item) => articleItemMatchesLevel(item, selectedMode));
             }
-            // MÃ¼ller-Filter: Eliminamos lo que ya te sabes para siempre
+            // Müller-Filter: Eliminamos lo que ya te sabes para siempre
             const finalQueue = filtered.filter(item => !masteredArticles.includes(item.de));
             
             if (finalQueue.length === 0) {
-                alert(`Â¡IncreÃ­ble! Ya dominas todo el mazo ${selectedMode}. ðŸ†`);
+                alert(`¡Increíble! Ya dominas todo el mazo ${selectedMode}. �x� `);
                 if (examCtx) onBack();
                 else setMode(null);
             } else {
@@ -446,7 +446,7 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
         } else {
             const GIST_URL = "https://gist.githubusercontent.com/djplaza1/a53fde18c901a7f2d86977174b5b9a72/raw/articulos.json?nocache=" + new Date().getTime();
             fetch(GIST_URL).then(res => res.json()).then(processData).catch(() => {
-                alert("Error de conexiÃ³n con la base de datos MÃ¼ller.");
+                alert("Error de conexión con la base de datos Müller.");
                 if (examCtx) onBack();
                 else {
                     setMode(null);
@@ -476,7 +476,7 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
         setShowTranslation(true);
     };
 
-    // ðŸŒŸ AcciÃ³n: "Ya me la sÃ©" (Descartar para siempre)
+    // �xRx Acción: "Ya me la sé" (Descartar para siempre)
     const handleMastered = () => {
         const currentWord = queue[0].de;
         const newMastered = [...masteredArticles, currentWord];
@@ -486,12 +486,12 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
         setFeedback(null);
     };
 
-    // ðŸ”„ AcciÃ³n: Siguiente / Reintento
+    // �x Acción: Siguiente / Reintento
     const handleNextWord = () => {
         if (feedback.type === 'success') {
-            setQueue(prev => prev.slice(1)); // Si acertÃ³, se va de la sesiÃ³n
+            setQueue(prev => prev.slice(1)); // Si acertó, se va de la sesión
         } else {
-            // PELIGRO: Si fallÃ³, al final de la cola (Spaced Retrieval)
+            // PELIGRO: Si falló, al final de la cola (Spaced Retrieval)
             setQueue(prev => [...prev.slice(1), prev[0]]);
         }
         setFeedback(null);
@@ -533,10 +533,10 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
         window.speechSynthesis.speak(utterance);
 
         if (guess === correct) {
-            setFeedback({ type: 'success', text: `Â¡Richtig! ðŸŸ¢ ${current.de}`, tip: getCardTip('articulos', current), currentCard: current });
+            setFeedback({ type: 'success', text: `¡Richtig! �xx� ${current.de}`, tip: getCardTip('articulos', current), currentCard: current });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
         } else {
-            setFeedback({ type: 'error', text: `âš ï¸ FALSCH! Era: ${current.de}`, tip: getCardTip('articulos', current), currentCard: current });
+            setFeedback({ type: 'error', text: `�a�️ FALSCH! Era: ${current.de}`, tip: getCardTip('articulos', current), currentCard: current });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
         }
     };
@@ -547,24 +547,24 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
         }
         return (
         <div className="flex flex-col items-center justify-center p-4 h-full w-full max-w-4xl mx-auto animate-in fade-in">
-            <button onClick={onBack} className="absolute top-4 left-4 bg-gray-800 p-2 rounded text-white hover:bg-gray-700">â¬… Volver</button>
-            <h2 className="text-3xl font-bold mb-2 text-blue-300">ArtÃ­culos MÃ¼ller</h2>
-            <p className="text-gray-400 mb-8 font-bold">â­ {masteredArticles.length} palabras en tu "Memoria de Oro"</p>
+            <button onClick={onBack} className="absolute top-4 left-4 bg-gray-800 p-2 rounded text-white hover:bg-gray-700">�& Volver</button>
+            <h2 className="text-3xl font-bold mb-2 text-blue-300">Artículos Müller</h2>
+            <p className="text-gray-400 mb-8 font-bold">⭐ {masteredArticles.length} palabras en tu "Memoria de Oro"</p>
             <div className="bg-black/30 border border-blue-800/50 rounded-xl p-3 mb-5 w-full text-sm text-gray-200">
                 {(() => {
                     const c = getProgressCounts(progressMap, 'articulos');
-                    return <p>ðŸ“Š Intentos: <b>{c.attempts}</b> Â· Fallos: <b>{c.errors}</b> Â· FÃ¡cil: <b>{c.easy}</b> Â· Normal: <b>{c.normal}</b> Â· DifÃ­cil: <b>{c.difficult}</b> Â· ProblemÃ¡ticas: <b>{c.weak}</b></p>;
+                    return <p>�x` Intentos: <b>{c.attempts}</b> · Fallos: <b>{c.errors}</b> · Fácil: <b>{c.easy}</b> · Normal: <b>{c.normal}</b> · Difícil: <b>{c.difficult}</b> · Problemáticas: <b>{c.weak}</b></p>;
                 })()}
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 w-full mb-6">
                 <button onClick={() => setQueueFilter('smart')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'smart' ? 'bg-blue-700 text-white' : 'bg-slate-800 text-gray-300'}`}>Mezcla inteligente</button>
                 <button onClick={() => setQueueFilter('failed')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'failed' ? 'bg-red-700 text-white' : 'bg-slate-800 text-gray-300'}`}>Solo falladas</button>
-                <button onClick={() => setQueueFilter('difficult')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'difficult' ? 'bg-rose-700 text-white' : 'bg-slate-800 text-gray-300'}`}>Solo difÃ­ciles</button>
-                <button onClick={() => setQueueFilter('weak')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'weak' ? 'bg-fuchsia-700 text-white' : 'bg-slate-800 text-gray-300'}`}>Solo dÃ©biles</button>
+                <button onClick={() => setQueueFilter('difficult')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'difficult' ? 'bg-rose-700 text-white' : 'bg-slate-800 text-gray-300'}`}>Solo difíciles</button>
+                <button onClick={() => setQueueFilter('weak')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'weak' ? 'bg-fuchsia-700 text-white' : 'bg-slate-800 text-gray-300'}`}>Solo débiles</button>
                 <button onClick={() => setQueueFilter('new')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'new' ? 'bg-emerald-700 text-white' : 'bg-slate-800 text-gray-300'}`}>Solo nuevas</button>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
-                <button onClick={() => loadData('historia')} className="col-span-2 md:col-span-3 bg-purple-900 border-2 border-purple-500 p-6 rounded-xl font-bold text-xl hover:bg-purple-800 transition">ðŸ“– Historia Actual</button>
+                <button onClick={() => loadData('historia')} className="col-span-2 md:col-span-3 bg-purple-900 border-2 border-purple-500 p-6 rounded-xl font-bold text-xl hover:bg-purple-800 transition">�x Historia Actual</button>
                 {['A1', 'A2', 'B1', 'B2', 'C1', 'MIXTO'].map(lvl => (
                     <button key={lvl} onClick={() => loadData(lvl)} className="bg-slate-800 border-b-4 border-blue-500 p-6 rounded-xl font-bold text-lg hover:bg-slate-700 transition">{lvl}</button>
                 ))}
@@ -574,30 +574,30 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
     }
 
     if (loading) return <div className="p-10"><div className="muller-skeleton h-6 w-64 rounded mb-4" /><div className="muller-skeleton h-36 w-full max-w-xl rounded-2xl" /></div>;
-    if (queue.length === 0) return <div className="p-20 text-center"><h2 className="text-2xl text-green-400">Â¡Mazo completado! ðŸ†</h2><button onClick={() => setMode(null)} className="mt-4 bg-gray-800 p-2 rounded text-white">Elegir otro</button></div>;
+    if (queue.length === 0) return <div className="p-20 text-center"><h2 className="text-2xl text-green-400">¡Mazo completado! �x� </h2><button onClick={() => setMode(null)} className="mt-4 bg-gray-800 p-2 rounded text-white">Elegir otro</button></div>;
 
     const wordWithoutArticle = queue[0].de.split(' ').slice(1).join(' ');
     const examHideEs = !!(examCtx && !showTranslation && !feedback);
 
     return (
         <div className="flex flex-col items-center justify-center p-4 h-full relative">
-            {examCtx && <button type="button" onClick={onBack} className="absolute top-2 left-2 md:top-4 md:left-4 bg-slate-800/90 p-2 rounded-lg text-gray-300 text-sm hover:bg-slate-700 z-10">â¬… Salir del examen</button>}
+            {examCtx && <button type="button" onClick={onBack} className="absolute top-2 left-2 md:top-4 md:left-4 bg-slate-800/90 p-2 rounded-lg text-gray-300 text-sm hover:bg-slate-700 z-10">�& Salir del examen</button>}
             <div className={`bg-slate-800 p-8 rounded-2xl shadow-2xl text-center max-w-md w-full border ${examCtx ? 'border-amber-600/35 shadow-[0_0_40px_rgba(245,158,11,0.06)]' : 'border-slate-700'}`}>
                 {examCtx && (
                     <TelcExamHud examCtx={examCtx} onUseTranslationHint={handleTranslationHint} answered={!!feedback} translationVisible={showTranslation} />
                 )}
                 <h3 className="text-5xl font-black text-white mb-2">{wordWithoutArticle}</h3>
                 {examHideEs ? (
-                    <p className="text-slate-500 mb-8 text-sm italic border border-dashed border-slate-600 rounded-lg py-6 px-3">TraducciÃ³n oculta â€” usa una pista arriba si la necesitas (como en examen).</p>
+                    <p className="text-slate-500 mb-8 text-sm italic border border-dashed border-slate-600 rounded-lg py-6 px-3">Traducción oculta � usa una pista arriba si la necesitas (como en examen).</p>
                 ) : (
                     <p className="text-gray-400 mb-8 text-xl italic">{queue[0].es}</p>
                 )}
                 
                 {!feedback ? (
                     <div className="grid grid-cols-3 gap-2">
-                        <button onClick={() => check('der')} className="bg-blue-600 py-6 rounded-xl font-bold text-xl transition">ðŸ”µ DER</button>
-                        <button onClick={() => check('die')} className="bg-red-600 py-6 rounded-xl font-bold text-xl transition">ðŸ”´ DIE</button>
-                        <button onClick={() => check('das')} className="bg-green-600 py-6 rounded-xl font-bold text-xl transition">ðŸŸ¢ DAS</button>
+                        <button onClick={() => check('der')} className="bg-blue-600 py-6 rounded-xl font-bold text-xl transition">�x� DER</button>
+                        <button onClick={() => check('die')} className="bg-red-600 py-6 rounded-xl font-bold text-xl transition">�x� DIE</button>
+                        <button onClick={() => check('das')} className="bg-green-600 py-6 rounded-xl font-bold text-xl transition">�xx� DAS</button>
                     </div>
                 ) : (
                     <div className="animate-in zoom-in">
@@ -606,25 +606,25 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
                         </div>
                         <p className="text-gray-400 mb-4 text-lg italic border border-slate-600/50 rounded-lg py-2 px-3 bg-black/20">ES: {(feedback.currentCard || queue[0]).es}</p>
                         <div className="bg-black/40 p-4 rounded-xl border border-cyan-500/30 text-left mb-5">
-                            <p className="text-cyan-300 font-bold text-sm uppercase mb-1">ðŸ’¡ Truco para recordarlo</p>
+                            <p className="text-cyan-300 font-bold text-sm uppercase mb-1">�x� Truco para recordarlo</p>
                             <p className="text-gray-200 text-sm italic">{feedback.tip}</p>
                         </div>
                         <div className="flex flex-col gap-3">
                             <div className="grid grid-cols-3 gap-2">
-                                <button onClick={() => registerTrainingResult('easy')} className="bg-emerald-700 hover:bg-emerald-600 text-white py-2 rounded-lg font-bold text-sm">FÃ¡cil</button>
+                                <button onClick={() => registerTrainingResult('easy')} className="bg-emerald-700 hover:bg-emerald-600 text-white py-2 rounded-lg font-bold text-sm">Fácil</button>
                                 <button onClick={() => registerTrainingResult('normal')} className="bg-yellow-700 hover:bg-yellow-600 text-white py-2 rounded-lg font-bold text-sm">Normal</button>
-                                <button onClick={() => registerTrainingResult('difficult')} className="bg-rose-700 hover:bg-rose-600 text-white py-2 rounded-lg font-bold text-sm">DifÃ­cil</button>
+                                <button onClick={() => registerTrainingResult('difficult')} className="bg-rose-700 hover:bg-rose-600 text-white py-2 rounded-lg font-bold text-sm">Difícil</button>
                             </div>
                             {!examCtx && (
-                                <button onClick={handleMastered} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold border-b-4 border-emerald-800 transition">ðŸŒŸ Â¡Ya me la sÃ© para siempre!</button>
+                                <button onClick={handleMastered} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold border-b-4 border-emerald-800 transition">�xRx ¡Ya me la sé para siempre!</button>
                             )}
                             <button onClick={handleNextWord} className="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-bold transition">
-                                {feedback.type === 'error' ? 'Reintentar luego âž”' : 'Siguiente âž”'}
+                                {feedback.type === 'error' ? 'Reintentar luego �~' : 'Siguiente �~'}
                             </button>
                         </div>
                     </div>
                 )}
-                <p className="text-gray-500 text-xs mt-6">Restantes en esta sesiÃ³n: {queue.length}</p>
+                <p className="text-gray-500 text-xs mt-6">Restantes en esta sesión: {queue.length}</p>
             </div>
         </div>
     );
@@ -681,10 +681,10 @@ function CloudPracticeFinal({ onBack, type, examCtx, setExamCtx }) {
         window.speechSynthesis.speak(utterance);
 
         if (guess === currentItem.answer) {
-            setFeedback({ type: 'success', text: `Â¡Richtig! Es '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(type, currentItem) });
+            setFeedback({ type: 'success', text: `¡Richtig! Es '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(type, currentItem) });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
         } else {
-            setFeedback({ type: 'error', text: `âš ï¸ FALSCH: Era '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(type, currentItem) });
+            setFeedback({ type: 'error', text: `�a�️ FALSCH: Era '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(type, currentItem) });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
         }
     };
@@ -724,17 +724,17 @@ function CloudPracticeFinal({ onBack, type, examCtx, setExamCtx }) {
     };
 
     if (loading) return <div className="p-10"><div className="muller-skeleton h-5 w-64 rounded mb-4 mx-auto" /><div className="muller-skeleton h-36 w-full max-w-2xl rounded-2xl mx-auto" /></div>;
-    if (queue.length === 0) return <div className="text-center p-20"><h2 className="text-3xl font-bold text-green-400">Â¡Mazo Completado! ðŸ†</h2><button onClick={onBack} className="mt-4 bg-gray-800 p-2 rounded text-white">Volver</button></div>;
+    if (queue.length === 0) return <div className="text-center p-20"><h2 className="text-3xl font-bold text-green-400">¡Mazo Completado! �x� </h2><button onClick={onBack} className="mt-4 bg-gray-800 p-2 rounded text-white">Volver</button></div>;
 
     const current = queue[0];
     const options = type === 'verbos' 
-        ? ['fÃ¼r', 'auf', 'an', 'von', 'Ã¼ber', 'mit', 'um', 'zu', 'vor', 'nach', 'in', 'bei', 'aus', 'durch', 'ohne', 'gegen']
-        : ['an', 'auf', 'in', 'aus', 'bei', 'mit', 'nach', 'seit', 'von', 'zu', 'durch', 'fÃ¼r', 'um', 'vor', 'Ã¼ber', 'unter', 'neben', 'zwischen', 'hinter', 'gegen', 'ohne'];
+        ? ['für', 'auf', 'an', 'von', 'über', 'mit', 'um', 'zu', 'vor', 'nach', 'in', 'bei', 'aus', 'durch', 'ohne', 'gegen']
+        : ['an', 'auf', 'in', 'aus', 'bei', 'mit', 'nach', 'seit', 'von', 'zu', 'durch', 'für', 'um', 'vor', 'über', 'unter', 'neben', 'zwischen', 'hinter', 'gegen', 'ohne'];
     const examHideEs = !!(examCtx && !showTranslation && !feedback);
 
     return (
         <div className="flex flex-col items-center justify-center p-4 h-full w-full relative">
-            <button type="button" onClick={onBack} className="absolute top-4 left-4 bg-gray-800 p-2 rounded text-gray-300 z-10">{examCtx ? 'â¬… Salir del examen' : 'â¬… Volver'}</button>
+            <button type="button" onClick={onBack} className="absolute top-4 left-4 bg-gray-800 p-2 rounded text-gray-300 z-10">{examCtx ? '�& Salir del examen' : '�& Volver'}</button>
             <div className={`bg-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl text-center max-w-4xl w-full border ${examCtx ? 'border-amber-600/35 shadow-[0_0_40px_rgba(245,158,11,0.06)]' : 'border-slate-700'}`}>
                 {examCtx && (
                     <TelcExamHud examCtx={examCtx} onUseTranslationHint={handleTranslationHint} answered={!!feedback} translationVisible={showTranslation} />
@@ -743,23 +743,23 @@ function CloudPracticeFinal({ onBack, type, examCtx, setExamCtx }) {
                     {(() => {
                         const scope = type === 'verbos' ? 'verbos' : 'preposiciones';
                         const c = getProgressCounts(progressMap, scope);
-                        return <p>ðŸ“Š Intentos: <b>{c.attempts}</b> Â· Fallos: <b>{c.errors}</b> Â· FÃ¡cil: <b>{c.easy}</b> Â· Normal: <b>{c.normal}</b> Â· DifÃ­cil: <b>{c.difficult}</b> Â· ProblemÃ¡ticas: <b>{c.weak}</b></p>;
+                        return <p>�x` Intentos: <b>{c.attempts}</b> · Fallos: <b>{c.errors}</b> · Fácil: <b>{c.easy}</b> · Normal: <b>{c.normal}</b> · Difícil: <b>{c.difficult}</b> · Problemáticas: <b>{c.weak}</b></p>;
                     })()}
                 </div>
                 {!examCtx && (
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
                         <button type="button" onClick={() => setQueueFilter('smart')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'smart' ? 'bg-blue-700 text-white' : 'bg-slate-700 text-gray-200'}`}>Mezcla inteligente</button>
                         <button type="button" onClick={() => setQueueFilter('failed')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'failed' ? 'bg-red-700 text-white' : 'bg-slate-700 text-gray-200'}`}>Solo falladas</button>
-                        <button type="button" onClick={() => setQueueFilter('difficult')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'difficult' ? 'bg-rose-700 text-white' : 'bg-slate-700 text-gray-200'}`}>Solo difÃ­ciles</button>
-                        <button type="button" onClick={() => setQueueFilter('weak')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'weak' ? 'bg-fuchsia-700 text-white' : 'bg-slate-700 text-gray-200'}`}>Solo dÃ©biles</button>
+                        <button type="button" onClick={() => setQueueFilter('difficult')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'difficult' ? 'bg-rose-700 text-white' : 'bg-slate-700 text-gray-200'}`}>Solo difíciles</button>
+                        <button type="button" onClick={() => setQueueFilter('weak')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'weak' ? 'bg-fuchsia-700 text-white' : 'bg-slate-700 text-gray-200'}`}>Solo débiles</button>
                         <button type="button" onClick={() => setQueueFilter('new')} className={`p-2 rounded-lg text-xs font-bold ${queueFilter === 'new' ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-gray-200'}`}>Solo nuevas</button>
                     </div>
                 )}
                 {examCtx && <p className="text-[11px] text-slate-500 mb-3 text-left">Examen: mezcla inteligente fija (sin filtros).</p>}
-                <p className="text-blue-400 font-bold mb-2 uppercase tracking-widest">{current.prepCase || 'ðŸŸ¡ Wechsel'}</p>
+                <p className="text-blue-400 font-bold mb-2 uppercase tracking-widest">{current.prepCase || '�xx� Wechsel'}</p>
                 <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">{current.de.replace('___', '_____')}</h3>
                 {examHideEs ? (
-                    <p className="text-slate-500 mb-8 text-sm italic border border-dashed border-slate-600 rounded-lg py-6 px-3">TraducciÃ³n oculta â€” usa una pista arriba si la necesitas.</p>
+                    <p className="text-slate-500 mb-8 text-sm italic border border-dashed border-slate-600 rounded-lg py-6 px-3">Traducción oculta � usa una pista arriba si la necesitas.</p>
                 ) : (
                     <p className="text-gray-400 mb-8 text-xl italic">{current.es}</p>
                 )}
@@ -779,15 +779,15 @@ function CloudPracticeFinal({ onBack, type, examCtx, setExamCtx }) {
                         </div>
                         <p className="text-gray-400 mb-4 text-lg italic border border-slate-600/50 rounded-lg py-2 px-3 bg-black/20">ES: {(feedback.currentCard || current).es}</p>
                         <div className="bg-black/40 p-4 rounded-xl border border-amber-500/30 text-left mb-6">
-                            <p className="text-amber-400 font-bold text-sm uppercase mb-1">ðŸ’¡ MÃ¼ller-Tipp:</p>
+                            <p className="text-amber-400 font-bold text-sm uppercase mb-1">�x� Müller-Tipp:</p>
                             <p className="text-gray-200 text-sm italic">{feedback.tip}</p>
                         </div>
                         <div className="grid grid-cols-3 gap-2 mb-4">
-                            <button type="button" onClick={() => registerTrainingResult('easy')} className="bg-emerald-700 hover:bg-emerald-600 text-white py-2 rounded-lg font-bold text-sm">FÃ¡cil</button>
+                            <button type="button" onClick={() => registerTrainingResult('easy')} className="bg-emerald-700 hover:bg-emerald-600 text-white py-2 rounded-lg font-bold text-sm">Fácil</button>
                             <button type="button" onClick={() => registerTrainingResult('normal')} className="bg-yellow-700 hover:bg-yellow-600 text-white py-2 rounded-lg font-bold text-sm">Normal</button>
-                            <button type="button" onClick={() => registerTrainingResult('difficult')} className="bg-rose-700 hover:bg-rose-600 text-white py-2 rounded-lg font-bold text-sm">DifÃ­cil</button>
+                            <button type="button" onClick={() => registerTrainingResult('difficult')} className="bg-rose-700 hover:bg-rose-600 text-white py-2 rounded-lg font-bold text-sm">Difícil</button>
                         </div>
-                        <button type="button" onClick={handleContinue} className="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-black text-xl transition">CONTINUAR âž”</button>
+                        <button type="button" onClick={handleContinue} className="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-black text-xl transition">CONTINUAR �~</button>
                     </div>
                 )}
             </div>
@@ -932,10 +932,10 @@ function TelcMixedExamFinal({ onBack, examCtx, setExamCtx }) {
             window.__mullerApplyPreferredDeVoice(utterance);
             window.speechSynthesis.speak(utterance);
             if (guess === correct) {
-                setFeedback({ type: 'success', text: `Â¡Richtig! ðŸŸ¢ ${current.de}`, tip: getCardTip('articulos', current), currentCard: current, kind: 'articulos' });
+                setFeedback({ type: 'success', text: `¡Richtig! �xx� ${current.de}`, tip: getCardTip('articulos', current), currentCard: current, kind: 'articulos' });
                 if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
             } else {
-                setFeedback({ type: 'error', text: `âš ï¸ FALSCH! Era: ${current.de}`, tip: getCardTip('articulos', current), currentCard: current, kind: 'articulos' });
+                setFeedback({ type: 'error', text: `�a�️ FALSCH! Era: ${current.de}`, tip: getCardTip('articulos', current), currentCard: current, kind: 'articulos' });
                 if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
             }
             return;
@@ -948,10 +948,10 @@ function TelcMixedExamFinal({ onBack, examCtx, setExamCtx }) {
         window.__mullerApplyPreferredDeVoice(utterance);
         window.speechSynthesis.speak(utterance);
         if (guess === currentItem.answer) {
-            setFeedback({ type: 'success', text: `Â¡Richtig! Es '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(cloudType, currentItem), kind: card.kind });
+            setFeedback({ type: 'success', text: `¡Richtig! Es '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(cloudType, currentItem), kind: card.kind });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
         } else {
-            setFeedback({ type: 'error', text: `âš ï¸ FALSCH: Era '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(cloudType, currentItem), kind: card.kind });
+            setFeedback({ type: 'error', text: `�a�️ FALSCH: Era '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(cloudType, currentItem), kind: card.kind });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
         }
     };
@@ -959,7 +959,7 @@ function TelcMixedExamFinal({ onBack, examCtx, setExamCtx }) {
     if (loading) return <div className="p-10"><div className="muller-skeleton h-5 w-64 rounded mb-4 mx-auto" /><div className="muller-skeleton h-36 w-full max-w-2xl rounded-2xl mx-auto" /></div>;
     if (queue.length === 0) return (
         <div className="text-center p-20">
-            <h2 className="text-2xl font-bold text-amber-200 mb-4">No hay tarjetas para mezclar (revisa la conexiÃ³n).</h2>
+            <h2 className="text-2xl font-bold text-amber-200 mb-4">No hay tarjetas para mezclar (revisa la conexión).</h2>
             <button type="button" onClick={onBack} className="bg-gray-800 p-2 rounded text-white">Volver</button>
         </div>
     );
@@ -967,31 +967,31 @@ function TelcMixedExamFinal({ onBack, examCtx, setExamCtx }) {
     const card = queue[0];
     const current = card.item;
     const examHideEs = !!(examCtx && !showTranslation && !feedback);
-    const optionsVerb = ['fÃ¼r', 'auf', 'an', 'von', 'Ã¼ber', 'mit', 'um', 'zu', 'vor', 'nach', 'in', 'bei', 'aus', 'durch', 'ohne', 'gegen'];
-    const optionsPrep = ['an', 'auf', 'in', 'aus', 'bei', 'mit', 'nach', 'seit', 'von', 'zu', 'durch', 'fÃ¼r', 'um', 'vor', 'Ã¼ber', 'unter', 'neben', 'zwischen', 'hinter', 'gegen', 'ohne'];
+    const optionsVerb = ['für', 'auf', 'an', 'von', 'über', 'mit', 'um', 'zu', 'vor', 'nach', 'in', 'bei', 'aus', 'durch', 'ohne', 'gegen'];
+    const optionsPrep = ['an', 'auf', 'in', 'aus', 'bei', 'mit', 'nach', 'seit', 'von', 'zu', 'durch', 'für', 'um', 'vor', 'über', 'unter', 'neben', 'zwischen', 'hinter', 'gegen', 'ohne'];
     const options = card.kind === 'verbos' ? optionsVerb : optionsPrep;
 
     return (
         <div className="flex flex-col items-center justify-center p-4 h-full w-full relative">
-            <button type="button" onClick={onBack} className="absolute top-2 left-2 md:top-4 md:left-4 bg-slate-800/90 p-2 rounded-lg text-gray-300 text-sm z-10">â¬… Salir del examen</button>
+            <button type="button" onClick={onBack} className="absolute top-2 left-2 md:top-4 md:left-4 bg-slate-800/90 p-2 rounded-lg text-gray-300 text-sm z-10">�& Salir del examen</button>
             <div className="bg-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl text-center max-w-4xl w-full border border-amber-600/35 shadow-[0_0_40px_rgba(245,158,11,0.06)]">
                 <TelcExamHud examCtx={examCtx} onUseTranslationHint={handleTranslationHint} answered={!!feedback} translationVisible={showTranslation} />
-                <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-2 text-left">Mezcla B1/B2 Â· {card.kind}</p>
+                <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-2 text-left">Mezcla B1/B2 · {card.kind}</p>
                 {card.kind === 'articulos' ? (
                     <>
                         <h3 className="text-4xl md:text-5xl font-black text-white mb-2">{current.de.split(' ').slice(1).join(' ')}</h3>
                         {examHideEs ? (
-                            <p className="text-slate-500 mb-6 text-sm italic border border-dashed border-slate-600 rounded-lg py-4 px-3">TraducciÃ³n oculta â€” usa una pista arriba si la necesitas.</p>
+                            <p className="text-slate-500 mb-6 text-sm italic border border-dashed border-slate-600 rounded-lg py-4 px-3">Traducción oculta � usa una pista arriba si la necesitas.</p>
                         ) : (
                             <p className="text-gray-400 mb-6 text-xl italic">{current.es}</p>
                         )}
                     </>
                 ) : (
                     <>
-                        <p className="text-blue-400 font-bold mb-2 uppercase tracking-widest text-sm">{current.prepCase || 'ðŸŸ¡ Wechsel'}</p>
+                        <p className="text-blue-400 font-bold mb-2 uppercase tracking-widest text-sm">{current.prepCase || '�xx� Wechsel'}</p>
                         <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-tight">{current.de.replace('___', '_____')}</h3>
                         {examHideEs ? (
-                            <p className="text-slate-500 mb-6 text-sm italic border border-dashed border-slate-600 rounded-lg py-4 px-3">TraducciÃ³n oculta â€” usa una pista arriba si la necesitas.</p>
+                            <p className="text-slate-500 mb-6 text-sm italic border border-dashed border-slate-600 rounded-lg py-4 px-3">Traducción oculta � usa una pista arriba si la necesitas.</p>
                         ) : (
                             <p className="text-gray-400 mb-6 text-xl italic">{current.es}</p>
                         )}
@@ -1016,15 +1016,15 @@ function TelcMixedExamFinal({ onBack, examCtx, setExamCtx }) {
                         <div className={`p-4 rounded-xl font-bold text-lg mb-3 text-center ${feedback.type === 'error' ? 'bg-red-900 border border-red-500' : 'bg-green-900 border border-green-500'}`}>{feedback.text}</div>
                         <p className="text-gray-400 mb-3 text-base italic border border-slate-600/50 rounded-lg py-2 px-3 bg-black/20">ES: {feedback.currentCard.es}</p>
                         <div className="bg-black/40 p-3 rounded-xl border border-amber-500/30 mb-4">
-                            <p className="text-amber-400 font-bold text-xs uppercase mb-1">ðŸ’¡ Tipp</p>
+                            <p className="text-amber-400 font-bold text-xs uppercase mb-1">�x� Tipp</p>
                             <p className="text-gray-200 text-sm italic">{feedback.tip}</p>
                         </div>
                         <div className="grid grid-cols-3 gap-2 mb-3">
-                            <button type="button" onClick={() => registerTrainingResult('easy')} className="bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm">FÃ¡cil</button>
+                            <button type="button" onClick={() => registerTrainingResult('easy')} className="bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm">Fácil</button>
                             <button type="button" onClick={() => registerTrainingResult('normal')} className="bg-yellow-700 text-white py-2 rounded-lg font-bold text-sm">Normal</button>
-                            <button type="button" onClick={() => registerTrainingResult('difficult')} className="bg-rose-700 text-white py-2 rounded-lg font-bold text-sm">DifÃ­cil</button>
+                            <button type="button" onClick={() => registerTrainingResult('difficult')} className="bg-rose-700 text-white py-2 rounded-lg font-bold text-sm">Difícil</button>
                         </div>
-                        <button type="button" onClick={handleContinue} className="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-black">Continuar âž”</button>
+                        <button type="button" onClick={handleContinue} className="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-black">Continuar �~</button>
                     </div>
                 )}
                 <p className="text-gray-500 text-xs mt-4">Restantes: {queue.length}</p>
@@ -1092,7 +1092,7 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
             <div className="flex justify-between items-center mb-10 border-b border-purple-900/50 pb-4 gap-2 flex-wrap">
                 <div className="flex items-center gap-3 flex-wrap">
                     <span className="bg-purple-600 p-2 rounded-lg"><i data-lucide="graduation-cap" className="w-6 h-6"></i></span>
-                    <h2 className="text-2xl md:text-3xl font-bold text-purple-100">Ãrea de Entrenamiento MÃ¼ller</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold text-purple-100">Área de Entrenamiento Müller</h2>
                     <button type="button" onClick={() => window.__MULLER_OPEN_EXERCISE_HELP && window.__MULLER_OPEN_EXERCISE_HELP(activeMode === 'exam_setup' ? 'advanced_exam' : 'advanced_menu')} className="text-xs font-bold text-purple-200 border border-purple-500/40 rounded-lg px-2 py-1.5 hover:bg-purple-900/50 transition">Ayuda</button>
                 </div>
                 {!embedded && <button type="button" onClick={handleClosePanel} className="bg-red-600/20 text-red-400 border border-red-900/50 px-4 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition">X Cerrar</button>}
@@ -1100,18 +1100,18 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
 
             {activeMode === 'exam_setup' && (
                 <div className="max-w-lg mx-auto w-full space-y-5 mb-6">
-                    <button type="button" onClick={() => setActiveMode('menu')} className="text-sm text-gray-400 hover:text-white">â† Volver al menÃº</button>
+                    <button type="button" onClick={() => setActiveMode('menu')} className="text-sm text-gray-400 hover:text-white">� � Volver al menú</button>
                     <div className="bg-slate-900/85 border border-amber-600/45 rounded-2xl p-6 shadow-xl shadow-amber-900/10">
                         <h3 className="text-xl font-bold text-amber-100 mb-1 flex items-center gap-2"><i data-lucide="timer" className="w-5 h-5"></i> Modo examen TELC</h3>
-                        <p className="text-sm text-gray-400 mb-5 leading-relaxed">CronÃ³metro orientativo (no detiene la sesiÃ³n), traducciÃ³n al espaÃ±ol oculta hasta que uses una pista. Pensado para la presiÃ³n del examen sin castigos duros.</p>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">DuraciÃ³n guÃ­a</p>
+                        <p className="text-sm text-gray-400 mb-5 leading-relaxed">Cronómetro orientativo (no detiene la sesión), traducción al español oculta hasta que uses una pista. Pensado para la presión del examen sin castigos duros.</p>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Duración guía</p>
                         <div className="flex flex-wrap gap-2 mb-5">
                             {[15, 20, 30, 45].map((m) => (
                                 <button key={m} type="button" onClick={() => setExamSetup((s) => ({ ...s, durationMin: m }))}
                                     className={`px-4 py-2 rounded-lg text-sm font-bold border transition ${examSetup.durationMin === m ? 'bg-amber-700/50 border-amber-500 text-amber-100' : 'bg-slate-800 border-slate-600 text-gray-300 hover:border-amber-700/50'}`}>{m} min</button>
                             ))}
                         </div>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Pistas de traducciÃ³n (toda la sesiÃ³n)</p>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Pistas de traducción (toda la sesión)</p>
                         <div className="flex flex-wrap gap-2 mb-5">
                             {[5, 8, 12].map((h) => (
                                 <button key={h} type="button" onClick={() => setExamSetup((s) => ({ ...s, hintsTotal: h }))}
@@ -1121,7 +1121,7 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Contenido</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
                             {[
-                                { id: 'articulos', label: 'ArtÃ­culos' },
+                                { id: 'articulos', label: 'Artículos' },
                                 { id: 'verbos', label: 'Verbos + prep.' },
                                 { id: 'preposiciones', label: 'Preposiciones' },
                                 { id: 'mix', label: 'Mezcla B1/B2 (45 tarjetas)' }
@@ -1132,7 +1132,7 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
                         </div>
                         {examSetup.track === 'articulos' && (
                             <div className="mb-5">
-                                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nivel artÃ­culos</p>
+                                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nivel artículos</p>
                                 <div className="flex flex-wrap gap-2">
                                     {['B1', 'B2', 'MIXTO', 'historia'].map((lvl) => (
                                         <button key={lvl} type="button" onClick={() => setExamSetup((s) => ({ ...s, articleLevel: lvl }))}
@@ -1155,7 +1155,7 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
                             else if (examSetup.track === 'preposiciones') setActiveMode('exam_preposiciones');
                             else setActiveMode('exam_mix');
                         }} className="w-full py-4 rounded-xl font-black text-lg bg-gradient-to-r from-amber-600 to-orange-800 hover:from-amber-500 hover:to-orange-700 border border-amber-500/30 shadow-lg transition">
-                            Iniciar sesiÃ³n tipo examen
+                            Iniciar sesión tipo examen
                         </button>
                     </div>
                 </div>
@@ -1166,11 +1166,11 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
                     <div className="grid grid-cols-2 md:grid-cols-7 gap-3 mb-6">
                         <div className="bg-slate-900/80 border border-blue-900/40 rounded-xl p-3 text-center"><p className="text-xs text-gray-400">Intentos</p><p className="text-xl font-black text-white">{dashboard.totalAttempts}</p></div>
                         <div className="bg-slate-900/80 border border-red-900/40 rounded-xl p-3 text-center"><p className="text-xs text-gray-400">Fallos</p><p className="text-xl font-black text-red-300">{dashboard.totalErrors}</p></div>
-                        <div className="bg-slate-900/80 border border-emerald-900/40 rounded-xl p-3 text-center"><p className="text-xs text-gray-400">PrecisiÃ³n</p><p className="text-xl font-black text-emerald-300">{dashboard.accuracy}%</p></div>
-                        <div className="bg-slate-900/80 border border-fuchsia-900/40 rounded-xl p-3 text-center"><p className="text-xs text-gray-400">DÃ©biles</p><p className="text-xl font-black text-fuchsia-300">{dashboard.weak}</p></div>
+                        <div className="bg-slate-900/80 border border-emerald-900/40 rounded-xl p-3 text-center"><p className="text-xs text-gray-400">Precisión</p><p className="text-xl font-black text-emerald-300">{dashboard.accuracy}%</p></div>
+                        <div className="bg-slate-900/80 border border-fuchsia-900/40 rounded-xl p-3 text-center"><p className="text-xs text-gray-400">Débiles</p><p className="text-xl font-black text-fuchsia-300">{dashboard.weak}</p></div>
                         <div className="bg-slate-900/80 border border-amber-900/40 rounded-xl p-3 text-center"><p className="text-xs text-gray-400">Art/Verb/Prep</p><p className="text-sm font-black text-amber-300">{dashboard.art.total}/{dashboard.verb.total}/{dashboard.prep.total}</p></div>
                         <div className="bg-slate-900/80 border border-cyan-900/40 rounded-xl p-3 text-center"><p className="text-xs text-gray-400">Objetivo Hoy</p><p className="text-xl font-black text-cyan-300">{dashboard.todayAttempts}/{dashboard.dailyGoal}</p><p className="text-[10px] text-cyan-200">{dashboard.dailyProgress}%</p></div>
-                        <div className="bg-slate-900/80 border border-orange-900/40 rounded-xl p-3 text-center"><p className="text-xs text-gray-400">Racha</p><p className="text-xl font-black text-orange-300">ðŸ”¥ {dashboard.streakDays}</p><p className="text-[10px] text-orange-200">dÃ­as</p></div>
+                        <div className="bg-slate-900/80 border border-orange-900/40 rounded-xl p-3 text-center"><p className="text-xs text-gray-400">Racha</p><p className="text-xl font-black text-orange-300">�x� {dashboard.streakDays}</p><p className="text-[10px] text-orange-200">días</p></div>
                     </div>
                     <div className="bg-slate-900/60 border border-purple-800/40 rounded-xl p-4 mb-6 flex flex-col md:flex-row md:items-center gap-4">
                         <div className="flex-1">
@@ -1182,15 +1182,15 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
                                 <span className="text-cyan-300 font-mono font-bold w-12 text-right">{dashboard.dailyGoal}</span>
                             </div>
                         </div>
-                        <p className="text-xs text-gray-400 md:max-w-xs">Ajusta el ritmo: en TELC cuenta mÃ¡s la constancia diaria que un solo dÃ­a intenso.</p>
+                        <p className="text-xs text-gray-400 md:max-w-xs">Ajusta el ritmo: en TELC cuenta más la constancia diaria que un solo día intenso.</p>
                     </div>
                     <button type="button" onClick={() => setActiveMode('exam_setup')} className="w-full mb-6 text-left bg-gradient-to-br from-amber-950/55 to-slate-900/85 border border-amber-600/45 hover:border-amber-500/80 rounded-2xl p-5 transition shadow-lg shadow-amber-900/15 group">
-                        <p className="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-1">SimulaciÃ³n</p>
+                        <p className="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-1">Simulación</p>
                         <h3 className="text-lg font-bold text-amber-100 mb-1 group-hover:text-white transition">Modo examen TELC</h3>
-                        <p className="text-sm text-gray-400 leading-snug">CronÃ³metro suave, traducciÃ³n oculta con pistas limitadas y ritmo de presiÃ³n sin bloquear la sesiÃ³n.</p>
+                        <p className="text-sm text-gray-400 leading-snug">Cronómetro suave, traducción oculta con pistas limitadas y ritmo de presión sin bloquear la sesión.</p>
                     </button>
                     <div className="mb-6">
-                        <p className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3">Insignias TELC / MÃ¼ller</p>
+                        <p className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3">Insignias TELC / Müller</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                             {ACHIEVEMENT_DEFS.map((def) => {
                                 const unlockedAt = achUnlocked[def.id];
@@ -1207,19 +1207,19 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <button onClick={() => setActiveMode('articulos')} className="bg-slate-900 border border-blue-800/50 p-8 rounded-2xl hover:bg-blue-900/30 transition shadow-lg group flex flex-col items-center text-center">
-                        <div className="text-5xl mb-4 group-hover:scale-110 transition">ðŸ“˜</div>
-                        <h3 className="text-2xl font-bold text-blue-400 mb-2">ArtÃ­culos (Der/Die/Das)</h3>
-                        <p className="text-sm text-gray-400">ExtraÃ­do en Nominativo estricto. Usa teclado (1, 2, 3).</p>
+                        <div className="text-5xl mb-4 group-hover:scale-110 transition">�x�</div>
+                        <h3 className="text-2xl font-bold text-blue-400 mb-2">Artículos (Der/Die/Das)</h3>
+                        <p className="text-sm text-gray-400">Extraído en Nominativo estricto. Usa teclado (1, 2, 3).</p>
                     </button>
 
                     <button onClick={() => setActiveMode('verbos_prep')} className="bg-slate-900 border border-green-800/50 p-8 rounded-2xl hover:bg-green-900/30 transition shadow-lg group flex flex-col items-center text-center">
-                        <div className="text-5xl mb-4 group-hover:scale-110 transition">ðŸ“—</div>
+                        <div className="text-5xl mb-4 group-hover:scale-110 transition">�x</div>
                         <h3 className="text-2xl font-bold text-green-400 mb-2">Verbos + Prep (Nube)</h3>
-                        <p className="text-sm text-gray-400">Conectado a tu GitHub. Sistema de repeticiÃ³n de fallos.</p>
+                        <p className="text-sm text-gray-400">Conectado a tu GitHub. Sistema de repetición de fallos.</p>
                     </button>
 
                 <button onClick={() => setActiveMode('preposiciones')} className="bg-slate-900 border border-amber-800/50 p-8 rounded-2xl hover:bg-amber-900/30 transition shadow-lg group flex flex-col items-center text-center">
-            <div className="text-5xl mb-4 group-hover:scale-110 transition">ðŸ“™</div>
+            <div className="text-5xl mb-4 group-hover:scale-110 transition">�x"</div>
             <h3 className="text-2xl font-bold text-amber-400 mb-2">Preposiciones</h3>
             <p className="text-sm text-gray-400">Base de datos en tiempo real (GitHub). Casos y ejemplos B1/B2.</p>
         </button>
@@ -1248,7 +1248,7 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
 
 // ============================================================================
 
-// -------------------- MODO AUDIOLIBRO (guion TTS encadenado) â€” control desde React --------------------
+// -------------------- MODO AUDIOLIBRO (guion TTS encadenado) � control desde React --------------------
 (function() {
     let isPlaying = false;
     let currentIdx = 0;
@@ -1257,8 +1257,8 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
     function sanitizeAudiobookText(text) {
         return String(text || '')
             .replace(/\[R\]/gi, '')
-            .replace(/\bN[Ã¼u]tzlich\b\.?/gi, '')
-            .replace(/\b[ÃšU]TIL\b\.?/gi, '')
+            .replace(/\bN[üu]tzlich\b\.?/gi, '')
+            .replace(/\b[�aU]TIL\b\.?/gi, '')
             .replace(/\s{2,}/g, ' ')
             .trim();
     }
@@ -1312,7 +1312,7 @@ function AdvancedPracticePanelFinal({ embedded = false, onRequestClose = null })
     function startAudioBook() {
         guionCache = getCurrentGuion();
         if (!guionCache || guionCache.length === 0) {
-            if (window.__mullerToast) window.__mullerToast('No hay ningÃºn guion cargado.', 'error');
+            if (window.__mullerToast) window.__mullerToast('No hay ningún guion cargado.', 'error');
             return;
         }
         stopAudioBook();

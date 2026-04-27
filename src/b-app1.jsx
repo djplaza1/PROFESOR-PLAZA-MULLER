@@ -1,4 +1,4 @@
-﻿        function App() {
+�        function App() {
           const [activeTab, setActiveTab] = useState(() => { try { return localStorage.getItem('muller_active_tab_v1') || 'inicio'; } catch { return 'inicio'; } });
           const [showSplash, setShowSplash] = useState(false); 
           const [splashLogoBlink, setSplashLogoBlink] = useState(false);
@@ -73,7 +73,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
           const [roleplayChar, setRoleplayChar] = useState('none');
           const [podcastMode, setPodcastMode] = useState(false);
           const [showHistoriaMenu, setShowHistoriaMenu] = useState(false);
-          /** Tras el Ãºltimo guion, carga el siguiente de Biblioteca (solo tiene efecto al terminar una escena en flujo normal / podcast). */
+          /** Tras el último guion, carga el siguiente de Biblioteca (solo tiene efecto al terminar una escena en flujo normal / podcast). */
           const [historiaPlaylistAllScripts, setHistoriaPlaylistAllScripts] = useState(false);
           const [showCurrentTranslation, setShowCurrentTranslation] = useState(false); 
           const [tempusVerbList, setTempusVerbList] = useState([]);
@@ -82,7 +82,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
           const [diktatInput, setDiktatInput] = useState("");
           const [showDiktatResult, setShowDiktatResult] = useState(false);
           const [savedScripts, setSavedScripts] = useState([]);
-          /** Si practicas un guion guardado en Biblioteca, su id; si no, null (ejemplo, IA o no guardado). Sirve para vincular Â«Distribuir â†’ B1/B2Â». */
+          /** Si practicas un guion guardado en Biblioteca, su id; si no, null (ejemplo, IA o no guardado). Sirve para vincular «Distribuir �  B1/B2». */
           const [activeSavedScriptId, setActiveSavedScriptId] = useState(null);
           const [customVocabLessons, setCustomVocabLessons] = useState([]);
           const [lexikonSearch, setLexikonSearch] = useState('');
@@ -149,7 +149,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
           const [grammarPolizeiMsg, setGrammarPolizeiMsg] = useState("");
           const [pronunciationFeedback, setPronunciationFeedback] = useState([]);
           const [newScriptTitle, setNewScriptTitle] = useState("");
-          const [scriptInput, setScriptInput] = useState(`Lukas: Hallo Elena! (Â¡Hola Elena!) [der Tag - el dÃ­a]\nElena: Ja, ich bin froh! (Â¡SÃ­, estoy contenta!) [froh - contento]`);
+          const [scriptInput, setScriptInput] = useState(`Lukas: Hallo Elena! (¡Hola Elena!) [der Tag - el día]\nElena: Ja, ich bin froh! (¡Sí, estoy contenta!) [froh - contento]`);
           const [showLoginModal, setShowLoginModal] = useState(false);
           const [tempUsername, setTempUsername] = useState("");
           const [showTutor, setShowTutor] = useState(false);
@@ -299,46 +299,46 @@ const [placementFinished, setPlacementFinished] = useState(false);
               const base = Array.isArray(window.MULLER_RUTA_LEVELS) ? window.MULLER_RUTA_LEVELS : [];
               const curriculumByLevel = {
                   A0: [
-                      { title: 'Alfabeto y sonidos base', topic: 'presentacion', grammarTip: 'Prioriza pronunciaciÃ³n de vocales largas/cortas y combinaciones ch, sch, ei, ie.', phrases: [{ de: 'Ich heiÃŸe Leo.', es: 'Me llamo Leo.' }, { de: 'Das ist Anna.', es: 'Esta es Anna.' }, { de: 'Wir lernen Deutsch.', es: 'Aprendemos alemÃ¡n.' }], fill: { prompt: 'Completa: Ich ___ Leo.', answer: 'heiÃŸe', hint: 'Verbo Â«heiÃŸenÂ», 1Âª persona.' }, speak: { target: 'Ich heiÃŸe Leo.' } },
-                      { title: 'NÃºmeros y datos personales', topic: 'tramites', grammarTip: 'Practica deletrear nombre, edad, telÃ©fono y paÃ­s.', phrases: [{ de: 'Ich bin 24 Jahre alt.', es: 'Tengo 24 aÃ±os.' }, { de: 'Meine Nummer ist null eins sieben.', es: 'Mi nÃºmero es 017.' }, { de: 'Ich komme aus Spanien.', es: 'Vengo de EspaÃ±a.' }], fill: { prompt: 'Completa: Ich bin 24 Jahre ___.', answer: 'alt', hint: 'ExpresiÃ³n fija para la edad.' }, speak: { target: 'Ich bin 24 Jahre alt.' } },
-                      { title: 'Aula y objetos cotidianos', topic: 'clase', grammarTip: 'Memoriza sustantivo con artÃ­culo: der Stift, die Tasche, das Heft.', phrases: [{ de: 'Das ist ein Stift.', es: 'Eso es un bolÃ­grafo.' }, { de: 'Die Tasche ist neu.', es: 'La mochila es nueva.' }, { de: 'Wo ist das Heft?', es: 'Â¿DÃ³nde estÃ¡ el cuaderno?' }], fill: { prompt: 'Completa: Das ist ___ Stift.', answer: 'ein', hint: 'Indefinido masculino.' }, speak: { target: 'Das ist ein Stift.' } },
-                      { title: 'Familia inmediata', topic: 'familia', grammarTip: 'Usa posesivos bÃ¡sicos: mein/meine y dein/deine.', phrases: [{ de: 'Das ist meine Mutter.', es: 'Esta es mi madre.' }, { de: 'Mein Bruder ist hier.', es: 'Mi hermano estÃ¡ aquÃ­.' }, { de: 'Hast du Geschwister?', es: 'Â¿Tienes hermanos?' }], fill: { prompt: 'Completa: Das ist ___ Mutter.', answer: 'meine', hint: 'Sustantivo femenino.' }, speak: { target: 'Das ist meine Mutter.' } },
-                      { title: 'Comidas y compras simples', topic: 'alimentos', grammarTip: 'Pide con Â«Ich mÃ¶chte ...Â» + Akkusativ.', phrases: [{ de: 'Ich mÃ¶chte Wasser.', es: 'Quiero agua.' }, { de: 'Wir kaufen Brot.', es: 'Compramos pan.' }, { de: 'Der Kaffee ist heiÃŸ.', es: 'El cafÃ© estÃ¡ caliente.' }], fill: { prompt: 'Completa: Ich ___ Wasser.', answer: 'mÃ¶chte', hint: 'Forma de cortesÃ­a comÃºn.' }, speak: { target: 'Ich mÃ¶chte Wasser.' } },
-                      { title: 'Rutina mÃ­nima diaria', topic: 'rutina', grammarTip: 'Separable verbs: Â«aufstehenÂ» separa en presente.', phrases: [{ de: 'Ich stehe um sieben auf.', es: 'Me levanto a las siete.' }, { de: 'Ich arbeite am Montag.', es: 'Trabajo el lunes.' }, { de: 'Abends lerne ich.', es: 'Por la noche estudio.' }], fill: { prompt: 'Completa: Ich ___ um sieben auf.', answer: 'stehe', hint: 'Verbo separable Â«aufstehenÂ».' }, speak: { target: 'Ich stehe um sieben auf.' } }
+                      { title: 'Alfabeto y sonidos base', topic: 'presentacion', grammarTip: 'Prioriza pronunciación de vocales largas/cortas y combinaciones ch, sch, ei, ie.', phrases: [{ de: 'Ich hei�xe Leo.', es: 'Me llamo Leo.' }, { de: 'Das ist Anna.', es: 'Esta es Anna.' }, { de: 'Wir lernen Deutsch.', es: 'Aprendemos alemán.' }], fill: { prompt: 'Completa: Ich ___ Leo.', answer: 'hei�xe', hint: 'Verbo «hei�xen», 1ª persona.' }, speak: { target: 'Ich hei�xe Leo.' } },
+                      { title: 'Números y datos personales', topic: 'tramites', grammarTip: 'Practica deletrear nombre, edad, teléfono y país.', phrases: [{ de: 'Ich bin 24 Jahre alt.', es: 'Tengo 24 años.' }, { de: 'Meine Nummer ist null eins sieben.', es: 'Mi número es 017.' }, { de: 'Ich komme aus Spanien.', es: 'Vengo de España.' }], fill: { prompt: 'Completa: Ich bin 24 Jahre ___.', answer: 'alt', hint: 'Expresión fija para la edad.' }, speak: { target: 'Ich bin 24 Jahre alt.' } },
+                      { title: 'Aula y objetos cotidianos', topic: 'clase', grammarTip: 'Memoriza sustantivo con artículo: der Stift, die Tasche, das Heft.', phrases: [{ de: 'Das ist ein Stift.', es: 'Eso es un bolígrafo.' }, { de: 'Die Tasche ist neu.', es: 'La mochila es nueva.' }, { de: 'Wo ist das Heft?', es: '¿Dónde está el cuaderno?' }], fill: { prompt: 'Completa: Das ist ___ Stift.', answer: 'ein', hint: 'Indefinido masculino.' }, speak: { target: 'Das ist ein Stift.' } },
+                      { title: 'Familia inmediata', topic: 'familia', grammarTip: 'Usa posesivos básicos: mein/meine y dein/deine.', phrases: [{ de: 'Das ist meine Mutter.', es: 'Esta es mi madre.' }, { de: 'Mein Bruder ist hier.', es: 'Mi hermano está aquí.' }, { de: 'Hast du Geschwister?', es: '¿Tienes hermanos?' }], fill: { prompt: 'Completa: Das ist ___ Mutter.', answer: 'meine', hint: 'Sustantivo femenino.' }, speak: { target: 'Das ist meine Mutter.' } },
+                      { title: 'Comidas y compras simples', topic: 'alimentos', grammarTip: 'Pide con «Ich möchte ...» + Akkusativ.', phrases: [{ de: 'Ich möchte Wasser.', es: 'Quiero agua.' }, { de: 'Wir kaufen Brot.', es: 'Compramos pan.' }, { de: 'Der Kaffee ist hei�x.', es: 'El café está caliente.' }], fill: { prompt: 'Completa: Ich ___ Wasser.', answer: 'möchte', hint: 'Forma de cortesía común.' }, speak: { target: 'Ich möchte Wasser.' } },
+                      { title: 'Rutina mínima diaria', topic: 'rutina', grammarTip: 'Separable verbs: «aufstehen» separa en presente.', phrases: [{ de: 'Ich stehe um sieben auf.', es: 'Me levanto a las siete.' }, { de: 'Ich arbeite am Montag.', es: 'Trabajo el lunes.' }, { de: 'Abends lerne ich.', es: 'Por la noche estudio.' }], fill: { prompt: 'Completa: Ich ___ um sieben auf.', answer: 'stehe', hint: 'Verbo separable «aufstehen».' }, speak: { target: 'Ich stehe um sieben auf.' } }
                   ],
                   A1: [
-                      { title: 'Presentarse con detalle', topic: 'presentacion', grammarTip: 'AmplÃ­a presentaciÃ³n con profesiÃ³n, ciudad y lenguas.', phrases: [{ de: 'Ich bin Ingenieurin und wohne in Madrid.', es: 'Soy ingeniera y vivo en Madrid.' }, { de: 'Ich spreche Spanisch und etwas Deutsch.', es: 'Hablo espaÃ±ol y algo de alemÃ¡n.' }, { de: 'Seit einem Jahr lerne ich Deutsch.', es: 'Desde hace un aÃ±o estudio alemÃ¡n.' }], fill: { prompt: 'Completa: Ich ___ in Madrid.', answer: 'wohne', hint: 'Verbo wohnen.' }, speak: { target: 'Ich spreche Spanisch und etwas Deutsch.' } },
-                      { title: 'Casa y habitaciones', topic: 'vivienda', grammarTip: 'Preposiciones de lugar frecuentes: in, auf, unter.', phrases: [{ de: 'Die KÃ¼che ist klein.', es: 'La cocina es pequeÃ±a.' }, { de: 'Das Buch liegt auf dem Tisch.', es: 'El libro estÃ¡ sobre la mesa.' }, { de: 'Wir wohnen in einer Wohnung.', es: 'Vivimos en un piso.' }], fill: { prompt: 'Completa: Das Buch liegt ___ dem Tisch.', answer: 'auf', hint: 'RelaciÃ³n Â«encima deÂ».' }, speak: { target: 'Das Buch liegt auf dem Tisch.' } },
-                      { title: 'Trabajo y horarios', topic: 'trabajo', grammarTip: 'Preguntar y responder horarios con Â«von ... bis ...Â».', phrases: [{ de: 'Ich arbeite von neun bis fÃ¼nf.', es: 'Trabajo de nueve a cinco.' }, { de: 'Wann beginnt dein Kurs?', es: 'Â¿CuÃ¡ndo empieza tu curso?' }, { de: 'Heute habe ich frei.', es: 'Hoy tengo libre.' }], fill: { prompt: 'Completa: Ich arbeite von neun ___ fÃ¼nf.', answer: 'bis', hint: 'ExpresiÃ³n de intervalo.' }, speak: { target: 'Ich arbeite von neun bis fÃ¼nf.' } },
-                      { title: 'Restaurante y pedidos', topic: 'alimentos', grammarTip: 'Usa Â«ich hÃ¤tte gernÂ» para sonar natural y cortÃ©s.', phrases: [{ de: 'Ich hÃ¤tte gern eine Suppe.', es: 'Quisiera una sopa.' }, { de: 'Wir zahlen zusammen.', es: 'Pagamos juntos.' }, { de: 'Die Rechnung, bitte.', es: 'La cuenta, por favor.' }], fill: { prompt: 'Completa: Ich hÃ¤tte ___ eine Suppe.', answer: 'gern', hint: 'PartÃ­cula fija en la fÃ³rmula.' }, speak: { target: 'Die Rechnung, bitte.' } },
-                      { title: 'Salud y farmacia', topic: 'salud', grammarTip: 'Estructura tÃ­pica: Â«Ich habe + sÃ­ntomaÂ».', phrases: [{ de: 'Ich habe Kopfschmerzen.', es: 'Tengo dolor de cabeza.' }, { de: 'Ich brauche einen Termin.', es: 'Necesito una cita.' }, { de: 'Nehmen Sie diese Tabletten.', es: 'Tome estas pastillas.' }], fill: { prompt: 'Completa: Ich ___ Kopfschmerzen.', answer: 'habe', hint: 'Verbo haben.' }, speak: { target: 'Ich habe Kopfschmerzen.' } },
-                      { title: 'Tiempo libre y planes', topic: 'tiempo_libre', grammarTip: 'Con Â«am WochenendeÂ» y Â«mit FreundenÂ» hablas de ocio.', phrases: [{ de: 'Am Wochenende spiele ich FuÃŸball.', es: 'El fin de semana juego al fÃºtbol.' }, { de: 'Heute Abend gehe ich ins Kino.', es: 'Esta tarde voy al cine.' }, { de: 'Morgen treffe ich Freunde.', es: 'MaÃ±ana quedo con amigos.' }], fill: { prompt: 'Completa: Heute Abend ___ ich ins Kino.', answer: 'gehe', hint: 'Verbo gehen, 1Âª persona.' }, speak: { target: 'Heute Abend gehe ich ins Kino.' } }
+                      { title: 'Presentarse con detalle', topic: 'presentacion', grammarTip: 'Amplía presentación con profesión, ciudad y lenguas.', phrases: [{ de: 'Ich bin Ingenieurin und wohne in Madrid.', es: 'Soy ingeniera y vivo en Madrid.' }, { de: 'Ich spreche Spanisch und etwas Deutsch.', es: 'Hablo español y algo de alemán.' }, { de: 'Seit einem Jahr lerne ich Deutsch.', es: 'Desde hace un año estudio alemán.' }], fill: { prompt: 'Completa: Ich ___ in Madrid.', answer: 'wohne', hint: 'Verbo wohnen.' }, speak: { target: 'Ich spreche Spanisch und etwas Deutsch.' } },
+                      { title: 'Casa y habitaciones', topic: 'vivienda', grammarTip: 'Preposiciones de lugar frecuentes: in, auf, unter.', phrases: [{ de: 'Die Küche ist klein.', es: 'La cocina es pequeña.' }, { de: 'Das Buch liegt auf dem Tisch.', es: 'El libro está sobre la mesa.' }, { de: 'Wir wohnen in einer Wohnung.', es: 'Vivimos en un piso.' }], fill: { prompt: 'Completa: Das Buch liegt ___ dem Tisch.', answer: 'auf', hint: 'Relación «encima de».' }, speak: { target: 'Das Buch liegt auf dem Tisch.' } },
+                      { title: 'Trabajo y horarios', topic: 'trabajo', grammarTip: 'Preguntar y responder horarios con «von ... bis ...».', phrases: [{ de: 'Ich arbeite von neun bis fünf.', es: 'Trabajo de nueve a cinco.' }, { de: 'Wann beginnt dein Kurs?', es: '¿Cuándo empieza tu curso?' }, { de: 'Heute habe ich frei.', es: 'Hoy tengo libre.' }], fill: { prompt: 'Completa: Ich arbeite von neun ___ fünf.', answer: 'bis', hint: 'Expresión de intervalo.' }, speak: { target: 'Ich arbeite von neun bis fünf.' } },
+                      { title: 'Restaurante y pedidos', topic: 'alimentos', grammarTip: 'Usa «ich hätte gern» para sonar natural y cortés.', phrases: [{ de: 'Ich hätte gern eine Suppe.', es: 'Quisiera una sopa.' }, { de: 'Wir zahlen zusammen.', es: 'Pagamos juntos.' }, { de: 'Die Rechnung, bitte.', es: 'La cuenta, por favor.' }], fill: { prompt: 'Completa: Ich hätte ___ eine Suppe.', answer: 'gern', hint: 'Partícula fija en la fórmula.' }, speak: { target: 'Die Rechnung, bitte.' } },
+                      { title: 'Salud y farmacia', topic: 'salud', grammarTip: 'Estructura típica: «Ich habe + síntoma».', phrases: [{ de: 'Ich habe Kopfschmerzen.', es: 'Tengo dolor de cabeza.' }, { de: 'Ich brauche einen Termin.', es: 'Necesito una cita.' }, { de: 'Nehmen Sie diese Tabletten.', es: 'Tome estas pastillas.' }], fill: { prompt: 'Completa: Ich ___ Kopfschmerzen.', answer: 'habe', hint: 'Verbo haben.' }, speak: { target: 'Ich habe Kopfschmerzen.' } },
+                      { title: 'Tiempo libre y planes', topic: 'tiempo_libre', grammarTip: 'Con «am Wochenende» y «mit Freunden» hablas de ocio.', phrases: [{ de: 'Am Wochenende spiele ich Fu�xball.', es: 'El fin de semana juego al fútbol.' }, { de: 'Heute Abend gehe ich ins Kino.', es: 'Esta tarde voy al cine.' }, { de: 'Morgen treffe ich Freunde.', es: 'Mañana quedo con amigos.' }], fill: { prompt: 'Completa: Heute Abend ___ ich ins Kino.', answer: 'gehe', hint: 'Verbo gehen, 1ª persona.' }, speak: { target: 'Heute Abend gehe ich ins Kino.' } }
                   ],
                   A2: [
-                      { title: 'Narrar pasado con Perfekt', topic: 'gramatica', grammarTip: 'Combina auxiliares haben/sein y participio al final.', phrases: [{ de: 'Letztes Jahr habe ich in Berlin gearbeitet.', es: 'El aÃ±o pasado trabajÃ© en BerlÃ­n.' }, { de: 'Wir sind spÃ¤t angekommen.', es: 'Llegamos tarde.' }, { de: 'Sie hat viel gelernt.', es: 'Ella ha estudiado mucho.' }], fill: { prompt: 'Completa: Wir sind spÃ¤t ___.', answer: 'angekommen', hint: 'Participio de ankommen.' }, speak: { target: 'Wir sind spÃ¤t angekommen.' } },
-                      { title: 'Conectores de causa y contraste', topic: 'conectores', grammarTip: 'weil + verbo final; aber/deshalb en frase principal.', phrases: [{ de: 'Ich bleibe zu Hause, weil ich krank bin.', es: 'Me quedo en casa porque estoy enfermo.' }, { de: 'Es regnet, aber wir gehen raus.', es: 'Llueve, pero salimos.' }, { de: 'Ich bin mÃ¼de, deshalb schlafe ich frÃ¼h.', es: 'Estoy cansado, por eso duermo pronto.' }], fill: { prompt: 'Completa: Ich bleibe zu Hause, ___ ich krank bin.', answer: 'weil', hint: 'Conector causal con verbo al final.' }, speak: { target: 'Ich bin mÃ¼de, deshalb schlafe ich frÃ¼h.' } },
-                      { title: 'Viajes y transporte', topic: 'viajes', grammarTip: 'Bloques Ãºtiles: Fahrkarte, umsteigen, Abfahrt, Ankunft.', phrases: [{ de: 'Wo kann ich eine Fahrkarte kaufen?', es: 'Â¿DÃ³nde puedo comprar un billete?' }, { de: 'Der Zug hat VerspÃ¤tung.', es: 'El tren tiene retraso.' }, { de: 'Wir mÃ¼ssen in KÃ¶ln umsteigen.', es: 'Tenemos que hacer transbordo en Colonia.' }], fill: { prompt: 'Completa: Der Zug hat ___.', answer: 'VerspÃ¤tung', hint: 'Retraso.' }, speak: { target: 'Wir mÃ¼ssen in KÃ¶ln umsteigen.' } },
-                      { title: 'TrÃ¡mites y oficina', topic: 'tramites', grammarTip: 'Practica frases formales cortas en ventanilla.', phrases: [{ de: 'Ich mÃ¶chte dieses Formular abgeben.', es: 'Quiero entregar este formulario.' }, { de: 'Welche Unterlagen brauche ich?', es: 'Â¿QuÃ© documentos necesito?' }, { de: 'KÃ¶nnen Sie mir helfen?', es: 'Â¿Puede ayudarme?' }], fill: { prompt: 'Completa: Welche ___ brauche ich?', answer: 'Unterlagen', hint: 'Documentos.' }, speak: { target: 'Ich mÃ¶chte dieses Formular abgeben.' } },
-                      { title: 'Relaciones personales', topic: 'familia', grammarTip: 'OpiniÃ³n bÃ¡sica: Â«Ich finde..., weil...Â»', phrases: [{ de: 'Ich finde meinen Job interessant.', es: 'Encuentro mi trabajo interesante.' }, { de: 'Mit meiner Schwester spreche ich oft.', es: 'Hablo mucho con mi hermana.' }, { de: 'Wir verstehen uns gut.', es: 'Nos llevamos bien.' }], fill: { prompt: 'Completa: Wir ___ uns gut.', answer: 'verstehen', hint: 'Verbo separable no, forma plural.' }, speak: { target: 'Wir verstehen uns gut.' } },
-                      { title: 'A2 oral prÃ¡ctico', topic: 'trabajo', grammarTip: 'Entrena respuestas completas de 2-3 frases.', phrases: [{ de: 'In meiner Firma arbeite ich im Team.', es: 'En mi empresa trabajo en equipo.' }, { de: 'Meine Aufgaben sind klar.', es: 'Mis tareas estÃ¡n claras.' }, { de: 'Ich mÃ¶chte mich verbessern.', es: 'Quiero mejorar.' }], fill: { prompt: 'Completa: Ich arbeite ___ Team.', answer: 'im', hint: 'in + dem = im.' }, speak: { target: 'In meiner Firma arbeite ich im Team.' } }
+                      { title: 'Narrar pasado con Perfekt', topic: 'gramatica', grammarTip: 'Combina auxiliares haben/sein y participio al final.', phrases: [{ de: 'Letztes Jahr habe ich in Berlin gearbeitet.', es: 'El año pasado trabajé en Berlín.' }, { de: 'Wir sind spät angekommen.', es: 'Llegamos tarde.' }, { de: 'Sie hat viel gelernt.', es: 'Ella ha estudiado mucho.' }], fill: { prompt: 'Completa: Wir sind spät ___.', answer: 'angekommen', hint: 'Participio de ankommen.' }, speak: { target: 'Wir sind spät angekommen.' } },
+                      { title: 'Conectores de causa y contraste', topic: 'conectores', grammarTip: 'weil + verbo final; aber/deshalb en frase principal.', phrases: [{ de: 'Ich bleibe zu Hause, weil ich krank bin.', es: 'Me quedo en casa porque estoy enfermo.' }, { de: 'Es regnet, aber wir gehen raus.', es: 'Llueve, pero salimos.' }, { de: 'Ich bin müde, deshalb schlafe ich früh.', es: 'Estoy cansado, por eso duermo pronto.' }], fill: { prompt: 'Completa: Ich bleibe zu Hause, ___ ich krank bin.', answer: 'weil', hint: 'Conector causal con verbo al final.' }, speak: { target: 'Ich bin müde, deshalb schlafe ich früh.' } },
+                      { title: 'Viajes y transporte', topic: 'viajes', grammarTip: 'Bloques útiles: Fahrkarte, umsteigen, Abfahrt, Ankunft.', phrases: [{ de: 'Wo kann ich eine Fahrkarte kaufen?', es: '¿Dónde puedo comprar un billete?' }, { de: 'Der Zug hat Verspätung.', es: 'El tren tiene retraso.' }, { de: 'Wir müssen in Köln umsteigen.', es: 'Tenemos que hacer transbordo en Colonia.' }], fill: { prompt: 'Completa: Der Zug hat ___.', answer: 'Verspätung', hint: 'Retraso.' }, speak: { target: 'Wir müssen in Köln umsteigen.' } },
+                      { title: 'Trámites y oficina', topic: 'tramites', grammarTip: 'Practica frases formales cortas en ventanilla.', phrases: [{ de: 'Ich möchte dieses Formular abgeben.', es: 'Quiero entregar este formulario.' }, { de: 'Welche Unterlagen brauche ich?', es: '¿Qué documentos necesito?' }, { de: 'Können Sie mir helfen?', es: '¿Puede ayudarme?' }], fill: { prompt: 'Completa: Welche ___ brauche ich?', answer: 'Unterlagen', hint: 'Documentos.' }, speak: { target: 'Ich möchte dieses Formular abgeben.' } },
+                      { title: 'Relaciones personales', topic: 'familia', grammarTip: 'Opinión básica: «Ich finde..., weil...»', phrases: [{ de: 'Ich finde meinen Job interessant.', es: 'Encuentro mi trabajo interesante.' }, { de: 'Mit meiner Schwester spreche ich oft.', es: 'Hablo mucho con mi hermana.' }, { de: 'Wir verstehen uns gut.', es: 'Nos llevamos bien.' }], fill: { prompt: 'Completa: Wir ___ uns gut.', answer: 'verstehen', hint: 'Verbo separable no, forma plural.' }, speak: { target: 'Wir verstehen uns gut.' } },
+                      { title: 'A2 oral práctico', topic: 'trabajo', grammarTip: 'Entrena respuestas completas de 2-3 frases.', phrases: [{ de: 'In meiner Firma arbeite ich im Team.', es: 'En mi empresa trabajo en equipo.' }, { de: 'Meine Aufgaben sind klar.', es: 'Mis tareas están claras.' }, { de: 'Ich möchte mich verbessern.', es: 'Quiero mejorar.' }], fill: { prompt: 'Completa: Ich arbeite ___ Team.', answer: 'im', hint: 'in + dem = im.' }, speak: { target: 'In meiner Firma arbeite ich im Team.' } }
                   ],
                   B1: [
-                      { title: 'OpiniÃ³n y argumentaciÃ³n', topic: 'conectores', grammarTip: 'Conecta ideas con auÃŸerdem, jedoch, deshalb.', phrases: [{ de: 'Meiner Meinung nach ist Homeoffice sinnvoll.', es: 'En mi opiniÃ³n, el teletrabajo tiene sentido.' }, { de: 'Einerseits spart man Zeit, andererseits fehlt Kontakt.', es: 'Por un lado ahorras tiempo, por otro falta contacto.' }, { de: 'Deshalb brauche ich einen Mix.', es: 'Por eso necesito un equilibrio.' }], fill: { prompt: 'Completa: Einerseits ..., ___ ...', answer: 'andererseits', hint: 'Conector correlativo.' }, speak: { target: 'Meiner Meinung nach ist Homeoffice sinnvoll.' } },
-                      { title: 'B1 trabajo y CV', topic: 'trabajo', grammarTip: 'Pasado relevante y logros concretos en frases breves.', phrases: [{ de: 'Ich habe drei Jahre im Kundenservice gearbeitet.', es: 'TrabajÃ© tres aÃ±os en atenciÃ³n al cliente.' }, { de: 'Ich bin zuverlÃ¤ssig und flexibel.', es: 'Soy fiable y flexible.' }, { de: 'Ich mÃ¶chte mich beruflich weiterentwickeln.', es: 'Quiero desarrollarme profesionalmente.' }], fill: { prompt: 'Completa: Ich habe drei Jahre im Kundenservice ___.', answer: 'gearbeitet', hint: 'Participio regular.' }, speak: { target: 'Ich mÃ¶chte mich beruflich weiterentwickeln.' } },
-                      { title: 'RelativsÃ¤tze Ãºtiles', topic: 'gramatica', grammarTip: 'der/die/das + verbo al final para aÃ±adir informaciÃ³n.', phrases: [{ de: 'Das ist der Kollege, der mir hilft.', es: 'Ese es el compaÃ±ero que me ayuda.' }, { de: 'Die Stadt, in der ich wohne, ist ruhig.', es: 'La ciudad donde vivo es tranquila.' }, { de: 'Ich suche ein Buch, das leicht ist.', es: 'Busco un libro que sea fÃ¡cil.' }], fill: { prompt: 'Completa: Das ist der Kollege, ___ mir hilft.', answer: 'der', hint: 'Relativo masculino nominativo.' }, speak: { target: 'Die Stadt, in der ich wohne, ist ruhig.' } },
-                      { title: 'B1 viajes e incidencias', topic: 'viajes', grammarTip: 'Describe problemas, pide soluciÃ³n y confirma pasos.', phrases: [{ de: 'Mein Flug wurde annulliert.', es: 'Mi vuelo fue cancelado.' }, { de: 'KÃ¶nnen Sie mir eine Alternative anbieten?', es: 'Â¿Puede ofrecerme una alternativa?' }, { de: 'Ich brauche eine BestÃ¤tigung per E-Mail.', es: 'Necesito una confirmaciÃ³n por correo.' }], fill: { prompt: 'Completa: Mein Flug wurde ___.', answer: 'annulliert', hint: 'Participio de annullieren.' }, speak: { target: 'KÃ¶nnen Sie mir eine Alternative anbieten?' } },
-                      { title: 'Konjunktiv II cotidiano', topic: 'gramatica', grammarTip: 'Usa wÃ¼rde + infinitivo para hipÃ³tesis y deseos.', phrases: [{ de: 'Ich wÃ¼rde gern in Deutschland arbeiten.', es: 'Me gustarÃ­a trabajar en Alemania.' }, { de: 'Wenn ich Zeit hÃ¤tte, wÃ¼rde ich mehr lesen.', es: 'Si tuviera tiempo, leerÃ­a mÃ¡s.' }, { de: 'KÃ¶nnten Sie das bitte wiederholen?', es: 'Â¿PodrÃ­a repetirlo, por favor?' }], fill: { prompt: 'Completa: Wenn ich Zeit hÃ¤tte, ___ ich mehr lesen.', answer: 'wÃ¼rde', hint: 'Estructura condicional.' }, speak: { target: 'Wenn ich Zeit hÃ¤tte, wÃ¼rde ich mehr lesen.' } }
+                      { title: 'Opinión y argumentación', topic: 'conectores', grammarTip: 'Conecta ideas con au�xerdem, jedoch, deshalb.', phrases: [{ de: 'Meiner Meinung nach ist Homeoffice sinnvoll.', es: 'En mi opinión, el teletrabajo tiene sentido.' }, { de: 'Einerseits spart man Zeit, andererseits fehlt Kontakt.', es: 'Por un lado ahorras tiempo, por otro falta contacto.' }, { de: 'Deshalb brauche ich einen Mix.', es: 'Por eso necesito un equilibrio.' }], fill: { prompt: 'Completa: Einerseits ..., ___ ...', answer: 'andererseits', hint: 'Conector correlativo.' }, speak: { target: 'Meiner Meinung nach ist Homeoffice sinnvoll.' } },
+                      { title: 'B1 trabajo y CV', topic: 'trabajo', grammarTip: 'Pasado relevante y logros concretos en frases breves.', phrases: [{ de: 'Ich habe drei Jahre im Kundenservice gearbeitet.', es: 'Trabajé tres años en atención al cliente.' }, { de: 'Ich bin zuverlässig und flexibel.', es: 'Soy fiable y flexible.' }, { de: 'Ich möchte mich beruflich weiterentwickeln.', es: 'Quiero desarrollarme profesionalmente.' }], fill: { prompt: 'Completa: Ich habe drei Jahre im Kundenservice ___.', answer: 'gearbeitet', hint: 'Participio regular.' }, speak: { target: 'Ich möchte mich beruflich weiterentwickeln.' } },
+                      { title: 'Relativsätze útiles', topic: 'gramatica', grammarTip: 'der/die/das + verbo al final para añadir información.', phrases: [{ de: 'Das ist der Kollege, der mir hilft.', es: 'Ese es el compañero que me ayuda.' }, { de: 'Die Stadt, in der ich wohne, ist ruhig.', es: 'La ciudad donde vivo es tranquila.' }, { de: 'Ich suche ein Buch, das leicht ist.', es: 'Busco un libro que sea fácil.' }], fill: { prompt: 'Completa: Das ist der Kollege, ___ mir hilft.', answer: 'der', hint: 'Relativo masculino nominativo.' }, speak: { target: 'Die Stadt, in der ich wohne, ist ruhig.' } },
+                      { title: 'B1 viajes e incidencias', topic: 'viajes', grammarTip: 'Describe problemas, pide solución y confirma pasos.', phrases: [{ de: 'Mein Flug wurde annulliert.', es: 'Mi vuelo fue cancelado.' }, { de: 'Können Sie mir eine Alternative anbieten?', es: '¿Puede ofrecerme una alternativa?' }, { de: 'Ich brauche eine Bestätigung per E-Mail.', es: 'Necesito una confirmación por correo.' }], fill: { prompt: 'Completa: Mein Flug wurde ___.', answer: 'annulliert', hint: 'Participio de annullieren.' }, speak: { target: 'Können Sie mir eine Alternative anbieten?' } },
+                      { title: 'Konjunktiv II cotidiano', topic: 'gramatica', grammarTip: 'Usa würde + infinitivo para hipótesis y deseos.', phrases: [{ de: 'Ich würde gern in Deutschland arbeiten.', es: 'Me gustaría trabajar en Alemania.' }, { de: 'Wenn ich Zeit hätte, würde ich mehr lesen.', es: 'Si tuviera tiempo, leería más.' }, { de: 'Könnten Sie das bitte wiederholen?', es: '¿Podría repetirlo, por favor?' }], fill: { prompt: 'Completa: Wenn ich Zeit hätte, ___ ich mehr lesen.', answer: 'würde', hint: 'Estructura condicional.' }, speak: { target: 'Wenn ich Zeit hätte, würde ich mehr lesen.' } }
                   ],
                   B2: [
-                      { title: 'Debate estructurado B2', topic: 'conectores', grammarTip: 'Estructura: tesis, argumentos, contraargumento, cierre.', phrases: [{ de: 'Ich vertrete die Auffassung, dass ...', es: 'Defiendo la postura de que...' }, { de: 'Zudem sprechen mehrere GrÃ¼nde dafÃ¼r.', es: 'AdemÃ¡s hay varias razones a favor.' }, { de: 'Dennoch mÃ¼ssen Risiken berÃ¼cksichtigt werden.', es: 'No obstante, deben considerarse riesgos.' }], fill: { prompt: 'Completa: ___ mÃ¼ssen Risiken berÃ¼cksichtigt werden.', answer: 'Dennoch', hint: 'Conector concesivo.' }, speak: { target: 'Ich vertrete die Auffassung, dass digitale Bildung wichtig ist.' } },
-                      { title: 'Correo formal y registro', topic: 'tramites', grammarTip: 'Registro formal: Sehr geehrte..., ich mÃ¶chte..., mit freundlichen GrÃ¼ÃŸen.', phrases: [{ de: 'Ich mÃ¶chte mich Ã¼ber den Kurs informieren.', es: 'Quiero informarme sobre el curso.' }, { de: 'FÃ¼r eine RÃ¼ckmeldung wÃ¤re ich dankbar.', es: 'AgradecerÃ­a una respuesta.' }, { de: 'Mit freundlichen GrÃ¼ÃŸen', es: 'Atentamente' }], fill: { prompt: 'Completa: FÃ¼r eine RÃ¼ckmeldung wÃ¤re ich ___.', answer: 'dankbar', hint: 'Adjetivo tÃ­pico en carta formal.' }, speak: { target: 'Ich mÃ¶chte mich Ã¼ber den Kurs informieren.' } },
-                      { title: 'NominalizaciÃ³n B2', topic: 'gramatica', grammarTip: 'Convierte verbos en sustantivos para estilo acadÃ©mico.', phrases: [{ de: 'Die Entscheidung wurde gestern getroffen.', es: 'La decisiÃ³n se tomÃ³ ayer.' }, { de: 'Die Verbesserung der Prozesse ist notwendig.', es: 'La mejora de procesos es necesaria.' }, { de: 'Nach der Analyse folgte die Umsetzung.', es: 'Tras el anÃ¡lisis siguiÃ³ la implementaciÃ³n.' }], fill: { prompt: 'Completa: Die ___ der Prozesse ist notwendig.', answer: 'Verbesserung', hint: 'Sustantivo de verbessern.' }, speak: { target: 'Die Entscheidung wurde gestern getroffen.' } },
-                      { title: 'ComprensiÃ³n de noticias', topic: 'trabajo', grammarTip: 'Extrae idea principal, datos y postura del autor.', phrases: [{ de: 'Laut dem Bericht steigt die Inflation.', es: 'SegÃºn el informe, sube la inflaciÃ³n.' }, { de: 'Die Experten fordern schnelle MaÃŸnahmen.', es: 'Los expertos piden medidas rÃ¡pidas.' }, { de: 'Die Folgen betreffen vor allem Haushalte.', es: 'Las consecuencias afectan sobre todo a los hogares.' }], fill: { prompt: 'Completa: Laut dem Bericht ___ die Inflation.', answer: 'steigt', hint: 'Verbo de la oraciÃ³n principal.' }, speak: { target: 'Die Experten fordern schnelle MaÃŸnahmen.' } }
+                      { title: 'Debate estructurado B2', topic: 'conectores', grammarTip: 'Estructura: tesis, argumentos, contraargumento, cierre.', phrases: [{ de: 'Ich vertrete die Auffassung, dass ...', es: 'Defiendo la postura de que...' }, { de: 'Zudem sprechen mehrere Gründe dafür.', es: 'Además hay varias razones a favor.' }, { de: 'Dennoch müssen Risiken berücksichtigt werden.', es: 'No obstante, deben considerarse riesgos.' }], fill: { prompt: 'Completa: ___ müssen Risiken berücksichtigt werden.', answer: 'Dennoch', hint: 'Conector concesivo.' }, speak: { target: 'Ich vertrete die Auffassung, dass digitale Bildung wichtig ist.' } },
+                      { title: 'Correo formal y registro', topic: 'tramites', grammarTip: 'Registro formal: Sehr geehrte..., ich möchte..., mit freundlichen Grü�xen.', phrases: [{ de: 'Ich möchte mich über den Kurs informieren.', es: 'Quiero informarme sobre el curso.' }, { de: 'Für eine Rückmeldung wäre ich dankbar.', es: 'Agradecería una respuesta.' }, { de: 'Mit freundlichen Grü�xen', es: 'Atentamente' }], fill: { prompt: 'Completa: Für eine Rückmeldung wäre ich ___.', answer: 'dankbar', hint: 'Adjetivo típico en carta formal.' }, speak: { target: 'Ich möchte mich über den Kurs informieren.' } },
+                      { title: 'Nominalización B2', topic: 'gramatica', grammarTip: 'Convierte verbos en sustantivos para estilo académico.', phrases: [{ de: 'Die Entscheidung wurde gestern getroffen.', es: 'La decisión se tomó ayer.' }, { de: 'Die Verbesserung der Prozesse ist notwendig.', es: 'La mejora de procesos es necesaria.' }, { de: 'Nach der Analyse folgte die Umsetzung.', es: 'Tras el análisis siguió la implementación.' }], fill: { prompt: 'Completa: Die ___ der Prozesse ist notwendig.', answer: 'Verbesserung', hint: 'Sustantivo de verbessern.' }, speak: { target: 'Die Entscheidung wurde gestern getroffen.' } },
+                      { title: 'Comprensión de noticias', topic: 'trabajo', grammarTip: 'Extrae idea principal, datos y postura del autor.', phrases: [{ de: 'Laut dem Bericht steigt die Inflation.', es: 'Según el informe, sube la inflación.' }, { de: 'Die Experten fordern schnelle Ma�xnahmen.', es: 'Los expertos piden medidas rápidas.' }, { de: 'Die Folgen betreffen vor allem Haushalte.', es: 'Las consecuencias afectan sobre todo a los hogares.' }], fill: { prompt: 'Completa: Laut dem Bericht ___ die Inflation.', answer: 'steigt', hint: 'Verbo de la oración principal.' }, speak: { target: 'Die Experten fordern schnelle Ma�xnahmen.' } }
                   ],
                   C1: [
-                      { title: 'Matiz y precisiÃ³n lÃ©xica', topic: 'gramatica', grammarTip: 'Selecciona verbo por intenciÃ³n: behaupten, erlÃ¤utern, einrÃ¤umen.', phrases: [{ de: 'Die Autorin rÃ¤umt ein, dass die Daten begrenzt sind.', es: 'La autora reconoce que los datos son limitados.' }, { de: 'Der Bericht legt nahe, dass Reformen nÃ¶tig sind.', es: 'El informe sugiere que las reformas son necesarias.' }, { de: 'Er erlÃ¤utert die Ursachen differenziert.', es: 'Explica las causas de forma matizada.' }], fill: { prompt: 'Completa: Der Bericht ___ nahe, dass Reformen nÃ¶tig sind.', answer: 'legt', hint: 'ExpresiÃ³n fija Â«nahelegenÂ».' }, speak: { target: 'Die Autorin rÃ¤umt ein, dass die Daten begrenzt sind.' } },
-                      { title: 'ArgumentaciÃ³n avanzada C1', topic: 'conectores', grammarTip: 'Conectores de alta precisiÃ³n: demzufolge, insofern, wohingegen.', phrases: [{ de: 'Die MaÃŸnahme ist teuer, demzufolge braucht sie klare Ziele.', es: 'La medida es costosa; por consiguiente, necesita metas claras.' }, { de: 'Insofern ist die Kritik nachvollziehbar.', es: 'En ese sentido, la crÃ­tica es comprensible.' }, { de: 'Wohingegen kurzfristige LÃ¶sungen selten nachhaltig sind.', es: 'Mientras que las soluciones a corto plazo rara vez son sostenibles.' }], fill: { prompt: 'Completa: Die MaÃŸnahme ist teuer, ___ braucht sie klare Ziele.', answer: 'demzufolge', hint: 'Conector de consecuencia formal.' }, speak: { target: 'Insofern ist die Kritik nachvollziehbar.' } },
-                      { title: 'PresentaciÃ³n profesional', topic: 'trabajo', grammarTip: 'Abrir, estructurar y cerrar exposiciÃ³n con naturalidad.', phrases: [{ de: 'Im Folgenden prÃ¤sentiere ich drei zentrale Punkte.', es: 'A continuaciÃ³n presento tres puntos centrales.' }, { de: 'AbschlieÃŸend lÃ¤sst sich festhalten, dass ...', es: 'Para concluir, puede sostenerse que...' }, { de: 'Gern beantworte ich anschlieÃŸend Ihre Fragen.', es: 'Con gusto respondo despuÃ©s sus preguntas.' }], fill: { prompt: 'Completa: ___ prÃ¤sentiere ich drei zentrale Punkte.', answer: 'Im Folgenden', hint: 'Inicio formal de exposiciÃ³n.' }, speak: { target: 'AbschlieÃŸend lÃ¤sst sich festhalten, dass nachhaltige Strategien nÃ¶tig sind.' } }
+                      { title: 'Matiz y precisión léxica', topic: 'gramatica', grammarTip: 'Selecciona verbo por intención: behaupten, erläutern, einräumen.', phrases: [{ de: 'Die Autorin räumt ein, dass die Daten begrenzt sind.', es: 'La autora reconoce que los datos son limitados.' }, { de: 'Der Bericht legt nahe, dass Reformen nötig sind.', es: 'El informe sugiere que las reformas son necesarias.' }, { de: 'Er erläutert die Ursachen differenziert.', es: 'Explica las causas de forma matizada.' }], fill: { prompt: 'Completa: Der Bericht ___ nahe, dass Reformen nötig sind.', answer: 'legt', hint: 'Expresión fija «nahelegen».' }, speak: { target: 'Die Autorin räumt ein, dass die Daten begrenzt sind.' } },
+                      { title: 'Argumentación avanzada C1', topic: 'conectores', grammarTip: 'Conectores de alta precisión: demzufolge, insofern, wohingegen.', phrases: [{ de: 'Die Ma�xnahme ist teuer, demzufolge braucht sie klare Ziele.', es: 'La medida es costosa; por consiguiente, necesita metas claras.' }, { de: 'Insofern ist die Kritik nachvollziehbar.', es: 'En ese sentido, la crítica es comprensible.' }, { de: 'Wohingegen kurzfristige Lösungen selten nachhaltig sind.', es: 'Mientras que las soluciones a corto plazo rara vez son sostenibles.' }], fill: { prompt: 'Completa: Die Ma�xnahme ist teuer, ___ braucht sie klare Ziele.', answer: 'demzufolge', hint: 'Conector de consecuencia formal.' }, speak: { target: 'Insofern ist die Kritik nachvollziehbar.' } },
+                      { title: 'Presentación profesional', topic: 'trabajo', grammarTip: 'Abrir, estructurar y cerrar exposición con naturalidad.', phrases: [{ de: 'Im Folgenden präsentiere ich drei zentrale Punkte.', es: 'A continuación presento tres puntos centrales.' }, { de: 'Abschlie�xend lässt sich festhalten, dass ...', es: 'Para concluir, puede sostenerse que...' }, { de: 'Gern beantworte ich anschlie�xend Ihre Fragen.', es: 'Con gusto respondo después sus preguntas.' }], fill: { prompt: 'Completa: ___ präsentiere ich drei zentrale Punkte.', answer: 'Im Folgenden', hint: 'Inicio formal de exposición.' }, speak: { target: 'Abschlie�xend lässt sich festhalten, dass nachhaltige Strategien nötig sind.' } }
                   ]
               };
               const premiumTopicPlan = {
@@ -350,31 +350,31 @@ const [placementFinished, setPlacementFinished] = useState(false);
                   C1: ['precision', 'argumentacion', 'registro', 'academico', 'presentacion', 'negociacion', 'conectores', 'resumen', 'analisis', 'matiz', 'retorica', 'debate']
               };
               const topicLabel = {
-                  presentacion: 'PresentaciÃ³n', pronunciacion: 'PronunciaciÃ³n', numeros: 'NÃºmeros', clase: 'Clase', familia: 'Familia', alimentos: 'Alimentos',
-                  rutina: 'Rutina', vivienda: 'Vivienda', viajes: 'Viajes', salud: 'Salud', trabajo: 'Trabajo', tramites: 'TrÃ¡mites', compras: 'Compras',
-                  tiempo_libre: 'Tiempo libre', conectores: 'Conectores', pasado: 'Pasado', telefonia: 'TelÃ©fono', gramatica: 'GramÃ¡tica',
-                  argumentacion: 'ArgumentaciÃ³n', cv: 'CV', entrevista: 'Entrevista', incidencias: 'Incidencias', relativsatz: 'Relativos', konjunktiv2: 'Konjunktiv II',
-                  debate: 'Debate', correo_formal: 'Correo formal', nominalizacion: 'NominalizaciÃ³n', noticias: 'Noticias', universidad: 'Universidad', pasiva: 'Pasiva',
-                  grafico: 'Describir grÃ¡ficos', negociacion: 'NegociaciÃ³n', medios: 'Medios', precision: 'PrecisiÃ³n lÃ©xica', registro: 'Registro', academico: 'AcadÃ©mico',
-                  resumen: 'Resumen', analisis: 'AnÃ¡lisis', matiz: 'Matiz', retorica: 'RetÃ³rica'
+                  presentacion: 'Presentación', pronunciacion: 'Pronunciación', numeros: 'Números', clase: 'Clase', familia: 'Familia', alimentos: 'Alimentos',
+                  rutina: 'Rutina', vivienda: 'Vivienda', viajes: 'Viajes', salud: 'Salud', trabajo: 'Trabajo', tramites: 'Trámites', compras: 'Compras',
+                  tiempo_libre: 'Tiempo libre', conectores: 'Conectores', pasado: 'Pasado', telefonia: 'Teléfono', gramatica: 'Gramática',
+                  argumentacion: 'Argumentación', cv: 'CV', entrevista: 'Entrevista', incidencias: 'Incidencias', relativsatz: 'Relativos', konjunktiv2: 'Konjunktiv II',
+                  debate: 'Debate', correo_formal: 'Correo formal', nominalizacion: 'Nominalización', noticias: 'Noticias', universidad: 'Universidad', pasiva: 'Pasiva',
+                  grafico: 'Describir gráficos', negociacion: 'Negociación', medios: 'Medios', precision: 'Precisión léxica', registro: 'Registro', academico: 'Académico',
+                  resumen: 'Resumen', analisis: 'Análisis', matiz: 'Matiz', retorica: 'Retórica'
               };
               const mkPremiumUnit = (levelKey, topic, idx) => {
                   const label = topicLabel[topic] || topic;
                   const topicForUi = ({ pronunciacion: 'presentacion', numeros: 'tramites', pasado: 'gramatica', telefonia: 'tramites', argumentacion: 'conectores', cv: 'trabajo', entrevista: 'trabajo', incidencias: 'viajes', relativsatz: 'gramatica', konjunktiv2: 'gramatica', debate: 'conectores', correo_formal: 'tramites', nominalizacion: 'gramatica', noticias: 'trabajo', universidad: 'trabajo', pasiva: 'gramatica', grafico: 'trabajo', negociacion: 'trabajo', medios: 'trabajo', precision: 'gramatica', registro: 'gramatica', academico: 'gramatica', resumen: 'gramatica', analisis: 'gramatica', matiz: 'gramatica', retorica: 'conectores' }[topic]) || topic;
                   const sentenceBank = {
                       A0: [{ de: 'Ich bin neu hier.', es: 'Soy nuevo aqui.' }, { de: 'Das ist meine Familie.', es: 'Esta es mi familia.' }, { de: 'Ich lerne jeden Tag.', es: 'Aprendo cada dia.' }],
-                      A1: [{ de: 'Ich mÃ¶chte im Restaurant bestellen.', es: 'Quiero pedir en el restaurante.' }, { de: 'Am Wochenende treffe ich Freunde.', es: 'El fin de semana quedo con amigos.' }, { de: 'Wir fahren morgen mit dem Zug.', es: 'Viajamos manana en tren.' }],
-                      A2: [{ de: 'Letzte Woche habe ich viel gearbeitet.', es: 'La semana pasada trabaje mucho.' }, { de: 'Ich lerne Deutsch, weil ich umziehen mÃ¶chte.', es: 'Aprendo aleman porque quiero mudarme.' }, { de: 'KÃ¶nnen Sie mir bitte weiterhelfen?', es: 'Puede ayudarme, por favor?' }],
-                      B1: [{ de: 'Meiner Meinung nach ist das sinnvoll.', es: 'En mi opinion eso tiene sentido.' }, { de: 'Wenn ich mehr Zeit hÃ¤tte, wÃ¼rde ich reisen.', es: 'Si tuviera mas tiempo, viajaria.' }, { de: 'Das ist ein Punkt, den wir beachten mÃ¼ssen.', es: 'Es un punto que debemos considerar.' }],
-                      B2: [{ de: 'Die MaÃŸnahme sollte schrittweise umgesetzt werden.', es: 'La medida deberia aplicarse gradualmente.' }, { de: 'DarÃ¼ber hinaus sind die Kosten zu berÃ¼cksichtigen.', es: 'Ademas hay que considerar los costes.' }, { de: 'Ich beziehe mich auf die vorliegenden Daten.', es: 'Me refiero a los datos disponibles.' }],
+                      A1: [{ de: 'Ich möchte im Restaurant bestellen.', es: 'Quiero pedir en el restaurante.' }, { de: 'Am Wochenende treffe ich Freunde.', es: 'El fin de semana quedo con amigos.' }, { de: 'Wir fahren morgen mit dem Zug.', es: 'Viajamos manana en tren.' }],
+                      A2: [{ de: 'Letzte Woche habe ich viel gearbeitet.', es: 'La semana pasada trabaje mucho.' }, { de: 'Ich lerne Deutsch, weil ich umziehen möchte.', es: 'Aprendo aleman porque quiero mudarme.' }, { de: 'Können Sie mir bitte weiterhelfen?', es: 'Puede ayudarme, por favor?' }],
+                      B1: [{ de: 'Meiner Meinung nach ist das sinnvoll.', es: 'En mi opinion eso tiene sentido.' }, { de: 'Wenn ich mehr Zeit hätte, würde ich reisen.', es: 'Si tuviera mas tiempo, viajaria.' }, { de: 'Das ist ein Punkt, den wir beachten müssen.', es: 'Es un punto que debemos considerar.' }],
+                      B2: [{ de: 'Die Ma�xnahme sollte schrittweise umgesetzt werden.', es: 'La medida deberia aplicarse gradualmente.' }, { de: 'Darüber hinaus sind die Kosten zu berücksichtigen.', es: 'Ademas hay que considerar los costes.' }, { de: 'Ich beziehe mich auf die vorliegenden Daten.', es: 'Me refiero a los datos disponibles.' }],
                       C1: [{ de: 'Insofern erscheint die Kritik nachvollziehbar.', es: 'En ese sentido, la critica resulta comprensible.' }, { de: 'Der Autor differenziert zwischen Ursache und Wirkung.', es: 'El autor diferencia entre causa y efecto.' }, { de: 'Nichtsdestotrotz bleibt die Kernfrage offen.', es: 'No obstante, la cuestion central sigue abierta.' }]
                   };
                   const sample = sentenceBank[levelKey] || sentenceBank.A1;
-                  const answerMap = { A0: 'bin', A1: 'mÃ¶chte', A2: 'habe', B1: 'wÃ¼rde', B2: 'werden', C1: 'bleibt' };
+                  const answerMap = { A0: 'bin', A1: 'möchte', A2: 'habe', B1: 'würde', B2: 'werden', C1: 'bleibt' };
                   return {
-                      title: `${label} Â· prÃ¡ctica ${idx + 1}`,
+                      title: `${label} · práctica ${idx + 1}`,
                       topic: topicForUi,
-                      grammarTip: `Nivel ${levelKey}: bloque de ${label.toLowerCase()} con enfoque comunicativo y correcciÃ³n gramatical.`,
+                      grammarTip: `Nivel ${levelKey}: bloque de ${label.toLowerCase()} con enfoque comunicativo y corrección gramatical.`,
                       phrases: [sample[idx % sample.length], sample[(idx + 1) % sample.length], sample[(idx + 2) % sample.length]],
                       fill: { prompt: `Completa (${levelKey}): Ich ___ weiter Deutsch.`, answer: answerMap[levelKey] || 'lerne', hint: `Forma habitual de ${levelKey}.` },
                       speak: { target: sample[idx % sample.length].de }
@@ -402,22 +402,22 @@ const [placementFinished, setPlacementFinished] = useState(false);
               };
               const mkCurriculumLesson = (levelKey, unit, idx) => ({
                   id: `curr-${levelKey.toLowerCase()}-${idx + 1}`,
-                  title: `${levelKey} Â· ${unit.title}`,
+                  title: `${levelKey} · ${unit.title}`,
                   topic: unit.topic || 'general',
                   rewardCoins: 14 + Math.min(20, idx * 2),
                   rewardXp: 20 + Math.min(26, idx * 2),
-                  grammarTip: unit.grammarTip || `PrÃ¡ctica guiada ${levelKey}.`,
-                  phrases: Array.isArray(unit.phrases) && unit.phrases.length ? unit.phrases.slice(0, 3) : [{ de: 'Ich lerne Deutsch.', es: 'Aprendo alemÃ¡n.' }],
+                  grammarTip: unit.grammarTip || `Práctica guiada ${levelKey}.`,
+                  phrases: Array.isArray(unit.phrases) && unit.phrases.length ? unit.phrases.slice(0, 3) : [{ de: 'Ich lerne Deutsch.', es: 'Aprendo alemán.' }],
                   fill: unit.fill || { prompt: 'Completa: Ich ___ Deutsch.', answer: 'lerne', hint: 'Verbo en presente.' },
                   speak: unit.speak || { target: (unit.phrases && unit.phrases[0] && unit.phrases[0].de) || 'Ich lerne Deutsch.' }
               });
               const mkLesson = (levelKey, chunk, idx) => {
                   const topicCycle = ['familia', 'trabajo', 'alimentos', 'viajes', 'vivienda', 'salud', 'tiempo_libre', 'tramites'];
                   const topic = topicCycle[idx % topicCycle.length];
-                  const title = `${levelKey} Â· Verbos ${idx + 1}`;
+                  const title = `${levelKey} · Verbos ${idx + 1}`;
                   const phrases = chunk.slice(0, 3).map((v) => ({
                       de: (v && v.examples && v.examples[0] && v.examples[0].de) || `Ich ${v.lemma}.`,
-                      es: (v && v.examples && v.examples[0] && v.examples[0].es) || (v.es || 'â€”')
+                      es: (v && v.examples && v.examples[0] && v.examples[0].es) || (v.es || '�')
                   }));
                   const p = chunk[0] || {};
                   return {
@@ -426,12 +426,12 @@ const [placementFinished, setPlacementFinished] = useState(false);
                       topic,
                       rewardCoins: 16 + Math.min(16, idx),
                       rewardXp: 22 + Math.min(20, idx * 2),
-                      grammarTip: `Nivel ${levelKey}: prÃ¡ctica de verbos frecuentes y sus formas.`,
+                      grammarTip: `Nivel ${levelKey}: práctica de verbos frecuentes y sus formas.`,
                       phrases,
                       fill: {
                           prompt: `Completa: Ich ___ (${p.lemma || 'lernen'}).`,
                           answer: (p.forms && p.forms.praesens && p.forms.praesens.ich) || p.lemma || 'lerne',
-                          hint: `Forma de 1Âª persona (PrÃ¤sens) de Â«${p.lemma || 'lernen'}Â».`
+                          hint: `Forma de 1ª persona (Präsens) de «${p.lemma || 'lernen'}».`
                       },
                       speak: { target: (phrases[0] && phrases[0].de) || 'Ich lerne Deutsch.' }
                   };
@@ -451,8 +451,8 @@ const [placementFinished, setPlacementFinished] = useState(false);
               const connectorByLevel = {
                   A1: ['und', 'aber', 'oder', 'denn'],
                   A2: ['weil', 'dass', 'wenn', 'deshalb', 'deswegen'],
-                  B1: ['obwohl', 'damit', 'trotzdem', 'auÃŸerdem', 'danach'],
-                  B2: ['wÃ¤hrend', 'sobald', 'falls', 'insofern', 'hingegen'],
+                  B1: ['obwohl', 'damit', 'trotzdem', 'au�xerdem', 'danach'],
+                  B2: ['während', 'sobald', 'falls', 'insofern', 'hingegen'],
                   C1: ['demzufolge', 'folglich', 'somit', 'nichtsdestotrotz', 'infolgedessen']
               };
               const mkArticleLesson = (levelKey, items, idx) => {
@@ -463,13 +463,13 @@ const [placementFinished, setPlacementFinished] = useState(false);
                   const article = de.split(/\s+/)[0] || 'das';
                   return {
                       id: `auto-art-${levelKey.toLowerCase()}-${idx + 1}`,
-                      title: `${levelKey} Â· ArtÃ­culos ${idx + 1}`,
+                      title: `${levelKey} · Artículos ${idx + 1}`,
                       topic,
                       rewardCoins: 15 + idx,
                       rewardXp: 20 + idx * 2,
-                      grammarTip: `Nivel ${levelKey}: artÃ­culo + sustantivo y concordancia en frase.`,
+                      grammarTip: `Nivel ${levelKey}: artículo + sustantivo y concordancia en frase.`,
                       phrases: items.slice(0, 3).map((x) => ({ de: `${x.de} ist wichtig.`, es: `${x.es || x.de} es importante.` })),
-                      fill: { prompt: `Completa: ___ ${de.split(/\s+/).slice(1).join(' ')} ist hier.`, answer: article, hint: 'Piensa en el gÃ©nero del sustantivo.' },
+                      fill: { prompt: `Completa: ___ ${de.split(/\s+/).slice(1).join(' ')} ist hier.`, answer: article, hint: 'Piensa en el género del sustantivo.' },
                       speak: { target: `${de} ist wichtig.` }
                   };
               };
@@ -478,16 +478,16 @@ const [placementFinished, setPlacementFinished] = useState(false);
                   const con = c[idx % c.length] || 'weil';
                   return {
                       id: `auto-conn-${levelKey.toLowerCase()}-${idx + 1}`,
-                      title: `${levelKey} Â· Conectores ${idx + 1}`,
+                      title: `${levelKey} · Conectores ${idx + 1}`,
                       topic: 'conectores',
                       rewardCoins: 18 + idx,
                       rewardXp: 24 + idx * 2,
-                      grammarTip: `Conector ${con}: practica posiciÃ³n verbal segÃºn tipo de oraciÃ³n.`,
+                      grammarTip: `Conector ${con}: practica posición verbal según tipo de oración.`,
                       phrases: [
-                          { de: `Ich lerne Deutsch, ${con} ich in Deutschland arbeiten mÃ¶chte.`, es: `Aprendo alemÃ¡n, ${con === 'weil' ? 'porque' : 'usando conector'} quiero trabajar en Alemania.` },
+                          { de: `Ich lerne Deutsch, ${con} ich in Deutschland arbeiten möchte.`, es: `Aprendo alemán, ${con === 'weil' ? 'porque' : 'usando conector'} quiero trabajar en Alemania.` },
                           { de: `${con.charAt(0).toUpperCase() + con.slice(1)} es regnet, bleibe ich zu Hause.`, es: 'Si/como llueve, me quedo en casa.' }
                       ],
-                      fill: { prompt: `Completa con conector (${levelKey}): Ich lerne Deutsch, ___ ich reisen will.`, answer: con, hint: 'Usa el conector trabajado en esta lecciÃ³n.' },
+                      fill: { prompt: `Completa con conector (${levelKey}): Ich lerne Deutsch, ___ ich reisen will.`, answer: con, hint: 'Usa el conector trabajado en esta lección.' },
                       speak: { target: `Ich lerne Deutsch, ${con} ich reisen will.` }
                   };
               };
@@ -509,18 +509,18 @@ const [placementFinished, setPlacementFinished] = useState(false);
                   for (let i = 0; i < Math.max(1, Math.ceil(cc.length / 2)); i++) lv.lessons.push(mkConnectorLesson(levelKey, i));
                   return lv;
               };
-              if (byLevel.A2.length || getArticleByLevel('A2').length) dynamic.push(mkMergedLevel('A2', 'Nivel A2 Â· ConsolidaciÃ³n', 'A2', byLevel.A2));
-              if (byLevel.B1.length || getArticleByLevel('B1').length) dynamic.push(mkMergedLevel('B1', 'Nivel B1 Â· Intermedio', 'B1', byLevel.B1));
-              if (byLevel.B2.length || getArticleByLevel('B2').length) dynamic.push(mkMergedLevel('B2', 'Nivel B2 Â· Avanzado', 'B2', byLevel.B2));
-              if (byLevel.C1.length || getArticleByLevel('C1').length) dynamic.push(mkMergedLevel('C1', 'Nivel C1 Â· Dominio', 'C1', byLevel.C1));
+              if (byLevel.A2.length || getArticleByLevel('A2').length) dynamic.push(mkMergedLevel('A2', 'Nivel A2 · Consolidación', 'A2', byLevel.A2));
+              if (byLevel.B1.length || getArticleByLevel('B1').length) dynamic.push(mkMergedLevel('B1', 'Nivel B1 · Intermedio', 'B1', byLevel.B1));
+              if (byLevel.B2.length || getArticleByLevel('B2').length) dynamic.push(mkMergedLevel('B2', 'Nivel B2 · Avanzado', 'B2', byLevel.B2));
+              if (byLevel.C1.length || getArticleByLevel('C1').length) dynamic.push(mkMergedLevel('C1', 'Nivel C1 · Dominio', 'C1', byLevel.C1));
               const existingKeys = new Set([...baseEnriched, ...dynamic].map((lv) => normalizeRutaLevelKey((lv && lv.badge) || (lv && lv.title) || '')));
               const fallbackTitles = {
-                  A0: { id: 'a0-ext', title: 'Nivel 0 Â· Fundamentos', badge: 'A0' },
-                  A1: { id: 'a1-ext', title: 'Nivel A1 Â· ComunicaciÃ³n bÃ¡sica', badge: 'A1' },
-                  A2: { id: 'a2-ext', title: 'Nivel A2 Â· ConsolidaciÃ³n', badge: 'A2' },
-                  B1: { id: 'b1-ext', title: 'Nivel B1 Â· Intermedio', badge: 'B1' },
-                  B2: { id: 'b2-ext', title: 'Nivel B2 Â· Avanzado', badge: 'B2' },
-                  C1: { id: 'c1-ext', title: 'Nivel C1 Â· Dominio', badge: 'C1' }
+                  A0: { id: 'a0-ext', title: 'Nivel 0 · Fundamentos', badge: 'A0' },
+                  A1: { id: 'a1-ext', title: 'Nivel A1 · Comunicación básica', badge: 'A1' },
+                  A2: { id: 'a2-ext', title: 'Nivel A2 · Consolidación', badge: 'A2' },
+                  B1: { id: 'b1-ext', title: 'Nivel B1 · Intermedio', badge: 'B1' },
+                  B2: { id: 'b2-ext', title: 'Nivel B2 · Avanzado', badge: 'B2' },
+                  C1: { id: 'c1-ext', title: 'Nivel C1 · Dominio', badge: 'C1' }
               };
               Object.keys(curriculumByLevel).forEach((k) => {
                   if (existingKeys.has(k)) return;
@@ -626,15 +626,15 @@ const [placementFinished, setPlacementFinished] = useState(false);
               const creatorEmail = String(window.MULLER_CREATOR_EMAIL || '').trim().toLowerCase();
               return !!(creatorEmail && String(unifiedAuth.email || '').toLowerCase() === creatorEmail);
           }, [walletIsCreator, unifiedAuth]);
-          const coinsUiLabel = isCreatorAccount ? 'âˆž' : userStats.coins;
+          const coinsUiLabel = isCreatorAccount ? '��~' : userStats.coins;
           const economyReasonText = (reason) => {
               const r = String(reason || '');
               if (r === 'already_claimed_today') return 'Ya has reclamado el bonus diario hoy.';
-              if (r === 'daily_limit_reached') return 'LÃ­mite diario de anuncios alcanzado (6/6).';
+              if (r === 'daily_limit_reached') return 'Límite diario de anuncios alcanzado (6/6).';
               if (r === 'cooldown_15m') return 'Debes esperar 15 minutos entre anuncios.';
-              if (r === 'invalid_reward_type') return 'Tipo de recompensa invÃ¡lido.';
+              if (r === 'invalid_reward_type') return 'Tipo de recompensa inválido.';
               if (r === 'creator_unlimited') return 'Cuenta creador: saldo ilimitado.';
-              if (r === 'ok') return 'OperaciÃ³n completada.';
+              if (r === 'ok') return 'Operación completada.';
               return r || 'No disponible.';
           };
           const leagueBoard = useMemo(() => {
@@ -645,7 +645,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
                   isBot: true,
                   isSelf: false,
                   score: mullerBotWeekScore(b.id, week),
-                  sub: `${b.tag} Â· ${b.lvl}`,
+                  sub: `${b.tag} · ${b.lvl}`,
                   rank: 0,
               }));
               const meScore = mullerLeagueComputeUserScore(userStats);
@@ -669,7 +669,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
                           isBot: false,
                           isSelf: true,
                           score: meScore,
-                          sub: 'Tu puntuaciÃ³n (se sube al jugar)',
+                          sub: 'Tu puntuación (se sube al jugar)',
                           rank: 0,
                       });
                   }
@@ -1135,11 +1135,11 @@ const [placementFinished, setPlacementFinished] = useState(false);
               }
               if (!supabaseUser || !supabaseUser.id) {
                   setCloudSyncState('local');
-                  setCloudSyncLabel('Local (sin sesiÃ³n)');
+                  setCloudSyncLabel('Local (sin sesión)');
                   return;
               }
               setCloudSyncState('syncing');
-              setCloudSyncLabel('Supabase conectandoâ€¦');
+              setCloudSyncLabel('Supabase conectando⬦');
               const client = mullerGetSupabaseClient();
               if (!client) {
                   setCloudSyncState('error');
@@ -1185,7 +1185,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
               if (!client) return undefined;
               if (cloudPushTimerRef.current) window.clearTimeout(cloudPushTimerRef.current);
               setCloudSyncState('syncing');
-              setCloudSyncLabel('Sincronizandoâ€¦');
+              setCloudSyncLabel('Sincronizando⬦');
               cloudPushTimerRef.current = window.setTimeout(async () => {
                   try {
                       const payload = buildCloudSnapshot();
@@ -1310,12 +1310,12 @@ const [placementFinished, setPlacementFinished] = useState(false);
                   return;
               }
               if (userStats.coins >= 50) { saveProgress({ coins: userStats.coins - 50, hearts: 5 }); setShowDeathModal(false); }
-              else { alert("No tienes suficientes Monedas (Coins). Completa ejercicios para ganar mÃ¡s."); }
+              else { alert("No tienes suficientes Monedas (Coins). Completa ejercicios para ganar más."); }
           };
 
           const getLast7Days = () => {
               const days = [];
-              const dayNames = ['Dom', 'Lun', 'Mar', 'MiÃ©', 'Jue', 'Vie', 'SÃ¡b'];
+              const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
               for(let i=6; i>=0; i--) {
                   const d = new Date(); d.setDate(d.getDate() - i);
                   days.push(`${dayNames[d.getDay()]} ${d.getDate()}`);
@@ -1359,7 +1359,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
               });
               window.__mullerPlaySfx && window.__mullerPlaySfx('complete');
               setCelebrationModal({
-                  title: 'Â¡Lo lograste!',
+                  title: '¡Lo lograste!',
                   subtitle: lesson.title,
                   xp: lesson.rewardXp,
                   coins: lesson.rewardCoins + bonus,
@@ -1398,7 +1398,7 @@ const handlePlacementAnswer = (selectedOpt) => {
   newAnswers[placementIndex] = selectedOpt;
   setPlacementAnswers(newAnswers);
   
-  // Actualizar puntuaciÃ³n del nivel actual
+  // Actualizar puntuación del nivel actual
   const newScore = {
     correct: placementScore.correct + (isCorrect ? 1 : 0),
     total: placementScore.total + 1
@@ -1410,7 +1410,7 @@ const handlePlacementAnswer = (selectedOpt) => {
     window.__mullerNotifyExerciseOutcome(isCorrect);
   }
   
-  // LÃ³gica adaptativa
+  // Lógica adaptativa
   const performanceRatio = newScore.correct / newScore.total;
   let nextLevel = placementLevel;
   let shouldFinish = false;
@@ -1434,7 +1434,7 @@ const handlePlacementAnswer = (selectedOpt) => {
     }
   }
   
-  // Si no hay mÃ¡s preguntas del nivel, finalizar
+  // Si no hay más preguntas del nivel, finalizar
   if (placementIndex >= placementQuestions.length - 1) {
     shouldFinish = true;
   }
@@ -1514,12 +1514,12 @@ const finishPlacementWithLevel = (finalLevel) => {
           const checkRutaSpeakAnswer = (target) => {
               const a = normalizeGermanSpeechText(rutaTranscript || '');
               const b = normalizeGermanSpeechText(target || '');
-              if (!a || !b) { setRutaSpeakErr('Graba de nuevo con el micrÃ³fono.'); return false; }
+              if (!a || !b) { setRutaSpeakErr('Graba de nuevo con el micrófono.'); return false; }
               const dist = levenshteinDistance(a, b);
               const tol = Math.max(2, Math.floor(b.length / 5));
               if (a === b || dist <= tol) { window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(true); setRutaSpeakErr(''); return true; }
               window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(false);
-              setRutaSpeakErr(typeof window.__mullerRandomMotivation === 'function' ? window.__mullerRandomMotivation() : 'Casi â€” prueba otra vez.');
+              setRutaSpeakErr(typeof window.__mullerRandomMotivation === 'function' ? window.__mullerRandomMotivation() : 'Casi � prueba otra vez.');
               return false;
           };
 
@@ -1566,7 +1566,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               }
               setPdfStudyExtracting(true);
               setPdfStudyErr('');
-              setPdfStudyBusyMsg('Leyendo PDFâ€¦');
+              setPdfStudyBusyMsg('Leyendo PDF⬦');
               pdfStudyBufferRef.current = null;
               pdfStudyDocHandleRef.current = null;
               try {
@@ -1578,7 +1578,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                   const totalPages = Math.max(1, Number(pdf.numPages) || 1);
                   const pages = [];
                   for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-                      setPdfStudyBusyMsg(`Extrayendo pÃ¡gina ${pageNum}/${totalPages}â€¦`);
+                      setPdfStudyBusyMsg(`Extrayendo página ${pageNum}/${totalPages}⬦`);
                       let text = '';
                       try {
                           const pg = await pdf.getPage(pageNum);
@@ -1612,7 +1612,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                   setPdfStudyPageIdx(0);
                   try { localStorage.setItem(MULLER_PDF_STUDY_STORAGE_KEY, JSON.stringify(payload)); } catch (e) {}
                   const extractedCount = compactPages.filter((p) => p.text).length;
-                  setPdfStudyBusyMsg(`PDF listo: ${extractedCount}/${compactPages.length} pÃ¡ginas con texto.`);
+                  setPdfStudyBusyMsg(`PDF listo: ${extractedCount}/${compactPages.length} páginas con texto.`);
               } catch (err) {
                   setPdfStudyErr(err && err.message ? err.message : 'No se pudo leer el PDF.');
               } finally {
@@ -1627,7 +1627,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               const page = pages[idx];
               if (!page) return;
               if (page.text && page.text.length >= 40) {
-                  setPdfStudyBusyMsg('Esta pÃ¡gina ya tiene texto; OCR no es necesario.');
+                  setPdfStudyBusyMsg('Esta página ya tiene texto; OCR no es necesario.');
                   return;
               }
               if (typeof Tesseract === 'undefined') {
@@ -1639,7 +1639,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                   return;
               }
               if (!pdfStudyBufferRef.current && !pdfStudyDocHandleRef.current) {
-                  setPdfStudyErr('Para OCR real de pÃ¡gina, vuelve a subir el PDF en esta sesiÃ³n.');
+                  setPdfStudyErr('Para OCR real de página, vuelve a subir el PDF en esta sesión.');
                   setPdfStudyBusyMsg('OCR no disponible: falta el PDF en memoria.');
                   return;
               }
@@ -1652,7 +1652,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                   const safePage = Math.max(1, Number(page.page || pageNumber) || 1);
                   while (attemptNo < attemptCap) {
                       try {
-                          setPdfStudyBusyMsg(`Preparando OCR pÃ¡gina ${safePage}${attemptNo > 0 ? ` (reintento ${attemptNo}/${attemptCap - 1})` : ''}â€¦`);
+                          setPdfStudyBusyMsg(`Preparando OCR página ${safePage}${attemptNo > 0 ? ` (reintento ${attemptNo}/${attemptCap - 1})` : ''}⬦`);
                           window.pdfjsLib.GlobalWorkerOptions.workerSrc = MULLER_PDFJS_WORKER_URL;
                           let pdf = pdfStudyDocHandleRef.current;
                           if (!pdf) {
@@ -1671,11 +1671,11 @@ const finishPlacementWithLevel = (finalLevel) => {
                               const ctx = canvas.getContext('2d');
                               if (!ctx) throw new Error('No se pudo crear el contexto de imagen para OCR.');
                               await pg.render({ canvasContext: ctx, viewport }).promise;
-                              setPdfStudyBusyMsg(`OCR pÃ¡gina ${safePage}: intento ${attempt + 1}/${scales.length}${attemptNo > 0 ? ` Â· retry ${attemptNo}` : ''}â€¦`);
+                              setPdfStudyBusyMsg(`OCR página ${safePage}: intento ${attempt + 1}/${scales.length}${attemptNo > 0 ? ` · retry ${attemptNo}` : ''}⬦`);
                               worker = await Tesseract.createWorker('deu', 1, {
                                   logger: (m) => {
                                       if (m && m.status === 'recognizing text' && typeof m.progress === 'number') {
-                                          setPdfStudyBusyMsg(`OCR pÃ¡gina ${safePage}: ${Math.round(100 * m.progress)}%`);
+                                          setPdfStudyBusyMsg(`OCR página ${safePage}: ${Math.round(100 * m.progress)}%`);
                                       }
                                   }
                               });
@@ -1687,8 +1687,8 @@ const finishPlacementWithLevel = (finalLevel) => {
                               if (ocrText.length >= 24 || attempt === scales.length - 1) break;
                           }
                           if (!ocrText) {
-                              setPdfStudyErr('OCR sin texto. Prueba una pÃ¡gina mÃ¡s nÃ­tida o con mÃ¡s contraste.');
-                              setPdfStudyBusyMsg(`OCR pÃ¡gina ${safePage}: sin texto detectado.`);
+                              setPdfStudyErr('OCR sin texto. Prueba una página más nítida o con más contraste.');
+                              setPdfStudyBusyMsg(`OCR página ${safePage}: sin texto detectado.`);
                               return;
                           }
                           const meta = mullerPdfGuessUnitLesson(ocrText.slice(0, 400));
@@ -1706,7 +1706,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                           const nextDoc = { ...pdfStudyDoc, pages: nextPages, updatedAt: new Date().toISOString() };
                           setPdfStudyDoc(nextDoc);
                           try { localStorage.setItem(MULLER_PDF_STUDY_STORAGE_KEY, JSON.stringify(nextDoc)); } catch (e) {}
-                          setPdfStudyBusyMsg(`OCR completado en pÃ¡gina ${safePage}.`);
+                          setPdfStudyBusyMsg(`OCR completado en página ${safePage}.`);
                           return;
                       } catch (attemptErr) {
                           if (worker) {
@@ -1715,12 +1715,12 @@ const finishPlacementWithLevel = (finalLevel) => {
                           }
                           attemptNo += 1;
                           if (attemptNo >= attemptCap) throw attemptErr;
-                          setPdfStudyBusyMsg(`OCR pÃ¡gina ${safePage}: error temporal, reintentandoâ€¦`);
+                          setPdfStudyBusyMsg(`OCR página ${safePage}: error temporal, reintentando⬦`);
                           await new Promise((resolve) => setTimeout(resolve, 220));
                       }
                   }
               } catch (err) {
-                  setPdfStudyErr(err && err.message ? err.message : 'Error al ejecutar OCR de pÃ¡gina.');
+                  setPdfStudyErr(err && err.message ? err.message : 'Error al ejecutar OCR de página.');
               } finally {
                   if (worker) {
                       try { await worker.terminate(); } catch (e) {}
@@ -1735,13 +1735,13 @@ const finishPlacementWithLevel = (finalLevel) => {
               const page = pdfStudyDoc.pages && pdfStudyDoc.pages[idx];
               const txt = page && page.text ? String(page.text).trim() : '';
               if (!txt) {
-                  setPdfStudyErr('PÃ¡gina sin texto extraÃ­do todavÃ­a.');
+                  setPdfStudyErr('Página sin texto extraído todavía.');
                   return;
               }
               setReadingSource('paste');
               setReadingTextInput(txt);
-              setPdfStudyBusyMsg(`PÃ¡gina ${page.page} enviada a Lectura.`);
-              setPdfStudyLastApplied(`âœ“ PÃ¡gina ${page.page} cargada en Lectura`);
+              setPdfStudyBusyMsg(`Página ${page.page} enviada a Lectura.`);
+              setPdfStudyLastApplied(`�S Página ${page.page} cargada en Lectura`);
           }, [pdfStudyDoc]);
 
           const applyPdfStudyTextToWriting = useCallback((pageNumber) => {
@@ -1750,15 +1750,15 @@ const finishPlacementWithLevel = (finalLevel) => {
               const page = pdfStudyDoc.pages && pdfStudyDoc.pages[idx];
               const txt = page && page.text ? String(page.text).trim() : '';
               if (!txt) {
-                  setPdfStudyErr('PÃ¡gina sin texto extraÃ­do todavÃ­a.');
+                  setPdfStudyErr('Página sin texto extraído todavía.');
                   return;
               }
               setActiveTab('escritura');
               setWritingMode('telc');
               setWritingTelcInputMode('keyboard');
               setWritingTelcTypedText(txt);
-              setPdfStudyBusyMsg(`PÃ¡gina ${page.page} enviada a Escritura TELC.`);
-              setPdfStudyLastApplied(`âœ“ PÃ¡gina ${page.page} cargada en Escritura TELC`);
+              setPdfStudyBusyMsg(`Página ${page.page} enviada a Escritura TELC.`);
+              setPdfStudyLastApplied(`�S Página ${page.page} cargada en Escritura TELC`);
           }, [pdfStudyDoc]);
 
           const updatePdfStudyPageMeta = useCallback((pageNumber, patch = {}) => {
@@ -1908,7 +1908,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
               if (!SpeechRecognition) { alert('Para leer en voz alta usa Chrome o Edge en escritorio.'); return; }
               const ok = await mullerEnsureMicPermission({ autoPrompt: true, showToast: true });
-              if (!ok) { setRutaSpeakErr('No hay permiso de micrÃ³fono. Puedes continuar sin grabar.'); return; }
+              if (!ok) { setRutaSpeakErr('No hay permiso de micrófono. Puedes continuar sin grabar.'); return; }
               try { if (rutaRecRef.current) rutaRecRef.current.stop(); } catch (e) {}
               const rec = new SpeechRecognition();
               rec.lang = 'de-DE';
@@ -1929,7 +1929,7 @@ const finishPlacementWithLevel = (finalLevel) => {
           };
 
           const readingScriptOptions = useMemo(() => {
-              return (savedScripts || []).map((s) => ({ id: String(s.id), title: s.title || 'Sin tÃ­tulo' }));
+              return (savedScripts || []).map((s) => ({ id: String(s.id), title: s.title || 'Sin título' }));
           }, [savedScripts]);
 
           const readingTargetText = useMemo(() => {
@@ -2037,7 +2037,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               }
           }, []);
           const readingSentences = useMemo(() => {
-              const chunks = String(readingTargetText || '').match(/[^.!?â€¦\n]+[.!?â€¦]?/g) || [];
+              const chunks = String(readingTargetText || '').match(/[^.!?⬦\n]+[.!?⬦]?/g) || [];
               return chunks.map((x) => x.replace(/\s+/g, ' ').trim()).filter(Boolean);
           }, [readingTargetText]);
           const readingCaptureCurrentSelection = useCallback(() => {
@@ -2061,7 +2061,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               if (!text) return false;
               const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
               if (!synth || typeof window.SpeechSynthesisUtterance !== 'function') {
-                  if (window.__mullerToast) window.__mullerToast('Tu navegador no soporta reproducciÃ³n de voz.', 'error');
+                  if (window.__mullerToast) window.__mullerToast('Tu navegador no soporta reproducción de voz.', 'error');
                   return false;
               }
               const defaultRate = Number(opts.rate);
@@ -2129,15 +2129,15 @@ const finishPlacementWithLevel = (finalLevel) => {
 
           const readingTipForWord = (w) => {
               const x = String(w || '').toLowerCase();
-              if (/[Ã¤Ã¶Ã¼]/.test(x)) return 'AtenciÃ³n a umlauts: Ã¤ (tipo e abierta), Ã¶ (o redondeada), Ã¼ (i con labios redondos).';
+              if (/[äöü]/.test(x)) return 'Atención a umlauts: ä (tipo e abierta), ö (o redondeada), ü (i con labios redondos).';
               if (x.includes('sch')) return 'sch suena como "sh".';
-              if (x.includes('ch')) return 'ch no suena como "ch" espaÃ±ol; en alemÃ¡n suele ser mÃ¡s suave/gutural.';
+              if (x.includes('ch')) return 'ch no suena como "ch" español; en alemán suele ser más suave/gutural.';
               if (x.includes('ei')) return 'ei suena parecido a "ai".';
               if (x.includes('ie')) return 'ie suena como i larga.';
-              if (x.includes('eu') || x.includes('Ã¤u')) return 'eu/Ã¤u suena parecido a "oi".';
+              if (x.includes('eu') || x.includes('äu')) return 'eu/äu suena parecido a "oi".';
               if (x.includes('z')) return 'z suena como "ts".';
-              if (x.includes('v')) return 'En alemÃ¡n muchas veces v suena como "f".';
-              return 'Repite lento por sÃ­labas, luego a velocidad normal.';
+              if (x.includes('v')) return 'En alemán muchas veces v suena como "f".';
+              return 'Repite lento por sílabas, luego a velocidad normal.';
           };
 
           const runReadingCompare = (targetText, transcript) => {
@@ -2208,7 +2208,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                           readingStopRequestedRef.current = true;
                           readingAutoRestartRef.current = false;
                           setReadingListening(false);
-                          if (window.__mullerToast) window.__mullerToast('Permiso de micrÃ³fono no disponible.', 'error');
+                          if (window.__mullerToast) window.__mullerToast('Permiso de micrófono no disponible.', 'error');
                       }
                   };
                   rec.onend = () => {
@@ -2267,7 +2267,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               setReadingListening(false);
           }, [activeTab]);
           useEffect(() => {
-              // Evita que una grabaciÃ³n de una pestaÃ±a siga viva al cambiar a otra.
+              // Evita que una grabación de una pestaña siga viva al cambiar a otra.
               try { if (recognitionRef.current) recognitionRef.current.stop(); } catch (e) {}
               try { if (rutaRecRef.current) rutaRecRef.current.stop(); } catch (e) {}
               try { if (readingRecRef.current) readingRecRef.current.stop(); } catch (e) {}
@@ -2404,13 +2404,13 @@ const finishPlacementWithLevel = (finalLevel) => {
                   const cleanWord = word.toLowerCase().replace(/[.,!?;:()]/g, '');
                   if (TEMPUS_DICT[cleanWord]) {
                       if (!processed.has(cleanWord)) { foundVerbs.push({ infinitive: cleanWord, forms: TEMPUS_DICT[cleanWord] }); processed.add(cleanWord); }
-                  } else if (cleanWord.match(/^(?:[a-zÃ¤Ã¶Ã¼ÃŸ]+)(?:en|eln|ern)$/i) && cleanWord.length > 3) {
+                  } else if (cleanWord.match(/^(?:[a-zäöü�x]+)(?:en|eln|ern)$/i) && cleanWord.length > 3) {
                       const infinitive = cleanWord;
                       if (!processed.has(infinitive)) {
                           const base = infinitive.slice(0, -2);
                           const praet = base + 'te';
                           const perf = 'hat ' + infinitive;
-                          foundVerbs.push({ infinitive, forms: `PrÃ¤t: ${praet} | Perf: ${perf} (regular estimado)` });
+                          foundVerbs.push({ infinitive, forms: `Prät: ${praet} | Perf: ${perf} (regular estimado)` });
                           processed.add(infinitive);
                       }
                   }
@@ -2433,7 +2433,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               }
               if (/(?:en|eln|ern)$/.test(clean) && clean.length > 3) {
                   const base = clean.slice(0, -2);
-                  return { touched: clean, infinitive: clean, forms: `PrÃ¤t: ${base}te | Perf: hat ${clean} (regular estimado)` };
+                  return { touched: clean, infinitive: clean, forms: `Prät: ${base}te | Perf: hat ${clean} (regular estimado)` };
               }
               return null;
           }
@@ -2442,8 +2442,8 @@ const finishPlacementWithLevel = (finalLevel) => {
               const w = String(word || '').toLowerCase();
               if (!w) return '';
               if (w.startsWith('ge') && (w.endsWith('t') || w.endsWith('en'))) return 'Forma probable: Partizip II (Perfekt/Plusquamperfekt).';
-              if (/(te|test|ten|tet)$/.test(w)) return 'Forma probable: PrÃ¤teritum (regular).';
-              if (/(st|t|en)$/.test(w)) return 'Forma probable: PrÃ¤sens (segÃºn contexto/persona).';
+              if (/(te|test|ten|tet)$/.test(w)) return 'Forma probable: Präteritum (regular).';
+              if (/(st|t|en)$/.test(w)) return 'Forma probable: Präsens (según contexto/persona).';
               return 'Tiempo/persona: revisa contexto de la frase.';
           }
 
@@ -2499,7 +2499,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               window.speechSynthesis.cancel(); 
               if (timeoutRef.current) clearTimeout(timeoutRef.current); 
               setIsPlaying(false); 
-              stopNoise(); // Detener ruido si estÃ¡ activo
+              stopNoise(); // Detener ruido si está activo
           };
 
           // Funciones para ruido de fondo
@@ -2576,14 +2576,14 @@ const finishPlacementWithLevel = (finalLevel) => {
                           }
                       }
                       if (userStats.failedDiktatScenes.length > 0) {
-                          alert("Â¡Historia terminada! Tienes fallos pendientes en Diktat. Iniciando Repaso.");
+                          alert("¡Historia terminada! Tienes fallos pendientes en Diktat. Iniciando Repaso.");
                           setIsReviewing(true); setReviewIndexPointer(0); setMode('dialogue'); resetModes();
                       } else {
                           stopAudio();
                           if (historiaPlaylistAllScripts && savedScripts.length > 0) {
-                              alert('Â¡Has escuchado todos los guiones guardados en secuencia!');
+                              alert('¡Has escuchado todos los guiones guardados en secuencia!');
                           } else {
-                              alert("Â¡Has completado el guion!");
+                              alert("¡Has completado el guion!");
                           }
                       }
                   }
@@ -2606,7 +2606,7 @@ const finishPlacementWithLevel = (finalLevel) => {
           useEffect(() => { if (puzzleMode && activeTab === 'historia') initPuzzle(guionData[getActualSceneIndex()]?.text); }, [sceneIndex, isReviewing, puzzleMode, guionData, activeTab]);
 
           const handleSaveCustomVocab = () => {
-              if (!vocabTitleInput.trim()) { alert("Por favor, dale un tÃ­tulo a la lecciÃ³n."); return; }
+              if (!vocabTitleInput.trim()) { alert("Por favor, dale un título a la lección."); return; }
               if (!vocabTextInput.trim()) { alert("Por favor, pega el vocabulario."); return; }
               const lines = vocabTextInput.split(/\r?\n/);
               let parsedWords = [];
@@ -2616,11 +2616,11 @@ const finishPlacementWithLevel = (finalLevel) => {
                   return s.trim();
               };
               lines.forEach(line => {
-                  let text = line.trim().replace(/â€“/g, '-').replace(/â€”/g, '-');
+                  let text = line.trim().replace(/�/g, '-').replace(/�/g, '-');
                   if (!text) return;
                   let isDiff = false;
                   if (text.startsWith('1')) { isDiff = true; text = text.replace(/^1[.\-):\]]*\s*/, '').trim(); }
-                  text = text.replace(/^[-*â€¢+>]\s*/, '').trim();
+                  text = text.replace(/^[-*⬢+>]\s*/, '').trim();
                   text = text.replace(/^\d+[.\-):\]]+\s*/, '').trim();
                   let de = ""; let es = "";
                   const match = text.match(/(\s+-\s+|\s+=\s+|\t|\s{2,}|={1,})/);
@@ -2654,12 +2654,12 @@ const finishPlacementWithLevel = (finalLevel) => {
                   setCustomVocabLessons(updatedLessons);
                   localStorage.setItem('mullerCustomVocab', JSON.stringify(updatedLessons));
                   setVocabTitleInput(""); setVocabTextInput("");
-                  alert(`Â¡Genial! Se ha guardado la lecciÃ³n "${vocabTitleInput}" con ${parsedWords.length} palabras.`);
-              } else { alert("No pude detectar vocabulario vÃ¡lido. Pega texto para guardar."); }
+                  alert(`¡Genial! Se ha guardado la lección "${vocabTitleInput}" con ${parsedWords.length} palabras.`);
+              } else { alert("No pude detectar vocabulario válido. Pega texto para guardar."); }
           };
 
   const handleSaveScript = () => {
-    if (!newScriptTitle.trim()) { alert("Dale un tÃ­tulo al guion primero."); return; }
+    if (!newScriptTitle.trim()) { alert("Dale un título al guion primero."); return; }
     try {
         const lines = scriptInput.split('\n');
         const newGuion = [];
@@ -2688,23 +2688,23 @@ const finishPlacementWithLevel = (finalLevel) => {
                 vocabPairs.forEach(pair => {
                     const parts = pair.split('-');
                     if (parts.length >= 2) {
-                        const cleanDe = parts[0].trim().replace(/[ðŸ”´ðŸ”µðŸŸ¢â€¢]/g, '');
+                        const cleanDe = parts[0].trim().replace(/[�x��x��xx�⬢]/g, '');
                         vocab.push({ de: cleanDe, es: parts[1].trim(), diff: 1 });
                     }
                 });
                 content = content.replace(vocabMatch[0], '').trim();
             }
 
-            // 4. Extraer TraducciÃ³n (...)
-            let translation = "TraducciÃ³n no proporcionada";
+            // 4. Extraer Traducción (...)
+            let translation = "Traducción no proporcionada";
             const transMatch = content.match(/\(([^)]+)\)/);
             if (transMatch) {
                 translation = transMatch[1].trim();
                 content = content.replace(transMatch[0], '').trim();
             }
 
-            // 5. AlemÃ¡n (limpio de cÃ­rculos para el audio)
-            const germanText = content.replace(/[ðŸ”´ðŸ”µðŸŸ¢]/g, '').trim();
+            // 5. Alemán (limpio de círculos para el audio)
+            const germanText = content.replace(/[�x��x��xx�]/g, '').trim();
 
             if (germanText) {
                 newGuion.push({ speaker, text: germanText, translation, isRedemittel, vocab });
@@ -2731,15 +2731,15 @@ const finishPlacementWithLevel = (finalLevel) => {
         setSceneIndex(0); setMode('dialogue'); stopAudio(); resetModes(); setIsReviewing(false);
         setNewScriptTitle(""); setActiveTab('historia');
     } catch (e) { 
-        alert("Error al procesar. AsegÃºrate de usar el formato: Nombre: Texto AlemÃ¡n. (TraducciÃ³n) [vocab-trad]"); 
+        alert("Error al procesar. Asegúrate de usar el formato: Nombre: Texto Alemán. (Traducción) [vocab-trad]"); 
     }
 };
 
           const handleBxDistribToLevels = (target) => {
               const text = (bxImportText || '').trim() || (scriptInput || '').trim();
-              if (!text) { alert('Pega texto en el cuadro de â€œDistribuir a B1/B2â€ o en el guion de arriba.'); return; }
+              if (!text) { alert('Pega texto en el cuadro de �SDistribuir a B1/B2⬝ o en el guion de arriba.'); return; }
               const flat = mullerBibliotecaFlatItems(text);
-              if (flat.length === 0) { alert('No se detectaron frases. Usa formato Nombre: AlemÃ¡n. (TraducciÃ³n) o listas â€œalemÃ¡n - espaÃ±olâ€ por lÃ­nea.'); return; }
+              if (flat.length === 0) { alert('No se detectaron frases. Usa formato Nombre: Alemán. (Traducción) o listas �Salemán - español⬝ por línea.'); return; }
               const z = () => ({ vocabulario: 0, verbos: 0, preposiciones: 0, conectores: 0, redemittel: 0 });
               let snap = null;
               setBxUserOverlay((prev) => {
@@ -2749,7 +2749,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                   let nuevos = 0;
                   flat.forEach(({ cat, item, seg }) => {
                       const lv = target === 'auto' ? mullerGuessBibliotecaItemLevel(item, seg) : target;
-                      const trickBase = 'Biblioteca Â· ' + cat + (target === 'auto' ? ' Â· nivel estimado ' + lv.toUpperCase() : ' Â· heurÃ­stica local (sin IA)');
+                      const trickBase = 'Biblioteca · ' + cat + (target === 'auto' ? ' · nivel estimado ' + lv.toUpperCase() : ' · heurística local (sin IA)');
                       const it = { ...item, trick: trickBase };
                       const ky = mullerBxItemKey(item);
                       const exists = (base[lv][cat] || []).some((x) => mullerBxItemKey(x) === ky);
@@ -2771,16 +2771,16 @@ const finishPlacementWithLevel = (finalLevel) => {
               const sum = (c) => `vocab ${c.vocabulario}, vb. ${c.verbos}, prep. ${c.preposiciones}, conn. ${c.conectores}, R ${c.redemittel}`;
               if (snap) {
                   if (snap.target === 'auto') {
-                      setBxImportSummary(`Nivel automÃ¡tico Â· B1: ${sum(snap.c1)} Â· B2: ${sum(snap.c2)} Â· nuevos: ${snap.nuevos} (detectados: ${snap.detectados})`);
+                      setBxImportSummary(`Nivel automático · B1: ${sum(snap.c1)} · B2: ${sum(snap.c2)} · nuevos: ${snap.nuevos} (detectados: ${snap.detectados})`);
                   } else {
                       const c = snap.target === 'b2' ? snap.c2 : snap.c1;
-                      setBxImportSummary(`Todo a ${snap.target.toUpperCase()}: ${sum(c)} Â· nuevos: ${snap.nuevos} (detectados: ${snap.detectados})`);
+                      setBxImportSummary(`Todo a ${snap.target.toUpperCase()}: ${sum(c)} · nuevos: ${snap.nuevos} (detectados: ${snap.detectados})`);
                   }
               }
           };
 
           const clearBxUserOverlay = () => {
-              if (!window.confirm('Esto borra solo lo que aÃ±adiste con Â«Distribuir textoÂ» (tu biblioteca local). Las tarjetas del archivo b1-b2-database.json del proyecto no se quitan: seguirÃ¡n viÃ©ndose en B1/B2. Â¿Borrar tus aportaciones?')) return;
+              if (!window.confirm('Esto borra solo lo que añadiste con «Distribuir texto» (tu biblioteca local). Las tarjetas del archivo b1-b2-database.json del proyecto no se quitan: seguirán viéndose en B1/B2. ¿Borrar tus aportaciones?')) return;
               const empty = normalizeBxPayload({});
               setBxUserOverlay(empty);
               try {
@@ -2793,7 +2793,7 @@ const finishPlacementWithLevel = (finalLevel) => {
 
           const clearBxUserLevelAllCategories = (levelKey) => {
               const lab = levelKey === 'b1' ? 'B1' : 'B2';
-              if (!window.confirm(`Â¿Seguro? Se borrarÃ¡n TODAS tus aportaciones en ${lab} (vocabulario, verbos, preposiciones, conectores y Redemittel). No se toca el archivo b1-b2-database.json.`)) return;
+              if (!window.confirm(`¿Seguro? Se borrarán TODAS tus aportaciones en ${lab} (vocabulario, verbos, preposiciones, conectores y Redemittel). No se toca el archivo b1-b2-database.json.`)) return;
               setBxUserOverlay((prev) => {
                   const base = normalizeBxPayload(prev);
                   Object.keys(BX_DB_EMPTY).forEach((cat) => { base[levelKey][cat] = []; });
@@ -2806,7 +2806,7 @@ const finishPlacementWithLevel = (finalLevel) => {
           const clearBxUserOneCategory = (levelKey, catKey) => {
               const lab = levelKey === 'b1' ? 'B1' : 'B2';
               const name = { vocabulario: 'Vocabulario', verbos: 'Verbos', preposiciones: 'Preposiciones', conectores: 'Conectores', redemittel: 'Redemittel' }[catKey] || catKey;
-              if (!window.confirm(`Â¿Seguro? Se borran solo tus aportaciones en Â«${name}Â» (${lab}). El resto de categorÃ­as y el JSON base no se tocan.`)) return;
+              if (!window.confirm(`¿Seguro? Se borran solo tus aportaciones en «${name}» (${lab}). El resto de categorías y el JSON base no se tocan.`)) return;
               setBxUserOverlay((prev) => {
                   const base = normalizeBxPayload(prev);
                   base[levelKey][catKey] = [];
@@ -2847,7 +2847,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                 .replace(/\bdennoch\b/gi, 'trotzdem')
                 .replace(/\baufgrund\b/gi, 'wegen')
                 .replace(/\bbeziehungsweise\b/gi, 'oder')
-                .replace(/\bauÃŸerdem\b/gi, 'auch')
+                .replace(/\bau�xerdem\b/gi, 'auch')
                 .replace(/\binsbesondere\b/gi, 'vor allem')
                 .replace(/\ballerdings\b/gi, 'aber')
                 .replace(/\bdaher\b/gi, 'deshalb');
@@ -2879,12 +2879,12 @@ const finishPlacementWithLevel = (finalLevel) => {
         const mullerStoryGlossary = (deText) => {
             const words = String(deText || '')
                 .toLowerCase()
-                .replace(/[^a-zÃ¤Ã¶Ã¼ÃŸ\s-]/gi, ' ')
+                .replace(/[^a-zäöü�x\s-]/gi, ' ')
                 .split(/\s+/)
                 .map((w) => w.trim())
                 .filter((w) => w.length >= 6 && !/^\d+$/.test(w));
             const unique = Array.from(new Set(words)).slice(0, 10);
-            return unique.map((w) => ({ de: w, es: '(revÃ­salo en Lexikon)' }));
+            return unique.map((w) => ({ de: w, es: '(revísalo en Lexikon)' }));
         };
 
           const mullerLexikonApplyPairsFromTranslate = (sourceText, translated, detectedLang, targetLang) => {
@@ -2940,7 +2940,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                       setLexikonResults({ titles: data[1] || [], descriptions: data[2] || [], urls: data[3] || [], wiki });
                   }
               } catch (e) {
-                  alert('No se pudo completar la bÃºsqueda (red o bloqueo). Prueba otra vez.');
+                  alert('No se pudo completar la búsqueda (red o bloqueo). Prueba otra vez.');
                   setLexikonResults({ error: true });
               } finally {
                   setLexikonDictLoading(false);
@@ -2972,7 +2972,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                       setLexikonTransOut(finalOut);
                       mullerLexikonApplyPairsFromTranslate(text, finalOut, tl === 'de' ? 'es' : 'de', tl);
                   } catch (e2) {
-                      setLexikonTransOut('Error de traducciÃ³n. Comprueba la conexiÃ³n.');
+                      setLexikonTransOut('Error de traducción. Comprueba la conexión.');
                   }
               } finally {
                   setLexikonTransLoading(false);
@@ -3043,7 +3043,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                   setStoriesProErr('Primero genera la historia.');
                   return;
               }
-              const title = `Historias Pro Â· ${storiesProLevel} Â· ${new Date().toLocaleDateString()}`;
+              const title = `Historias Pro · ${storiesProLevel} · ${new Date().toLocaleDateString()}`;
               setGuionData(storiesProResult.scenes);
               setSceneIndex(0);
               setMode('dialogue');
@@ -3058,7 +3058,7 @@ const finishPlacementWithLevel = (finalLevel) => {
           const appendPairToCustomLesson = (de, es) => {
               const d = String(de || '').trim();
               const e = String(es || '').trim();
-              if (!d || !e) { alert('Falta alemÃ¡n o espaÃ±ol.'); return; }
+              if (!d || !e) { alert('Falta alemán o español.'); return; }
               let lessonId = lexikonSaveLessonId;
               if (lessonId === '__new__') {
                   const t = (lexikonNewLessonTitle || '').trim() || `Lexikon ${new Date().toLocaleDateString()}`;
@@ -3068,10 +3068,10 @@ const finishPlacementWithLevel = (finalLevel) => {
                   try { localStorage.setItem('mullerCustomVocab', JSON.stringify(updated)); } catch (err) {}
                   setLexikonSaveLessonId(newLesson.id);
                   setLexikonNewLessonTitle('');
-                  alert(`Guardado en nueva lecciÃ³n: Â«${t}Â». Puedes practicarla en Vocab.`);
+                  alert(`Guardado en nueva lección: «${t}». Puedes practicarla en Vocab.`);
                   return;
               }
-              if (!lessonId) { alert('Elige una lecciÃ³n o Â«Nueva lecciÃ³nâ€¦Â».'); return; }
+              if (!lessonId) { alert('Elige una lección o «Nueva lección⬦».'); return; }
               setCustomVocabLessons((prev) => {
                   let hit = false;
                   const next = prev.map((l) => {
@@ -3081,13 +3081,13 @@ const finishPlacementWithLevel = (finalLevel) => {
                       return { ...l, words: [...l.words, { de: d, es: e, diff: 0 }] };
                   });
                   if (!hit) {
-                      alert('No se encontrÃ³ esa lecciÃ³n.');
+                      alert('No se encontró esa lección.');
                       return prev;
                   }
                   try { localStorage.setItem('mullerCustomVocab', JSON.stringify(next)); } catch (err) {}
                   return next;
               });
-              alert('Palabra aÃ±adida a la lecciÃ³n.');
+              alert('Palabra añadida a la lección.');
           };
 
           const handleBxUserCardDelete = () => {
@@ -3096,10 +3096,10 @@ const finishPlacementWithLevel = (finalLevel) => {
               const level = bxBankLevel === 'b1' ? 'b1' : 'b2';
               let srcCat = bxCategory === 'mix' ? (item._mullerCategory || mullerFindUserBxCategory(bxUserOverlay, level, item._mullerUid)) : bxCategory;
               if (!srcCat) {
-                  alert('No se encontrÃ³ la categorÃ­a de esta tarjeta.');
+                  alert('No se encontró la categoría de esta tarjeta.');
                   return;
               }
-              if (!window.confirm('Â¿Eliminar esta tarjeta solo de tu biblioteca local?')) return;
+              if (!window.confirm('¿Eliminar esta tarjeta solo de tu biblioteca local?')) return;
               setBxUserOverlay((prev) => {
                   const base = JSON.parse(JSON.stringify(normalizeBxPayload(prev)));
                   base[level][srcCat] = (base[level][srcCat] || []).filter((x) => x._mullerUid !== item._mullerUid);
@@ -3114,12 +3114,12 @@ const finishPlacementWithLevel = (finalLevel) => {
               const level = bxBankLevel === 'b1' ? 'b1' : 'b2';
               let srcCat = bxCategory === 'mix' ? (item._mullerCategory || mullerFindUserBxCategory(bxUserOverlay, level, item._mullerUid)) : bxCategory;
               if (!srcCat) {
-                  alert('No se encontrÃ³ la categorÃ­a de origen.');
+                  alert('No se encontró la categoría de origen.');
                   return;
               }
               const toCat = bxMoveTargetCat;
               if (srcCat === toCat) {
-                  alert('Elige otra categorÃ­a distinta.');
+                  alert('Elige otra categoría distinta.');
                   return;
               }
               setBxUserOverlay((prev) => {
@@ -3150,44 +3150,44 @@ const finishPlacementWithLevel = (finalLevel) => {
           const runChromeLocalSummarize = async () => {
               const text = (chromeAiText || '').trim();
               if (text.length < 40) {
-                  alert('Pega un texto mÃ¡s largo o usa â€œCargar escena actualâ€.');
+                  alert('Pega un texto más largo o usa �SCargar escena actual⬝.');
                   return;
               }
               if (!('Summarizer' in self)) {
-                  setChromeAiLine('Tu navegador no expone la API Summarizer. Usa Google Chrome 138+ en escritorio con IA integrada (Gemini Nano). En Edge puede ir detrÃ¡s de flags; revisa la documentaciÃ³n de Built-in AI.');
+                  setChromeAiLine('Tu navegador no expone la API Summarizer. Usa Google Chrome 138+ en escritorio con IA integrada (Gemini Nano). En Edge puede ir detrás de flags; revisa la documentación de Built-in AI.');
                   setChromeAiOut('');
                   return;
               }
               setChromeAiBusy(true);
               setChromeAiOut('');
-              setChromeAiLine('Comprobandoâ€¦');
+              setChromeAiLine('Comprobando⬦');
               try {
                   const Summarizer = self.Summarizer;
                   const availability = await Summarizer.availability();
                   if (availability === 'unavailable') {
-                      setChromeAiLine('Gemini Nano no disponible en este equipo (requisitos de hardware, espacio ~22 GB libres en el perfil de Chrome, o polÃ­tica).');
+                      setChromeAiLine('Gemini Nano no disponible en este equipo (requisitos de hardware, espacio ~22 GB libres en el perfil de Chrome, o política).');
                       setChromeAiBusy(false);
                       return;
                   }
-                  setChromeAiLine('Preparando modelo local (la primera vez puede descargarse)â€¦');
+                  setChromeAiLine('Preparando modelo local (la primera vez puede descargarse)⬦');
                   const summarizer = await Summarizer.create({
                       type: 'key-points',
                       format: 'markdown',
                       length: 'short',
                       expectedInputLanguages: ['de', 'en'],
                       outputLanguage: 'es',
-                      sharedContext: 'Estudiante de alemÃ¡n TELC; resÃºmenes claros en espaÃ±ol.',
+                      sharedContext: 'Estudiante de alemán TELC; resúmenes claros en español.',
                       monitor(m) {
                           m.addEventListener('downloadprogress', (e) => {
                               const p = typeof e.loaded === 'number' ? Math.round(e.loaded * 100) : 0;
-                              setChromeAiLine('Descarga del modelo en tu PCâ€¦ ' + p + '%');
+                              setChromeAiLine('Descarga del modelo en tu PC⬦ ' + p + '%');
                           });
                       }
                   });
-                  setChromeAiLine('Generando resumen (proceso local)â€¦');
-                  const summary = await summarizer.summarize(text, { context: 'Texto o diÃ¡logo en alemÃ¡n para estudio.' });
+                  setChromeAiLine('Generando resumen (proceso local)⬦');
+                  const summary = await summarizer.summarize(text, { context: 'Texto o diálogo en alemán para estudio.' });
                   setChromeAiOut(typeof summary === 'string' ? summary : String(summary));
-                  setChromeAiLine('Listo: sin enviar datos a los servidores de MÃ¼ller.');
+                  setChromeAiLine('Listo: sin enviar datos a los servidores de Müller.');
                   try { if (typeof summarizer.destroy === 'function') summarizer.destroy(); } catch (e2) {}
               } catch (err) {
                   setChromeAiLine('Error: ' + (err && err.message ? err.message : String(err)));
@@ -3224,13 +3224,13 @@ const finishPlacementWithLevel = (finalLevel) => {
               e.stopPropagation();
               const sid = script && script.id != null ? String(script.id) : '';
               if (!sid) {
-                  alert('Este guion no tiene id interno; recarga la pÃ¡gina y prueba de nuevo.');
+                  alert('Este guion no tiene id interno; recarga la página y prueba de nuevo.');
                   return;
               }
-              if (!window.confirm('Â¿Eliminar este guion de la lista?')) return;
+              if (!window.confirm('¿Eliminar este guion de la lista?')) return;
               const stripBx = window.confirm(
-                  'Â¿Quitar tambiÃ©n de B1/B2 las frases que aÃ±adiste con Â«Distribuir textoÂ» mientras tenÃ­as cargado este guion en Historia?\n\n' +
-                  '(Solo afecta a tarjetas nuevas vinculadas a este guion. Las que enviaste antes sin esta vinculaciÃ³n, o el contenido del archivo b1-b2-database.json, no se tocan.)'
+                  '¿Quitar también de B1/B2 las frases que añadiste con «Distribuir texto» mientras tenías cargado este guion en Historia?\n\n' +
+                  '(Solo afecta a tarjetas nuevas vinculadas a este guion. Las que enviaste antes sin esta vinculación, o el contenido del archivo b1-b2-database.json, no se tocan.)'
               );
               setSavedScripts((prev) => {
                   const next = prev.filter((s) => String(s.id) !== sid);
@@ -3254,24 +3254,24 @@ const finishPlacementWithLevel = (finalLevel) => {
               setTimeout(() => {
                   let wordsArray = aiCustomWords.split(',').map(w => w.trim()).filter(w => w);
                   let mockLongStory = [
-                      { speaker: 'ErzÃ¤hler', text: 'Es war ein kalter Morgen in der groÃŸen Stadt.', translation: 'Era una frÃ­a maÃ±ana en la gran ciudad.' },
-                      { speaker: 'Lukas', text: 'Ich muss heute so viel erledigen. Wo fange ich an?', translation: 'Tengo tanto que hacer hoy. Â¿Por dÃ³nde empiezo?' },
-                      { speaker: 'Anna', text: 'Vergiss nicht, dass wir spÃ¤ter zusammen essen gehen.', translation: 'No olvides que luego vamos a comer juntos.' },
-                      { speaker: 'Lukas', text: 'NatÃ¼rlich nicht! Ich habe den Tisch schon reserviert.', translation: 'Â¡Por supuesto que no! Ya he reservado la mesa.' },
+                      { speaker: 'Erzähler', text: 'Es war ein kalter Morgen in der gro�xen Stadt.', translation: 'Era una fría mañana en la gran ciudad.' },
+                      { speaker: 'Lukas', text: 'Ich muss heute so viel erledigen. Wo fange ich an?', translation: 'Tengo tanto que hacer hoy. ¿Por dónde empiezo?' },
+                      { speaker: 'Anna', text: 'Vergiss nicht, dass wir später zusammen essen gehen.', translation: 'No olvides que luego vamos a comer juntos.' },
+                      { speaker: 'Lukas', text: 'Natürlich nicht! Ich habe den Tisch schon reserviert.', translation: '¡Por supuesto que no! Ya he reservado la mesa.' },
                       { speaker: 'Anna', text: 'Das ist wunderbar. Ich freue mich wirklich darauf.', translation: 'Eso es maravilloso. De verdad me alegro de ello.' },
-                      { speaker: 'ErzÃ¤hler', text: 'SpÃ¤ter am Abend trafen sie sich im neuen Restaurant.', translation: 'MÃ¡s tarde en la noche se encontraron en el nuevo restaurante.' },
-                      { speaker: 'Kellner', text: 'Guten Abend! Was darf ich Ihnen heute bringen?', translation: 'Â¡Buenas tardes! Â¿QuÃ© les puedo traer hoy?' },
-                      { speaker: 'Lukas', text: 'Wir hÃ¤tten gerne die Speisekarte und ein Wasser, bitte.', translation: 'Nos gustarÃ­a la carta y un agua, por favor.' },
-                      { speaker: 'Anna', text: 'Und ich hÃ¤tte gerne ein Glas Rotwein.', translation: 'Y a mÃ­ me gustarÃ­a una copa de vino tinto.' },
-                      { speaker: 'Kellner', text: 'Kommt sofort! Haben Sie schon gewÃ¤hlt?', translation: 'Â¡Enseguida! Â¿Ya han elegido?' }
+                      { speaker: 'Erzähler', text: 'Später am Abend trafen sie sich im neuen Restaurant.', translation: 'Más tarde en la noche se encontraron en el nuevo restaurante.' },
+                      { speaker: 'Kellner', text: 'Guten Abend! Was darf ich Ihnen heute bringen?', translation: '¡Buenas tardes! ¿Qué les puedo traer hoy?' },
+                      { speaker: 'Lukas', text: 'Wir hätten gerne die Speisekarte und ein Wasser, bitte.', translation: 'Nos gustaría la carta y un agua, por favor.' },
+                      { speaker: 'Anna', text: 'Und ich hätte gerne ein Glas Rotwein.', translation: 'Y a mí me gustaría una copa de vino tinto.' },
+                      { speaker: 'Kellner', text: 'Kommt sofort! Haben Sie schon gewählt?', translation: '¡Enseguida! ¿Ya han elegido?' }
                   ];
                   if (wordsArray.length > 0) {
                       wordsArray.forEach((word, index) => {
                           let i = (index + 1) * 2; 
                           if (i >= mockLongStory.length) i = mockLongStory.length - 1;
                           mockLongStory.splice(i, 0, {
-                              speaker: 'Anna', text: `Ãœbrigens, erinnerst du dich an ${word}? Das war eine interessante Erfahrung.`,
-                              translation: `Por cierto, Â¿te acuerdas de ${word}? Fue una experiencia interesante.`,
+                              speaker: 'Anna', text: `�Sbrigens, erinnerst du dich an ${word}? Das war eine interessante Erfahrung.`,
+                              translation: `Por cierto, ¿te acuerdas de ${word}? Fue una experiencia interesante.`,
                               vocab: [{ de: word, es: 'Palabra Custom', diff: 1 }]
                           });
                       });
@@ -3285,8 +3285,8 @@ const finishPlacementWithLevel = (finalLevel) => {
           const sanitizeHistoriaSpeechText = (text) => {
               return String(text || '')
                   .replace(/\[R\]/gi, '')
-                  .replace(/\bN[Ã¼u]tzlich\b\.?/gi, '')
-                  .replace(/\b[ÃšU]TIL\b\.?/gi, '')
+                  .replace(/\bN[üu]tzlich\b\.?/gi, '')
+                  .replace(/\b[�aU]TIL\b\.?/gi, '')
                   .replace(/\s{2,}/g, ' ')
                   .trim();
           };
@@ -3296,7 +3296,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               utterance.lang = 'de-DE';
               if (speaker === 'Lukas') { utterance.voice = getVoice('de', 'male'); utterance.pitch = 1.1; } 
               else if (speaker === 'Elena' || speaker === 'Anna') { utterance.voice = getVoice('de', 'female'); utterance.pitch = 1.2; } 
-              else if (speaker.includes('Weber') || speaker === 'Professor' || speaker === 'ErzÃ¤hler') { utterance.voice = getVoice('de', 'male', true); utterance.pitch = 0.8; } 
+              else if (speaker.includes('Weber') || speaker === 'Professor' || speaker === 'Erzähler') { utterance.voice = getVoice('de', 'male', true); utterance.pitch = 0.8; } 
               else { utterance.voice = getVoice('de', 'male'); }
               utterance.rate = (speaker.includes('Weber') ? 0.9 : 1.0) * playbackRate;
               if (fluesternMode) { utterance.volume = 0.3; utterance.pitch = utterance.pitch * 0.8; } 
@@ -3313,7 +3313,7 @@ const finishPlacementWithLevel = (finalLevel) => {
             if ((currentScene.speaker === roleplayChar || roleplayChar === 'Todos') && mode === 'dialogue' && !podcastMode) {
                 setMode('roleplay_wait'); setIsPlaying(false); return; 
             }
-           // Limpiamos el texto de sÃ­mbolos que el motor de voz lee por error (.;)
+           // Limpiamos el texto de símbolos que el motor de voz lee por error (.;)
 const audioCleanText = sanitizeHistoriaSpeechText(currentScene.text).replace(/[.;;]/g, '.'); 
 const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
             let utterances = [sentenceUtterance];
@@ -3328,7 +3328,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                 });
             }
             if (podcastMode) {
-                const esUtter = new SpeechSynthesisUtterance(currentScene.translation || "TraducciÃ³n no disponible");
+                const esUtter = new SpeechSynthesisUtterance(currentScene.translation || "Traducción no disponible");
                 esUtter.lang = 'es-ES'; esUtter.voice = getVoice('es', 'male'); esUtter.rate = 1.0;
                 utterances = [sentenceUtterance, esUtter];
             }
@@ -3352,7 +3352,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                       if (!newGrammar.some(g => g.base === p.base)) { newGrammar.push({ base: p.base, exampleDe: text, exampleEs: translation }); found = true; }
                   }
               });
-              if (found) { saveProgress({ difficultGrammar: newGrammar }); alert("Â¡Estructura automÃ¡tica detectada y guardada en tu mazo!"); } 
+              if (found) { saveProgress({ difficultGrammar: newGrammar }); alert("¡Estructura automática detectada y guardada en tu mazo!"); } 
               else { setShowGrammarPrompt(true); }
           };
 
@@ -3363,25 +3363,25 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               let newGrammar = [...userStats.difficultGrammar];
               newGrammar.push({ base: customGrammarInput, exampleDe: text, exampleEs: translation });
               saveProgress({ difficultGrammar: newGrammar });
-              setShowGrammarPrompt(false); setCustomGrammarInput(""); alert("Â¡Estructura personalizada guardada con Ã©xito!");
+              setShowGrammarPrompt(false); setCustomGrammarInput(""); alert("¡Estructura personalizada guardada con éxito!");
           };
 
           const generateTutorFeedback = (text) => {
               let feedback = [];
               const tLower = text.toLowerCase();
-              if (tLower.match(/\b(weil|dass|obwohl|wenn|als|damit|ob|bevor|nachdem)\b/i)) feedback.push("ðŸŸ£ **Nebensatz (Subordinada):** Has usado un conector subordinante. El verbo conjugado va a la Ãºltima posiciÃ³n de la frase.");
-              if (tLower.match(/\b(deshalb|deswegen|darum|trotzdem|dann|danach|auÃŸerdem)\b/i)) feedback.push("ðŸŸ  **Hauptsatz (InversiÃ³n):** Conector en PosiciÃ³n 1. Inmediatamente despuÃ©s tiene que ir el verbo (Pos 2), y luego el sujeto.");
-              if (tLower.match(/\b(und|aber|oder|denn|sondern)\b/i)) feedback.push("ðŸŸ¢ **Conector ADUSO (PosiciÃ³n 0):** Une dos frases sin alterar el orden normal (Sujeto + Verbo).");
-              if (tLower.match(/\b(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\b.*\b(ge[a-zÃ¤Ã¶Ã¼ÃŸ]+t|ge[a-zÃ¤Ã¶Ã¼ÃŸ]+en|.+[ie]rt)\b/i)) feedback.push("ðŸ•°ï¸ **Perfekt:** Auxiliar (haben/sein) en PosiciÃ³n 2 y Participio al final.");
-              if (tLower.match(/\b(wurde|wurdest|wurden|wurdet|war|warst|waren|wart|hatte|hattest|hatten|hattet|gab|musste|konnte|wollte|sollte|durfte)\b/i) && !tLower.match(/\b(worden)\b/i)) feedback.push("ðŸ“– **PrÃ¤teritum:** Pasado simple. Usado para verbos auxiliares, modales o narraciÃ³n.");
-              if (tLower.match(/\b(wurde|worden)\b/i) || (tLower.match(/\b(werden|wird|werden|werdet)\b/i) && tLower.match(/\b(ge[a-zÃ¤Ã¶Ã¼ÃŸ]+t|ge[a-zÃ¤Ã¶Ã¼ÃŸ]+en)\b/i))) feedback.push("ðŸ›ï¸ **Passiv:** 'Werden' + Participio II. Lo importante es la acciÃ³n, no el sujeto.");
-              if (tLower.match(/\b(muss|musst|mÃ¼ssen|kann|kannst|kÃ¶nnen|darf|darfst|dÃ¼rfen|soll|sollst|sollen|will|willst|wollen|mÃ¶chte|mÃ¶chtest|mÃ¶chten)\b/i)) feedback.push("ðŸ’ª **Modalverben:** Verbo modal en Pos 2, obliga al verbo principal en Infinitivo al final.");
-              if (tLower.match(/\b(an|ein|auf|zu|mit|aus|vor|nach|ab|her|hin|los|teil)\s*[.,!?]*$/i)) feedback.push("âœ‚ï¸ **Trennbare Verben:** El prefijo del verbo se ha separado al final de la frase.");
-              if (tLower.match(/\b(aus|bei|mit|nach|seit|von|zu|ab)\b/i)) feedback.push("ðŸ”µ **Dativo (PreposiciÃ³n):** PreposiciÃ³n que rige Dativo estricto.");
-              if (tLower.match(/\b(durch|fÃ¼r|gegen|ohne|um)\b/i)) feedback.push("ðŸ”´ **Acusativo (PreposiciÃ³n):** PreposiciÃ³n que rige Acusativo estricto.");
-              if (tLower.match(/\b(in|an|auf|neben|hinter|Ã¼ber|unter|vor|zwischen)\b/i)) feedback.push("ðŸŸ¡ **WechselprÃ¤position:** Rige Dativo (Wo?) o Acusativo (Wohin?).");
-              GRAMMAR_PATTERNS.forEach(p => { if (text.match(p.regex)) feedback.push(`ðŸŒŸ **Verbo con PreposiciÃ³n Fija:** ${p.tooltip}.`); });
-              return feedback.join("\n\n") || "ðŸŸ¢ **Hauptsatz:** Estructura estÃ¡ndar perfecta.";
+              if (tLower.match(/\b(weil|dass|obwohl|wenn|als|damit|ob|bevor|nachdem)\b/i)) feedback.push("�xx� **Nebensatz (Subordinada):** Has usado un conector subordinante. El verbo conjugado va a la última posición de la frase.");
+              if (tLower.match(/\b(deshalb|deswegen|darum|trotzdem|dann|danach|au�xerdem)\b/i)) feedback.push("�xx� **Hauptsatz (Inversión):** Conector en Posición 1. Inmediatamente después tiene que ir el verbo (Pos 2), y luego el sujeto.");
+              if (tLower.match(/\b(und|aber|oder|denn|sondern)\b/i)) feedback.push("�xx� **Conector ADUSO (Posición 0):** Une dos frases sin alterar el orden normal (Sujeto + Verbo).");
+              if (tLower.match(/\b(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\b.*\b(ge[a-zäöü�x]+t|ge[a-zäöü�x]+en|.+[ie]rt)\b/i)) feedback.push("�x"�️ **Perfekt:** Auxiliar (haben/sein) en Posición 2 y Participio al final.");
+              if (tLower.match(/\b(wurde|wurdest|wurden|wurdet|war|warst|waren|wart|hatte|hattest|hatten|hattet|gab|musste|konnte|wollte|sollte|durfte)\b/i) && !tLower.match(/\b(worden)\b/i)) feedback.push("�x **Präteritum:** Pasado simple. Usado para verbos auxiliares, modales o narración.");
+              if (tLower.match(/\b(wurde|worden)\b/i) || (tLower.match(/\b(werden|wird|werden|werdet)\b/i) && tLower.match(/\b(ge[a-zäöü�x]+t|ge[a-zäöü�x]+en)\b/i))) feedback.push("�x�:️ **Passiv:** 'Werden' + Participio II. Lo importante es la acción, no el sujeto.");
+              if (tLower.match(/\b(muss|musst|müssen|kann|kannst|können|darf|darfst|dürfen|soll|sollst|sollen|will|willst|wollen|möchte|möchtest|möchten)\b/i)) feedback.push("�x� **Modalverben:** Verbo modal en Pos 2, obliga al verbo principal en Infinitivo al final.");
+              if (tLower.match(/\b(an|ein|auf|zu|mit|aus|vor|nach|ab|her|hin|los|teil)\s*[.,!?]*$/i)) feedback.push("�S️ **Trennbare Verben:** El prefijo del verbo se ha separado al final de la frase.");
+              if (tLower.match(/\b(aus|bei|mit|nach|seit|von|zu|ab)\b/i)) feedback.push("�x� **Dativo (Preposición):** Preposición que rige Dativo estricto.");
+              if (tLower.match(/\b(durch|für|gegen|ohne|um)\b/i)) feedback.push("�x� **Acusativo (Preposición):** Preposición que rige Acusativo estricto.");
+              if (tLower.match(/\b(in|an|auf|neben|hinter|über|unter|vor|zwischen)\b/i)) feedback.push("�xx� **Wechselpräposition:** Rige Dativo (Wo?) o Acusativo (Wohin?).");
+              GRAMMAR_PATTERNS.forEach(p => { if (text.match(p.regex)) feedback.push(`�xRx **Verbo con Preposición Fija:** ${p.tooltip}.`); });
+              return feedback.join("\n\n") || "�xx� **Hauptsatz:** Estructura estándar perfecta.";
           };
 
           const showAITutor = () => {
@@ -3392,12 +3392,12 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           const handleDiktatCheck = () => {
               if (!diktatInput.trim()) { alert("Por favor, escribe lo que has escuchado primero."); return; }
               setShowDiktatResult(true);
-              const cleanText = (t) => t.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[.,!?]/g, '').trim();
+              const cleanText = (t) => t.toLowerCase().replace(/�/g, 'ae').replace(/�/g, 'oe').replace(/�/g, 'ue').replace(/�/g, 'ss').replace(/[.,!?]/g, '').trim();
               const originalText = cleanText(guionData[getActualSceneIndex()].text);
               const typedText = cleanText(diktatInput);
               if (originalText !== typedText) {
                   window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(false);
-                  setDiktatMotivationMsg(typeof window.__mullerRandomMotivation === 'function' ? window.__mullerRandomMotivation() : 'Sigue intentÃ¡ndolo.');
+                  setDiktatMotivationMsg(typeof window.__mullerRandomMotivation === 'function' ? window.__mullerRandomMotivation() : 'Sigue intentándolo.');
                   if (!isReviewing && !userStats.failedDiktatScenes.includes(sceneIndex)) {
                       saveProgress({ failedDiktatScenes: [...userStats.failedDiktatScenes, sceneIndex], diktatAttempts: userStats.diktatAttempts + 1, activityByDay: mergeActivityPoints(6) });
                   }
@@ -3412,10 +3412,10 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           const handleVoiceStart = async (targetText = null, evalOpts = {}) => {
               if (userStats.hearts <= 0 && evalOpts.mode !== 'shadow') { setShowDeathModal(true); return; }
               const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-              if (!SpeechRecognition) { alert("Tu navegador no soporta esta funciÃ³n. Usa Google Chrome."); return; }
+              if (!SpeechRecognition) { alert("Tu navegador no soporta esta función. Usa Google Chrome."); return; }
               const ok = await mullerEnsureMicPermission({ autoPrompt: true, showToast: true });
               if (!ok) {
-                  setGrammarPolizeiMsg('Sin permiso de micrÃ³fono. Puedes seguir con texto y audio.');
+                  setGrammarPolizeiMsg('Sin permiso de micrófono. Puedes seguir con texto y audio.');
                   return;
               }
               if (recognitionRef.current) {
@@ -3424,7 +3424,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               const recognition = new SpeechRecognition();
               recognition.lang = 'de-DE';
               const mobileStt = typeof navigator !== 'undefined' && (navigator.maxTouchPoints > 0 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || ''));
-              /* continuous: una sola sesiÃ³n por pulsaciÃ³n; en mÃ³vil interimResults=false reduce duplicados del motor */
+              /* continuous: una sola sesión por pulsación; en móvil interimResults=false reduce duplicados del motor */
               recognition.continuous = true;
               recognition.interimResults = !mobileStt;
               recognition.maxAlternatives = mobileStt ? 1 : 3;
@@ -3468,7 +3468,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                               const cur = speechFinalRef.current || "";
                               if (!cur) speechFinalRef.current = f;
                               else if (f.startsWith(cur.trim())) speechFinalRef.current = f;
-                              else if (cur.startsWith(f) && f.length < cur.length) { /* mantener frase mÃ¡s larga */ }
+                              else if (cur.startsWith(f) && f.length < cur.length) { /* mantener frase más larga */ }
                               else if (f.length >= cur.length && (f.indexOf(cur) >= 0 || cur.indexOf(f) >= 0)) speechFinalRef.current = f.length >= cur.length ? f : cur;
                               else speechFinalRef.current = mergeSpeechFinalChunk(cur, f);
                           } else {
@@ -3490,7 +3490,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                   console.error("Error de micro:", event.error);
                   setIsListening(false);
                   if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                      alert("Permiso de micrÃ³fono denegado. Activa el mic en la barra del navegador.");
+                      alert("Permiso de micrófono denegado. Activa el mic en la barra del navegador.");
                   }
               };
               recognition.onend = () => {
@@ -3519,7 +3519,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               const mode = opts.mode || 'default';
               if (!transcript || transcript.trim() === "") {
                   if (mode === 'shadow') {
-                      setGrammarPolizeiMsg("No se detectÃ³ voz. Comprueba el micrÃ³fono o habla mÃ¡s cerca.");
+                      setGrammarPolizeiMsg("No se detectó voz. Comprueba el micrófono o habla más cerca.");
                       setPronunciationScore(null);
                       setPronunciationFeedback([]);
                       if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
@@ -3544,7 +3544,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               let penalty = false;
               if (mode !== 'shadow' && cleanOrig.includes("wegen des") && cleanSpoken.includes("wegen dem")) {
                   score -= 20;
-                  polizeiMsg = "ðŸš¨ Grammatik-Polizei: Has external DATIVO en vez de GENITIVO. -1 â¤ï¸";
+                  polizeiMsg = "�xa� Grammatik-Polizei: Has external DATIVO en vez de GENITIVO. -1 ❤️";
                   penalty = true;
               }
               const finalScore = score > 100 ? 100 : score < 0 ? 0 : score;
@@ -3574,8 +3574,8 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               if(vocabDisplayList.length === 0) return;
               window.speechSynthesis.cancel();
               const currentVocab = vocabDisplayList[vocabReviewIndex];
-              const cleanDeAudio = currentVocab.de.replace(/^[0-9]+[.\-):\]]*\s*/g, '').replace(/^[a-zA-ZÃ¤Ã¶Ã¼ÃŸÃ„Ã–Ãœ]{1,10}\s*[.:]\s*/g, '').replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{2B50}]|\u{FE0F}/gu, '').trim();
-              const cleanEsAudio = currentVocab.es.replace(/^[0-9]+[.\-):\]]*\s*/g, '').replace(/^[a-zA-ZÃ±Ã‘Ã¡Ã©Ã­Ã³ÃºÃÃ‰ÃÃ“Ãš]{1,10}\s*[.:]\s*/g, '').replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{2B50}]|\u{FE0F}/gu, '').trim();
+              const cleanDeAudio = currentVocab.de.replace(/^[0-9]+[.\-):\]]*\s*/g, '').replace(/^[a-zA-Zäöü�x���S]{1,10}\s*[.:]\s*/g, '').replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{2B50}]|\u{FE0F}/gu, '').trim();
+              const cleanEsAudio = currentVocab.es.replace(/^[0-9]+[.\-):\]]*\s*/g, '').replace(/^[a-zA-Zñ�áéíóúÁ�0Í��a]{1,10}\s*[.:]\s*/g, '').replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{2B50}]|\u{FE0F}/gu, '').trim();
               const utterDe = new SpeechSynthesisUtterance(cleanDeAudio);
               utterDe.lang = 'de-DE'; utterDe.voice = getVoice('de', 'female'); utterDe.rate = 0.85;
               utterDe.onend = () => {
@@ -3607,16 +3607,16 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
             if (vocabReviewIndex < vocabDisplayList.length - 1) { setVocabReviewIndex(prev => prev + 1); setShowVocabTranslation(false); } 
             else {
                 window.__mullerPlaySfx && window.__mullerPlaySfx('complete');
-                setCelebrationModal({ title: 'Â¡Lista completada!', subtitle: 'Has repasado todas las tarjetas de esta sesiÃ³n.', xp: 15, coins: 10 });
+                setCelebrationModal({ title: '¡Lista completada!', subtitle: 'Has repasado todas las tarjetas de esta sesión.', xp: 15, coins: 10 });
                 saveProgress({ xp: userStats.xp + 15, coins: userStats.coins + 10, activityByDay: mergeActivityPoints(35) });
                 setActiveTab('guiones');
             }
           };
 
           const startPractice = (type) => {
-              if (type === 'diff' && (!userStats.difficultVocab || userStats.difficultVocab.length === 0)) { alert("Tu mazo de Vocabulario DifÃ­cil estÃ¡ vacÃ­o."); return; }
-              if (type === 'norm' && (!userStats.normalVocab || userStats.normalVocab.length === 0)) { alert("Tu mazo de Vocabulario Normal estÃ¡ vacÃ­o."); return; }
-              if (type === 'grammar' && (!userStats.difficultGrammar || userStats.difficultGrammar.length === 0)) { alert("Tu mazo de GramÃ¡tica estÃ¡ vacÃ­o."); return; }
+              if (type === 'diff' && (!userStats.difficultVocab || userStats.difficultVocab.length === 0)) { alert("Tu mazo de Vocabulario Difícil está vacío."); return; }
+              if (type === 'norm' && (!userStats.normalVocab || userStats.normalVocab.length === 0)) { alert("Tu mazo de Vocabulario Normal está vacío."); return; }
+              if (type === 'grammar' && (!userStats.difficultGrammar || userStats.difficultGrammar.length === 0)) { alert("Tu mazo de Gramática está vacío."); return; }
               setPracticeActive(type); setPracticeIndex(0); setPracticeShowTrans(false);
           };
 
@@ -3633,7 +3633,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               if (practiceIndex < list.length - 1) { setPracticeIndex(practiceIndex + 1); setPracticeShowTrans(false); saveProgress({ activityByDay: mergeActivityPoints(6) }); } 
               else {
                   window.__mullerPlaySfx && window.__mullerPlaySfx('complete');
-                  setCelebrationModal({ title: 'Â¡SesiÃ³n de mazos!', subtitle: '+20 XP Â· +5 monedas', xp: 20, coins: 5 });
+                  setCelebrationModal({ title: '¡Sesión de mazos!', subtitle: '+20 XP · +5 monedas', xp: 20, coins: 5 });
                   saveProgress({ xp: userStats.xp + 20, coins: userStats.coins + 5, activityByDay: mergeActivityPoints(30) });
                   setPracticeActive(null);
               }
@@ -3641,9 +3641,9 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
 
           const getArticleVisual = (word) => {
             if (!word) return null;
-            if (word.startsWith('der ')) return <span className="text-blue-400 mr-2">ðŸ”µ</span>;
-            if (word.startsWith('die ')) return <span className="text-red-400 mr-2">ðŸ”´</span>;
-            if (word.startsWith('das ')) return <span className="text-green-400 mr-2">ðŸŸ¢</span>;
+            if (word.startsWith('der ')) return <span className="text-blue-400 mr-2">�x�</span>;
+            if (word.startsWith('die ')) return <span className="text-red-400 mr-2">�x�</span>;
+            if (word.startsWith('das ')) return <span className="text-green-400 mr-2">�xx�</span>;
             return null;
           };
 
@@ -3656,9 +3656,9 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                 sortedVocab.forEach(v => {
                    let searchWord = v.de.replace(/^(der|die|das|sich)\s/i, '').trim();
                    const safeWord = searchWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                   const regex = new RegExp(`(?![^<]*>)(^|[^a-zÃ¤Ã¶Ã¼ÃŸA-ZÃ„Ã–Ãœáºž])(${safeWord})([^a-zÃ¤Ã¶Ã¼ÃŸA-ZÃ„Ã–Ãœáºž]|$)`, 'gi');
+                   const regex = new RegExp(`(?![^<]*>)(^|[^a-zäöü�xA-Z���S�~])(${safeWord})([^a-zäöü�xA-Z���S�~]|$)`, 'gi');
                    if (lueckentextMode) htmlText = htmlText.replace(regex, `$1<span class="bg-gray-800 text-transparent border-b border-yellow-500/70 rounded px-3 mx-1 select-none" title="${v.es}">[ ??? ]</span>$3`);
-                   else htmlText = htmlText.replace(regex, `$1<span class="bg-amber-500/20 text-amber-100 border-b border-amber-400/60 px-1 mx-0.5 rounded-sm font-bold shadow-sm" title="TraducciÃ³n: ${v.es}">$2</span>$3`);
+                   else htmlText = htmlText.replace(regex, `$1<span class="bg-amber-500/20 text-amber-100 border-b border-amber-400/60 px-1 mx-0.5 rounded-sm font-bold shadow-sm" title="Traducción: ${v.es}">$2</span>$3`);
                 });
             }
             GRAMMAR_PATTERNS.forEach(p => { htmlText = htmlText.replace(p.regex, `<span class="bg-cyan-800/40 text-cyan-200 border-b border-cyan-400/60 px-1 mx-0.5 rounded-sm shadow-sm" title="${p.tooltip}">$1</span>`); });
@@ -3668,17 +3668,17 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                     const regex = new RegExp(`(?![^<]*>)\\b(${safeVerb})\\b`, 'gi');
                     htmlText = htmlText.replace(regex, `<span class="tempus-clickable text-blue-100 font-bold underline decoration-blue-400/70 decoration-2 underline-offset-4 cursor-pointer px-0.5 rounded" data-tempus-verb="$1" title="Toca para ver infinitivo y tiempos">$1</span>`);
                 });
-                const genericInfRegex = /(?![^<]*>)\b([a-zÃ¤Ã¶Ã¼ÃŸ]{4,}(?:en|eln|ern))\b/gi;
+                const genericInfRegex = /(?![^<]*>)\b([a-zäöü�x]{4,}(?:en|eln|ern))\b/gi;
                 htmlText = htmlText.replace(genericInfRegex, `<span class="tempus-clickable text-blue-100 font-bold underline decoration-blue-400/70 decoration-2 underline-offset-4 cursor-pointer px-0.5 rounded" data-tempus-verb="$1" title="Toca para ver infinitivo y tiempos">$1</span>`);
             }
             const connRegex = new RegExp(`(?![^<]*>)\\b(${CONN_LIST.join('|')})\\b`, 'gi');
             htmlText = htmlText.replace(connRegex, `<span class="text-purple-300 font-bold underline decoration-purple-500/70 decoration-2 underline-offset-4" title="Conector">$1</span>`);
             const datRegex = new RegExp(`(?![^<]*>)\\b(${PREP_DAT.join('|')})\\b`, 'gi');
-            htmlText = htmlText.replace(datRegex, `<span class="text-blue-300 font-bold underline decoration-blue-500/70 decoration-2 underline-offset-4" title="PreposiciÃ³n Dativo (EstÃ¡tico)">$1</span>`);
+            htmlText = htmlText.replace(datRegex, `<span class="text-blue-300 font-bold underline decoration-blue-500/70 decoration-2 underline-offset-4" title="Preposición Dativo (Estático)">$1</span>`);
             const akkRegex = new RegExp(`(?![^<]*>)\\b(${PREP_AKK.join('|')})\\b`, 'gi');
-            htmlText = htmlText.replace(akkRegex, `<span class="text-red-300 font-bold underline decoration-red-500/70 decoration-2 underline-offset-4" title="PreposiciÃ³n Acusativo (Movimiento)">$1</span>`);
+            htmlText = htmlText.replace(akkRegex, `<span class="text-red-300 font-bold underline decoration-red-500/70 decoration-2 underline-offset-4" title="Preposición Acusativo (Movimiento)">$1</span>`);
             const wechRegex = new RegExp(`(?![^<]*>)\\b(${PREP_WECHSEL.join('|')})\\b`, 'gi');
-            htmlText = htmlText.replace(wechRegex, `<span class="text-yellow-500/90 font-bold underline decoration-yellow-600/70 decoration-2 underline-offset-4" title="WechselprÃ¤position (Mixta)">$1</span>`);
+            htmlText = htmlText.replace(wechRegex, `<span class="text-yellow-500/90 font-bold underline decoration-yellow-600/70 decoration-2 underline-offset-4" title="Wechselpräposition (Mixta)">$1</span>`);
             return (
                 <div
                     className="leading-loose inline"
@@ -3696,7 +3696,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           };
 
           const renderDiktatDiff = (original, typed) => {
-              const cleanWord = (w) => w.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[.,!?]/g, '').trim();
+              const cleanWord = (w) => w.toLowerCase().replace(/�/g, 'ae').replace(/�/g, 'oe').replace(/�/g, 'ue').replace(/�/g, 'ss').replace(/[.,!?]/g, '').trim();
               const origWords = original.split(/\s+/).filter(w=>w);
               const typedWords = typed.split(/\s+/).filter(w=>w);
               return (
@@ -3719,13 +3719,13 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
           const exportToAnki = (type) => {
             let csvContent = "data:text/csv;charset=utf-8,";
             if (type === 'vocab_diff') {
-                if (!userStats.difficultVocab || userStats.difficultVocab.length === 0) { alert("VacÃ­o."); return; }
+                if (!userStats.difficultVocab || userStats.difficultVocab.length === 0) { alert("Vacío."); return; }
                 userStats.difficultVocab.forEach((v) => { csvContent += `"${v.de}","${v.es}<br><small>TELC B1</small>","Dificil"\r\n`; });
             } else if (type === 'vocab_norm') {
-                if (!userStats.normalVocab || userStats.normalVocab.length === 0) { alert("VacÃ­o."); return; }
+                if (!userStats.normalVocab || userStats.normalVocab.length === 0) { alert("Vacío."); return; }
                 userStats.normalVocab.forEach((v) => { csvContent += `"${v.de}","${v.es}<br><small>TELC B1</small>","Repaso"\r\n`; });
             } else {
-                if (!userStats.difficultGrammar || userStats.difficultGrammar.length === 0) { alert("VacÃ­o."); return; }
+                if (!userStats.difficultGrammar || userStats.difficultGrammar.length === 0) { alert("Vacío."); return; }
                 userStats.difficultGrammar.forEach((g) => { csvContent += `"${g.base} (Verbo+Prep)","${g.exampleDe}<br><small>${g.exampleEs}</small>","Dificil"\r\n`; });
             }
             const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); 
@@ -3779,14 +3779,14 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                     </style>
                 </head>
                 <body>
-                    <h1>ðŸ“œ ${escPdf(activeScriptTitle)}</h1>
-                    <p class="meta"><strong>MÃ¼ller</strong> Â· Entrenador alemÃ¡n TELC Â· ${escPdf(genDate)} Â· ${totalScenes} escena${totalScenes === 1 ? '' : 's'}</p>
+                    <h1>�xS ${escPdf(activeScriptTitle)}</h1>
+                    <p class="meta"><strong>Müller</strong> · Entrenador alemán TELC · ${escPdf(genDate)} · ${totalScenes} escena${totalScenes === 1 ? '' : 's'}</p>
             `;
             let uniqueGrammarRules = new Set();
             guionData.forEach((scene, sceneIdx) => {
                 let deText = scene.text;
                 const feedback = generateTutorFeedback(deText);
-                if (feedback && !feedback.includes("Estructura estÃ¡ndar perfecta")) {
+                if (feedback && !feedback.includes("Estructura estándar perfecta")) {
                     feedback.split('\n\n').forEach(f => uniqueGrammarRules.add(f));
                 }
                 if (scene.vocab) {
@@ -3794,7 +3794,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                     sortedVocab.forEach(v => {
                         let searchWord = v.de.replace(/^(der|die|das|sich)\s/i, '').trim();
                         const safeWord = searchWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        const regex = new RegExp(`(?![^<]*>)(^|[^a-zÃ¤Ã¶Ã¼ÃŸA-ZÃ„Ã–Ãœáºž])(${safeWord})([^a-zÃ¤Ã¶Ã¼ÃŸA-ZÃ„Ã–Ãœáºž]|$)`, 'gi');
+                        const regex = new RegExp(`(?![^<]*>)(^|[^a-zäöü�xA-Z���S�~])(${safeWord})([^a-zäöü�xA-Z���S�~]|$)`, 'gi');
                         deText = deText.replace(regex, `$1<span class="hl-vocab">$2</span>$3`);
                     });
                 }
@@ -3814,10 +3814,10 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                 deText = deText.replace(wechRegex, `<span class="hl-wech">$1</span>`);
                 const tr = scene.translation && String(scene.translation).trim();
                 const trBlock = tr
-                    ? `<div class="block-es"><div class="label-row label-es">EspaÃ±ol Â· traducciÃ³n</div><p class="text-es">${escPdf(tr)}</p></div>`
-                    : `<div class="block-es"><div class="label-row label-es">EspaÃ±ol Â· traducciÃ³n</div><p class="text-es text-es-empty">(Sin traducciÃ³n en esta lÃ­nea del guion â€” puedes aÃ±adirla en Biblioteca al editar.)</p></div>`;
+                    ? `<div class="block-es"><div class="label-row label-es">Español · traducción</div><p class="text-es">${escPdf(tr)}</p></div>`
+                    : `<div class="block-es"><div class="label-row label-es">Español · traducción</div><p class="text-es text-es-empty">(Sin traducción en esta línea del guion � puedes añadirla en Biblioteca al editar.)</p></div>`;
                 const vocabHtml = scene.vocab && scene.vocab.length > 0
-                    ? `<div class="vocab-box">ðŸ“– Vocabulario: ${scene.vocab.map((v) => `${escPdf(v.de)} â†’ ${escPdf(v.es)}`).join(' Â· ')}</div>`
+                    ? `<div class="vocab-box">�x Vocabulario: ${scene.vocab.map((v) => `${escPdf(v.de)} �  ${escPdf(v.es)}`).join(' · ')}</div>`
                     : '';
                 htmlContent += `
                     <div class="scene">
@@ -3836,21 +3836,21 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
                 `;
             });
             if (uniqueGrammarRules.size > 0) {
-                htmlContent += `<div class="grammar-summary"><h2>ðŸ§  AnÃ¡lisis Gramatical del Guion</h2><ul>`;
+                htmlContent += `<div class="grammar-summary"><h2>�x�� Análisis Gramatical del Guion</h2><ul>`;
                 uniqueGrammarRules.forEach(rule => { let cleanRule = rule.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); htmlContent += `<li>${cleanRule}</li>`; });
                 htmlContent += `</ul></div>`;
             }
             htmlContent += `
                 <div class="legend">
-                    <h3>Leyenda de marcas en el alemÃ¡n</h3>
+                    <h3>Leyenda de marcas en el alemán</h3>
                     <ul>
-                        <li><strong>Resaltado amarillo:</strong> Ã­tems del vocabulario de la escena.</li>
-                        <li><strong>Cyan (fondo):</strong> verbos con preposiciÃ³n detectados.</li>
+                        <li><strong>Resaltado amarillo:</strong> ítems del vocabulario de la escena.</li>
+                        <li><strong>Cyan (fondo):</strong> verbos con preposición detectados.</li>
                         <li><strong>Subrayados de color:</strong> conectores; preposiciones con Dativ / Akkusativ / Wechsel.</li>
-                        <li><strong>Etiquetas moradas (Tempus):</strong> referencia de formas verbales (PrÃ¤t/Perf).</li>
+                        <li><strong>Etiquetas moradas (Tempus):</strong> referencia de formas verbales (Prät/Perf).</li>
                     </ul>
                 </div>
-                <div class="footer">MÃ¼ller Â· TELC Â· Â¡Viel Erfolg beim Deutschlernen!</div>
+                <div class="footer">Müller · TELC · ¡Viel Erfolg beim Deutschlernen!</div>
                 <script>window.onload = function() { window.print(); }<\/script></body></html>`;
             printWindow.document.write(htmlContent);
             printWindow.document.close();
@@ -3860,18 +3860,18 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
             const printWindow = window.open('', '_blank');
             if (!printWindow) { alert("Por favor, permite las ventanas emergentes (pop-ups) en tu navegador para generar el PDF."); return; }
             const htmlContent = `
-                <html><head><title>Mi Resumen de AlemÃ¡n - Profesor MÃ¼ller</title><style>body { font-family: 'Segoe UI', sans-serif; color: #1e293b; padding: 40px; line-height: 1.6; } h1 { color: #2563eb; text-align: center; border-bottom: 3px solid #2563eb; padding-bottom: 15px; } h2 { color: #0f172a; margin-top: 40px; } table { width: 100%; border-collapse: collapse; margin-top: 15px; } th, td { border: 1px solid #94a3b8; padding: 12px; } th { background-color: #f1f5f9; } .diff { color: #dc2626; font-weight: bold; } .norm { color: #2563eb; } .grammar-base { color: #0891b2; }</style></head><body>
-                <h1>ðŸ“š Resumen de Estudio - B1/B2</h1>
-                <div><h2>ðŸ”´ Vocabulario DifÃ­cil</h2>${userStats.difficultVocab?.length ? `<table><tr><th>AlemÃ¡n</th><th>EspaÃ±ol</th></tr>${userStats.difficultVocab.map(v => `<tr><td class="diff">${v.de}</td><td>${v.es}</td></tr>`).join('')}</table>` : '<p>VacÃ­o.</p>'}</div>
-                <div><h2>ðŸ”µ Vocabulario Normal</h2>${userStats.normalVocab?.length ? `<table><tr><th>AlemÃ¡n</th><th>EspaÃ±ol</th></tr>${userStats.normalVocab.map(v => `<tr><td class="norm">${v.de}</td><td>${v.es}</td></tr>`).join('')}</table>` : '<p>VacÃ­o.</p>'}</div>
-                <div><h2>ðŸ§  Reglas Gramaticales</h2>${userStats.difficultGrammar?.length ? `<table><tr><th>Regla</th><th>Ejemplo</th><th>TraducciÃ³n</th></tr>${userStats.difficultGrammar.map(g => `<tr><td class="grammar-base">${g.base}</td><td><i>"${g.exampleDe}"</i></td><td>${g.exampleEs}</td></tr>`).join('')}</table>` : '<p>VacÃ­o.</p>'}</div>
+                <html><head><title>Mi Resumen de Alemán - Profesor Müller</title><style>body { font-family: 'Segoe UI', sans-serif; color: #1e293b; padding: 40px; line-height: 1.6; } h1 { color: #2563eb; text-align: center; border-bottom: 3px solid #2563eb; padding-bottom: 15px; } h2 { color: #0f172a; margin-top: 40px; } table { width: 100%; border-collapse: collapse; margin-top: 15px; } th, td { border: 1px solid #94a3b8; padding: 12px; } th { background-color: #f1f5f9; } .diff { color: #dc2626; font-weight: bold; } .norm { color: #2563eb; } .grammar-base { color: #0891b2; }</style></head><body>
+                <h1>�xa Resumen de Estudio - B1/B2</h1>
+                <div><h2>�x� Vocabulario Difícil</h2>${userStats.difficultVocab?.length ? `<table><tr><th>Alemán</th><th>Español</th></tr>${userStats.difficultVocab.map(v => `<tr><td class="diff">${v.de}</td><td>${v.es}</td></tr>`).join('')}</table>` : '<p>Vacío.</p>'}</div>
+                <div><h2>�x� Vocabulario Normal</h2>${userStats.normalVocab?.length ? `<table><tr><th>Alemán</th><th>Español</th></tr>${userStats.normalVocab.map(v => `<tr><td class="norm">${v.de}</td><td>${v.es}</td></tr>`).join('')}</table>` : '<p>Vacío.</p>'}</div>
+                <div><h2>�x�� Reglas Gramaticales</h2>${userStats.difficultGrammar?.length ? `<table><tr><th>Regla</th><th>Ejemplo</th><th>Traducción</th></tr>${userStats.difficultGrammar.map(g => `<tr><td class="grammar-base">${g.base}</td><td><i>"${g.exampleDe}"</i></td><td>${g.exampleEs}</td></tr>`).join('')}</table>` : '<p>Vacío.</p>'}</div>
                 <script>window.onload = function() { window.print(); }<\/script></body></html>
             `;
             printWindow.document.write(htmlContent);
             printWindow.document.close();
           };
 
-          // COLORES DE FONDO SUAVIZADOS (CorrecciÃ³n) + temas UI
+          // COLORES DE FONDO SUAVIZADOS (Corrección) + temas UI
           const getBgColor = () => {
               if (uiTheme === 'light') {
                   if (activeTab === 'inicio') return 'bg-slate-100';
