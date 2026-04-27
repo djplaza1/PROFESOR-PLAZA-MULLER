@@ -1409,7 +1409,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
               const candidates = words.filter((w) => w.length >= 4 && !rutaStopWords.has(w.toLowerCase()));
               return (candidates[0] || words.find((w) => w.length >= 2) || '').trim();
           };
-          const makeGapExercise = (sentence, hintBase, fromReview, id) => {
+          const makeGapExercise = (sentence, promptEs, hintBase, fromReview, id) => {
               const answer = chooseGapWord(sentence);
               if (!answer) return null;
               const escaped = answer.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1418,6 +1418,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
                   id,
                   type: 'fill',
                   prompt,
+                  promptEs: String(promptEs || '').trim(),
                   answer,
                   hint: hintBase || '',
                   fromReview: !!fromReview
@@ -1449,7 +1450,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
               const safePhrases = Array.isArray(lesson.phrases) && lesson.phrases.length
                   ? lesson.phrases
                   : [{ de: 'Ich lerne Deutsch.', es: 'Aprendo alemán.' }];
-              const safeFill = lesson.fill || { prompt: 'Completa: Ich ___ Deutsch.', answer: 'lerne', hint: 'Verbo en presente.' };
+              const safeFill = lesson.fill || { prompt: 'Completa: Ich ___ Deutsch.', promptEs: 'Completa: Yo ___ alemán.', answer: 'lerne', hint: 'Verbo en presente.' };
               const safeSpeak = lesson.speak || { target: safePhrases[0].de };
 
               const previousLessons = [];
@@ -1622,6 +1623,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
                   } else if (mode === 'fill') {
                       const gap = makeGapExercise(
                           sourceSentence,
+                          srcPhrase.es || srcFill.promptEs || '',
                           shouldShowHintForLevel(levelKey, i) ? (srcFill.hint || safeFill.hint || '') : '',
                           useReview,
                           `${srcLesson.id || lesson.id}-fill-${i}`
@@ -1633,6 +1635,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
                               id: `${srcLesson.id || lesson.id}-fill-fallback-${i}`,
                               type: 'fill',
                               prompt: srcFill.prompt || safeFill.prompt,
+                              promptEs: srcFill.promptEs || srcPhrase.es || safeFill.promptEs || '',
                               answer: srcFill.answer || safeFill.answer,
                               hint: shouldShowHintForLevel(levelKey, i) ? (srcFill.hint || safeFill.hint || '') : '',
                               fromReview: useReview

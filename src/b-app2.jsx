@@ -3463,6 +3463,7 @@
                                               ) : ex.type === 'fill' ? (
                                                   <div className="mb-4 rounded-xl border border-emerald-500/25 bg-emerald-950/20 p-4">
                                                       <p className="text-white font-bold mb-3">{ex.prompt}</p>
+                                                      {ex.promptEs ? <p className="text-xs text-emerald-200/85 mb-2">Traducción: {ex.promptEs}</p> : null}
                                                       {ex.hint ? <p className="text-xs text-gray-500 mb-2">Pista: {ex.hint}</p> : null}
                                                   </div>
                                               ) : ex.type === 'order' || ex.type === 'connector' ? (
@@ -3496,6 +3497,7 @@
                                       {st === 1 && ex && ex.type === 'fill' && (
                                           <>
                                               <p className="text-white font-bold mb-3">{ex.prompt}</p>
+                                              {ex.promptEs ? <p className="text-xs text-emerald-200/85 mb-2">Traducción: {ex.promptEs}</p> : null}
                                               {ex.hint ? <p className="text-xs text-gray-500 mb-2">Pista: {ex.hint}</p> : null}
                                               <input value={rutaFillInput} onChange={(e) => setRutaFillInput(e.target.value)} onKeyDown={(e) => handleExerciseEnterSubmit(e, 'ruta-fill-submit', () => { if (checkRutaFillAnswer(ex)) { setRutaRun({ ...rutaRun, step: 2 }); setRutaTranscript(''); setRutaSpeakErr(''); } })} className="w-full rounded-xl bg-black/50 border border-fuchsia-500/40 px-4 py-3 text-white text-lg mb-3 outline-none focus:border-fuchsia-400" placeholder="Tu respuesta" autoComplete="off" />
                                               {rutaSpeakErr ? <p className="text-amber-200 text-sm mb-2">{rutaSpeakErr}</p> : null}
