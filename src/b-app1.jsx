@@ -3374,9 +3374,9 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               if (tLower.match(/\b(und|aber|oder|denn|sondern)\b/i)) feedback.push("🟢 **Conector ADUSO (Posición 0):** Une dos frases sin alterar el orden normal (Sujeto + Verbo).");
               if (tLower.match(/\b(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\b.*\b(ge[a-zäöüß]+t|ge[a-zäöüß]+en|.+[ie]rt)\b/i)) feedback.push("🕰️ **Perfekt:** Auxiliar (haben/sein) en Posición 2 y Participio al final.");
               if (tLower.match(/\b(wurde|wurdest|wurden|wurdet|war|warst|waren|wart|hatte|hattest|hatten|hattet|gab|musste|konnte|wollte|sollte|durfte)\b/i) && !tLower.match(/\b(worden)\b/i)) feedback.push("📖 **Präteritum:** Pasado simple. Usado para verbos auxiliares, modales o narración.");
-              if (tLower.match(/\b(wurde|worden)\b/i) || (tLower.match(/\b(werden|wird|werden|werdet)\b/i) && tLower.match(/\b(ge[a-zäöüß]+t|ge[a-zäöüß]+en)\b/i))) feedback.push("🏛ï¸ **Passiv:** 'Werden' + Participio II. Lo importante es la acción, no el sujeto.");
+              if (tLower.match(/\b(wurde|worden)\b/i) || (tLower.match(/\b(werden|wird|werden|werdet)\b/i) && tLower.match(/\b(ge[a-zäöüß]+t|ge[a-zäöüß]+en)\b/i))) feedback.push("🏛️ **Passiv:** 'Werden' + Participio II. Lo importante es la acción, no el sujeto.");
               if (tLower.match(/\b(muss|musst|müssen|kann|kannst|können|darf|darfst|dürfen|soll|sollst|sollen|will|willst|wollen|möchte|möchtest|möchten)\b/i)) feedback.push("💪 **Modalverben:** Verbo modal en Pos 2, obliga al verbo principal en Infinitivo al final.");
-              if (tLower.match(/\b(an|ein|auf|zu|mit|aus|vor|nach|ab|her|hin|los|teil)\s*[.,!?]*$/i)) feedback.push("✂ï¸ **Trennbare Verben:** El prefijo del verbo se ha separado al final de la frase.");
+              if (tLower.match(/\b(an|ein|auf|zu|mit|aus|vor|nach|ab|her|hin|los|teil)\s*[.,!?]*$/i)) feedback.push("✂️ **Trennbare Verben:** El prefijo del verbo se ha separado al final de la frase.");
               if (tLower.match(/\b(aus|bei|mit|nach|seit|von|zu|ab)\b/i)) feedback.push("🔵 **Dativo (Preposición):** Preposición que rige Dativo estricto.");
               if (tLower.match(/\b(durch|für|gegen|ohne|um)\b/i)) feedback.push("🔴 **Acusativo (Preposición):** Preposición que rige Acusativo estricto.");
               if (tLower.match(/\b(in|an|auf|neben|hinter|über|unter|vor|zwischen)\b/i)) feedback.push("🟡 **Wechselpräposition:** Rige Dativo (Wo?) o Acusativo (Wohin?).");
@@ -3544,7 +3544,7 @@ const sentenceUtterance = playSceneAudio(audioCleanText, currentScene.speaker);
               let penalty = false;
               if (mode !== 'shadow' && cleanOrig.includes("wegen des") && cleanSpoken.includes("wegen dem")) {
                   score -= 20;
-                  polizeiMsg = "🚨 Grammatik-Polizei: Has external DATIVO en vez de GENITIVO. -1 ❤ï¸";
+                  polizeiMsg = "🚨 Grammatik-Polizei: Has external DATIVO en vez de GENITIVO. -1 ❤️";
                   penalty = true;
               }
               const finalScore = score > 100 ? 100 : score < 0 ? 0 : score;

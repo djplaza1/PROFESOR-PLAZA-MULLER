@@ -536,7 +536,7 @@ function ArticlePracticeFinal({ onBack, examCtx, setExamCtx, examAutoLevel }) {
             setFeedback({ type: 'success', text: `¡Richtig! 🟢 ${current.de}`, tip: getCardTip('articulos', current), currentCard: current });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
         } else {
-            setFeedback({ type: 'error', text: `⚠ï¸ FALSCH! Era: ${current.de}`, tip: getCardTip('articulos', current), currentCard: current });
+            setFeedback({ type: 'error', text: `⚠️ FALSCH! Era: ${current.de}`, tip: getCardTip('articulos', current), currentCard: current });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
         }
     };
@@ -684,7 +684,7 @@ function CloudPracticeFinal({ onBack, type, examCtx, setExamCtx }) {
             setFeedback({ type: 'success', text: `¡Richtig! Es '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(type, currentItem) });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
         } else {
-            setFeedback({ type: 'error', text: `⚠ï¸ FALSCH: Era '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(type, currentItem) });
+            setFeedback({ type: 'error', text: `⚠️ FALSCH: Era '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(type, currentItem) });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
         }
     };
@@ -935,7 +935,7 @@ function TelcMixedExamFinal({ onBack, examCtx, setExamCtx }) {
                 setFeedback({ type: 'success', text: `¡Richtig! 🟢 ${current.de}`, tip: getCardTip('articulos', current), currentCard: current, kind: 'articulos' });
                 if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
             } else {
-                setFeedback({ type: 'error', text: `⚠ï¸ FALSCH! Era: ${current.de}`, tip: getCardTip('articulos', current), currentCard: current, kind: 'articulos' });
+                setFeedback({ type: 'error', text: `⚠️ FALSCH! Era: ${current.de}`, tip: getCardTip('articulos', current), currentCard: current, kind: 'articulos' });
                 if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
             }
             return;
@@ -951,7 +951,7 @@ function TelcMixedExamFinal({ onBack, examCtx, setExamCtx }) {
             setFeedback({ type: 'success', text: `¡Richtig! Es '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(cloudType, currentItem), kind: card.kind });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(true);
         } else {
-            setFeedback({ type: 'error', text: `⚠ï¸ FALSCH: Era '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(cloudType, currentItem), kind: card.kind });
+            setFeedback({ type: 'error', text: `⚠️ FALSCH: Era '${currentItem.answer}'`, currentCard: currentItem, tip: getCardTip(cloudType, currentItem), kind: card.kind });
             if (window.__mullerNotifyExerciseOutcome) window.__mullerNotifyExerciseOutcome(false);
         }
     };

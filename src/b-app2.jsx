@@ -526,7 +526,7 @@
               return (
                   <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
                       <div className="bg-gray-800 rounded-2xl p-4 max-w-2xl w-full">
-                          <h3 className="text-xl font-bold mb-2">✍ï¸ Escritura a mano</h3>
+                          <h3 className="text-xl font-bold mb-2">✍️ Escritura a mano</h3>
                           <canvas ref={canvasRef} className="handwriting-canvas" onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing} />
                           <div className="flex gap-3 mt-4">
                               <button onClick={clearCanvas} className="bg-gray-600 px-4 py-2 rounded-lg">Borrar</button>
@@ -4164,7 +4164,7 @@
                                 <span className="uppercase tracking-widest text-xs md:text-sm font-bold bg-black/30 px-3 md:px-5 py-1 md:py-2 rounded-full border border-white/10">{guionData[getActualSceneIndex()].speaker} spricht...</span>
                                 {!showDiktatResult ? (
                                     <>
-                                        <p className="text-base md:text-xl text-blue-200 font-bold mb-1 md:mb-2">✍ï¸ Escribe lo que oyes:</p>
+                                        <p className="text-base md:text-xl text-blue-200 font-bold mb-1 md:mb-2">✍️ Escribe lo que oyes:</p>
                                         <textarea className="w-full h-24 md:h-32 bg-black/50 border-2 border-blue-500/50 rounded-xl p-3 md:p-4 text-base md:text-2xl text-white outline-none" value={diktatInput} onChange={(e) => setDiktatInput(e.target.value)} onKeyDown={(e) => handleExerciseEnterSubmit(e, 'diktat-check', handleDiktatCheck, { requireCtrlOrMeta: true })} autoFocus />
                                         <div className="flex gap-3 md:gap-4 w-full md:w-auto justify-center">
                                             <button onClick={() => { setIsPlaying(true); togglePlay(); setIsPlaying(true); }} className="bg-gray-800 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold flex items-center gap-2 flex-1 md:flex-none justify-center text-xs md:text-sm"><Icon name="volume-2" className="w-3 h-3 md:w-5 md:h-5" /> Audio</button>
