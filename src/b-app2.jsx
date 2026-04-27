@@ -3385,6 +3385,21 @@
                               const score = rutaRun.score || { correct: 0, total: 0, reviewCorrect: 0, reviewTotal: 0 };
                               const accPct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
                               const reviewLabel = ex && ex.fromReview ? 'Repaso (20%)' : 'Nuevo';
+                              const levelVisualKey = String(rutaRun.levelKey || '').toUpperCase();
+                              const avatarTone = levelVisualKey === 'A0' || levelVisualKey === 'A1'
+                                  ? 'from-cyan-200 via-emerald-200 to-lime-200'
+                                  : levelVisualKey === 'A2' || levelVisualKey === 'B1'
+                                      ? 'from-amber-200 via-rose-200 to-violet-200'
+                                      : 'from-slate-200 via-indigo-200 to-fuchsia-200';
+                              const eyeClass = (levelVisualKey === 'B2' || levelVisualKey === 'C1') ? 'w-2.5 h-1.5 rounded bg-slate-700' : 'w-2 h-2 rounded-full bg-slate-700';
+                              const mouthClass = rutaTutorTalking
+                                  ? (levelVisualKey === 'B2' || levelVisualKey === 'C1' ? 'w-5 h-1.5 rounded bg-slate-700 animate-pulse' : 'w-4 h-2 rounded-full bg-slate-700 animate-pulse')
+                                  : (levelVisualKey === 'B2' || levelVisualKey === 'C1' ? 'w-3 h-1 rounded bg-slate-700' : 'w-3 h-1 rounded-full bg-slate-700');
+                              const tutorMood = (levelVisualKey === 'A0' || levelVisualKey === 'A1')
+                                  ? 'Modo amigable'
+                                  : (levelVisualKey === 'A2' || levelVisualKey === 'B1')
+                                      ? 'Modo intermedio'
+                                      : 'Modo avanzado';
                               const handleOptionAnswer = (opt) => {
                                   if (!ex) return;
                                   const ok = String(opt || '').trim().toLowerCase() === String(ex.answer || '').trim().toLowerCase();
@@ -3421,13 +3436,13 @@
                                       <h2 className="text-2xl font-black text-white mb-1">{lesson.title}</h2>
                                       <p className="text-xs text-fuchsia-400/90 mb-3">{lv.badge} · {lv.title}</p>
                                       <div className="mb-4 rounded-xl border border-white/10 bg-slate-900/65 p-3 flex items-center gap-3">
-                                          <div className={`relative w-14 h-14 rounded-full border ${rutaTutorTalking ? 'border-fuchsia-400 shadow-[0_0_18px_rgba(217,70,239,0.4)]' : 'border-white/20'} bg-gradient-to-br from-amber-200 via-rose-200 to-violet-200 transition`}>
-                                              <div className="absolute left-3 top-5 w-2 h-2 rounded-full bg-slate-700" />
-                                              <div className="absolute right-3 top-5 w-2 h-2 rounded-full bg-slate-700" />
-                                              <div className={`absolute left-1/2 -translate-x-1/2 bottom-3 rounded-full bg-slate-700 transition-all ${rutaTutorTalking ? 'w-4 h-2 animate-pulse' : 'w-3 h-1'}`} />
+                                          <div className={`relative w-14 h-14 rounded-full border ${rutaTutorTalking ? 'border-fuchsia-400 shadow-[0_0_18px_rgba(217,70,239,0.4)]' : 'border-white/20'} bg-gradient-to-br ${avatarTone} transition`}>
+                                              <div className={`absolute left-3 top-5 ${eyeClass}`} />
+                                              <div className={`absolute right-3 top-5 ${eyeClass}`} />
+                                              <div className={`absolute left-1/2 -translate-x-1/2 bottom-3 transition-all ${mouthClass}`} />
                                           </div>
                                           <div className="min-w-[160px]">
-                                              <p className="text-[10px] font-black uppercase tracking-wider text-fuchsia-300">Tutor {rutaMentor === 'tom' ? 'Tom' : rutaMentor === 'lina' ? 'Lina' : 'Lena'}</p>
+                                              <p className="text-[10px] font-black uppercase tracking-wider text-fuchsia-300">Tutor {rutaMentor === 'tom' ? 'Tom' : rutaMentor === 'lina' ? 'Lina' : 'Lena'} · {tutorMood}</p>
                                               <p className="text-xs text-gray-300">{rutaTutorTalking ? 'Hablando...' : (rutaListening ? 'Escuchando tu voz...' : 'Listo para practicar')}</p>
                                           </div>
                                       </div>
