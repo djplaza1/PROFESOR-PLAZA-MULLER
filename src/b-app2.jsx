@@ -4297,26 +4297,26 @@
 
               {/* REPRODUCTOR CONTROLES INFERIORES */}
               {activeTab === 'historia' && mode !== 'quiz' && mode !== 'interview' && !practiceActive && (
-                  <div className="muller-historia-player-bar bg-gray-950 p-1.5 md:p-3 flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-1.5 md:gap-2 border-t border-gray-800 z-20">
-                      <div className="flex flex-col text-[10px] md:text-xs text-gray-400 w-full sm:w-auto text-center sm:text-left leading-tight">
-                        <span className="font-bold text-white text-xs md:text-sm truncate sm:max-w-[200px]">{activeScriptTitle}</span>
+                  <div className="muller-historia-player-bar bg-gray-950 px-2 py-1 md:px-3 md:py-1.5 flex flex-row flex-wrap items-center justify-center gap-1 md:gap-1.5 border-t border-gray-800 z-20">
+                      <div className="flex flex-col text-[9px] md:text-[10px] text-gray-400 w-auto text-left leading-tight">
+                        <span className="font-bold text-white text-[10px] md:text-xs truncate max-w-[140px] md:max-w-[180px]">{activeScriptTitle}</span>
                         <span>Szene {isReviewing ? reviewIndexPointer + 1 : sceneIndex + 1} von {isReviewing ? userStats.failedDiktatScenes.length : guionData.length} {isReviewing && "(Repaso)"}</span>
                       </div>
-                      <div className="flex items-center justify-center gap-2 md:gap-3 w-full sm:w-auto">
-                        <button onClick={handlePrev} className={`muller-icon-nav p-1.5 md:p-2 bg-gray-900 rounded-full transition text-white border border-gray-700 shadow-md ${isReviewing || podcastMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`} disabled={podcastMode}><Icon name="chevron-left" className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" /></button>
-                        <button onClick={togglePlay} className={`p-2.5 md:p-4 rounded-full flex items-center justify-center transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.5)] ${isPlaying ? 'bg-red-500 text-white' : 'bg-blue-600 text-white'}`}>
-                            {isPlaying ? <Icon name="square" className="w-4 h-4 md:w-6 md:h-6 fill-current" /> : <Icon name="play" className="w-4 h-4 md:w-6 md:h-6 ml-0.5 md:ml-1 fill-current" />}
+                      <div className="flex items-center justify-center gap-1.5 md:gap-2 w-auto">
+                        <button onClick={handlePrev} className={`muller-icon-nav p-1 md:p-1.5 bg-gray-900 rounded-full transition text-white border border-gray-700 shadow-md ${isReviewing || podcastMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`} disabled={podcastMode}><Icon name="chevron-left" className="w-3 h-3 md:w-4 md:h-4 text-white" /></button>
+                        <button onClick={togglePlay} className={`p-1.5 md:p-2.5 rounded-full flex items-center justify-center transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.5)] ${isPlaying ? 'bg-red-500 text-white' : 'bg-blue-600 text-white'}`}>
+                            {isPlaying ? <Icon name="square" className="w-3.5 h-3.5 md:w-5 md:h-5 fill-current" /> : <Icon name="play" className="w-3.5 h-3.5 md:w-5 md:h-5 ml-0.5 fill-current" />}
                         </button>
-                        <button type="button" onClick={() => { try { if (window.__mullerAudiobook && typeof window.__mullerAudiobook.toggle === 'function') window.__mullerAudiobook.toggle(); } catch (e) {} }} className={`p-1.5 md:p-2 rounded-full transition text-white border border-gray-700 shadow-md ${audiobookPlaying ? 'bg-red-600 hover:bg-red-500' : 'bg-amber-700 hover:bg-amber-600'}`} title={audiobookPlaying ? 'Detener audiolibro' : 'Audiolibro: reproduce todo el guión'}>
-                            <Icon name={audiobookPlaying ? 'square' : 'headphones'} className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" />
+                        <button type="button" onClick={() => { try { if (window.__mullerAudiobook && typeof window.__mullerAudiobook.toggle === 'function') window.__mullerAudiobook.toggle(); } catch (e) {} }} className={`p-1 md:p-1.5 rounded-full transition text-white border border-gray-700 shadow-md ${audiobookPlaying ? 'bg-red-600 hover:bg-red-500' : 'bg-amber-700 hover:bg-amber-600'}`} title={audiobookPlaying ? 'Detener audiolibro' : 'Audiolibro: reproduce todo el guión'}>
+                            <Icon name={audiobookPlaying ? 'square' : 'headphones'} className="w-3 h-3 md:w-4 md:h-4 text-white" />
                         </button>
-                        <button onClick={handleNext} className={`muller-icon-nav p-1.5 md:p-2 bg-gray-900 rounded-full transition text-white border border-gray-700 shadow-md ${podcastMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`} disabled={podcastMode}><Icon name="chevron-right" className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" /></button>
+                        <button onClick={handleNext} className={`muller-icon-nav p-1 md:p-1.5 bg-gray-900 rounded-full transition text-white border border-gray-700 shadow-md ${podcastMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`} disabled={podcastMode}><Icon name="chevron-right" className="w-3 h-3 md:w-4 md:h-4 text-white" /></button>
                       </div>
-                      <button type="button" onClick={exportScriptPDF} className="flex bg-red-700 hover:bg-red-600 border border-red-500 px-2.5 md:px-3 py-1 md:py-1.5 rounded-xl text-white font-bold items-center gap-1.5 shadow-lg transition text-[10px] md:text-xs shrink-0" title="PDF con alemán, traducción al español, vocabulario y análisis"><Icon name="file-down" className="w-3 h-3 md:w-3.5 md:h-3.5" /> PDF Guion</button>
-                      <div className="flex items-center justify-center gap-1.5 md:gap-2 bg-black/50 px-2 md:px-3 py-0.5 md:py-1 rounded-xl border border-gray-800 w-full sm:w-auto sm:mr-6 md:mr-10">
-                          <Icon name="sliders" className="w-3 h-3 md:w-3.5 md:h-3.5 text-gray-400" />
-                          <input type="range" min="0.50" max="1.50" step="0.01" value={playbackRate} onChange={(e) => setPlaybackRate(parseFloat(e.target.value))} className="w-16 md:w-24 accent-blue-500 cursor-pointer"/>
-                          <span className="text-white font-mono font-bold text-[10px] md:text-xs w-9 md:w-10 text-right">x{playbackRate.toFixed(2)}</span>
+                      <button type="button" onClick={exportScriptPDF} className="flex bg-red-700 hover:bg-red-600 border border-red-500 px-2 py-0.5 md:py-1 rounded-lg text-white font-bold items-center gap-1 shadow-lg transition text-[9px] md:text-[10px] shrink-0" title="PDF con alemán, traducción al español, vocabulario y análisis"><Icon name="file-down" className="w-2.5 h-2.5 md:w-3 md:h-3" /> PDF</button>
+                      <div className="flex items-center justify-center gap-1 md:gap-1.5 bg-black/50 px-1.5 md:px-2 py-0.5 rounded-lg border border-gray-800 w-auto sm:mr-4 md:mr-6">
+                          <Icon name="sliders" className="w-2.5 h-2.5 md:w-3 md:h-3 text-gray-400" />
+                          <input type="range" min="0.50" max="1.50" step="0.01" value={playbackRate} onChange={(e) => setPlaybackRate(parseFloat(e.target.value))} className="w-14 md:w-20 accent-blue-500 cursor-pointer"/>
+                          <span className="text-white font-mono font-bold text-[9px] md:text-[10px] w-8 md:w-9 text-right">x{playbackRate.toFixed(2)}</span>
                       </div>
                   </div>
               )}
