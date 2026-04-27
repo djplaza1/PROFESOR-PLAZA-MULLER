@@ -773,33 +773,39 @@
     })();
     </script>
 
-    <!-- App partida en 4 chunks (<500KB c/u) para evitar warning de Babel -->
+    <!-- App partida en 4 chunks (<500KB c/u) para red; se concatenan antes de Babel -->
     <script>
       (function() {
         var CHUNKS = ['src/a-core.jsx', 'src/b-app1.jsx', 'src/b-app2.jsx', 'src/c-extra.jsx'];
         var idx = 0;
+        var parts = [];
         function loadNext() {
-          if (idx >= CHUNKS.length) return;
+          if (idx >= CHUNKS.length) {
+            // Todos los chunks cargados — concatenar y compilar como uno solo
+            var fullCode = parts.join('');
+            try {
+              var result = Babel.transform(fullCode, {
+                presets: ['react', 'env'],
+                compact: true,
+                comments: false,
+                minified: true
+              });
+              var script = document.createElement('script');
+              script.type = 'text/javascript';
+              script.textContent = result.code;
+              document.body.appendChild(script);
+            } catch(err) {
+              console.error('Babel transform failed:', err);
+            }
+            return;
+          }
           var url = CHUNKS[idx];
           idx++;
           var xhr = new XMLHttpRequest();
           xhr.open('GET', url, true);
           xhr.onload = function() {
             if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                var result = Babel.transform(xhr.responseText, {
-                  presets: ['react', 'env'],
-                  compact: true,
-                  comments: false,
-                  minified: true
-                });
-                var script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.textContent = result.code;
-                document.body.appendChild(script);
-              } catch(err) {
-                console.error('Babel transform failed for ' + url + ':', err);
-              }
+              parts.push(xhr.responseText);
             } else {
               console.error('Failed to load ' + url + ':', xhr.status);
             }
