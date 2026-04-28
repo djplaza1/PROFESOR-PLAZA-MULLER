@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -649,6 +649,24 @@
                 box-shadow: 0 0 35px gold, 0 0 70px rgba(212, 175, 55, 0.4);
                 border-color: #d4a017;
             }
+        }
+
+        /* ── Animaciones Avatar Ruta ── */
+        @keyframes ruta-avatar-talk {
+            0%, 100% { transform: scaleY(1) translateY(0); }
+            25% { transform: scaleY(0.97) translateY(1px); }
+            50% { transform: scaleY(1.02) translateY(-1px); }
+            75% { transform: scaleY(0.98) translateY(0.5px); }
+        }
+        @keyframes ruta-avatar-bar {
+            0%, 100% { opacity: 0.4; transform: scaleY(0.6); }
+            50% { opacity: 1; transform: scaleY(1); }
+        }
+        .animate-ruta-avatar-talk {
+            animation: ruta-avatar-talk 0.35s ease-in-out infinite;
+        }
+        .animate-ruta-avatar-bar {
+            animation: ruta-avatar-bar 0.5s ease-in-out infinite;
         }
 
         @media (max-width: 640px) {

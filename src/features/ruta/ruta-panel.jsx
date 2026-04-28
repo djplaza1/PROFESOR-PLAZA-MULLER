@@ -68,6 +68,63 @@ function RutaPanel(rawProps) {
     saveProgress, mergeActivityPoints, coinsUiLabel, userStats
   } = p;
   const ExerciseHelpBtn = window.ExerciseHelpBtn || (() => null);
+  /* ── AVATARES DiceBear + animación CSS ── */
+  const RUTA_AVATARS = useMemo(() => [
+    { id: 'plaza', name: 'Plaza Müller',  seed: 'PlazaMuller', style: 'notionists',   bg: '#2563eb',  color: '#60a5fa', url: 'https://api.dicebear.com/9.x/notionists/svg?seed=PlazaMuller&primaryColor=2563eb&secondaryColor=60a5fa' },
+    { id: 'laura', name: 'Laura Müller',  seed: 'Anna',        style: 'adventurer',   bg: '#fda4af',  url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=Anna&backgroundColor=fda4af' },
+    { id: 'anna',  name: 'Anna',          seed: 'LauraMuller', style: 'adventurer',   bg: '#86efac',  url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=LauraMuller&backgroundColor=86efac' },
+    { id: 'hans',  name: 'Hans',          seed: 'Hans',        style: 'notionists',   bg: '#ea580c',  color: '#fdba74', url: 'https://api.dicebear.com/9.x/notionists/svg?seed=Hans&primaryColor=ea580c&secondaryColor=fdba74' },
+    { id: 'maria', name: 'Maria',         seed: 'Maria',       style: 'adventurer',   bg: '#c4b5fd',  url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=Maria&backgroundColor=c4b5fd' },
+  ], []);
+  const [currentAvatarId, setCurrentAvatarId] = useState('plaza');
+  const [avatarSpeaking, setAvatarSpeaking] = useState(false);
+  const avatarRef = useRef(null);
+  const currentAvatar = useMemo(() => RUTA_AVATARS.find(a => a.id === currentAvatarId) || RUTA_AVATARS[0], [currentAvatarId, RUTA_AVATARS]);
+  /* Hook: detectar fin de TTS para desactivar animación boca */
+  useEffect(() => {
+    if (!avatarSpeaking) return;
+    const timer = setTimeout(() => setAvatarSpeaking(false), 800);
+    return () => clearTimeout(timer);
+  }, [avatarSpeaking]);
+  /* Componente Avatar */
+  const RutaAvatar = useCallback(({ size = 80, avatarId, className = '' }) => {
+    const av = RUTA_AVATARS.find(a => a.id === avatarId) || currentAvatar;
+    const isSpeaking = avatarSpeaking && avatarId === currentAvatarId;
+    return (
+      <div className={`relative inline-flex flex-col items-center ${className}`} style={{ width: size, height: size + 20 }}>
+        <div className={`rounded-full overflow-hidden border-2 transition-all duration-300 ${isSpeaking ? 'border-emerald-400 shadow-lg shadow-emerald-500/30 scale-105' : 'border-white/20'}`} style={{ width: size, height: size }}>
+          <img
+            ref={avatarRef}
+            src={av.url}
+            alt={av.name}
+            className={`w-full h-full object-cover transition-all duration-150 ${isSpeaking ? 'animate-ruta-avatar-talk' : ''}`}
+            style={{ filter: isSpeaking ? 'brightness(1.15)' : 'none' }}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        </div>
+        <p className="text-[10px] font-bold text-white/80 mt-1 truncate max-w-[100px] text-center">{av.name}</p>
+        {isSpeaking && (
+          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-0.5">
+            <span className="w-1 h-2 bg-emerald-400 rounded-full animate-ruta-avatar-bar" style={{ animationDelay: '0ms' }} />
+            <span className="w-1 h-3 bg-emerald-400 rounded-full animate-ruta-avatar-bar" style={{ animationDelay: '150ms' }} />
+            <span className="w-1 h-1.5 bg-emerald-400 rounded-full animate-ruta-avatar-bar" style={{ animationDelay: '300ms' }} />
+          </div>
+        )}
+      </div>
+    );
+  }, [RUTA_AVATARS, currentAvatar, currentAvatarId, avatarSpeaking]);
+  /* Helper: seleccionar avatar aleatorio y disparar TTS con animación */
+  const speakWithAvatar = useCallback((text, avatarId) => {
+    if (!text) return;
+    setCurrentAvatarId(avatarId);
+    setAvatarSpeaking(true);
+    if (typeof speakRutaDe === 'function') speakRutaDe(text);
+  }, [speakRutaDe]);
+  /* Helper: avatar aleatorio para ejercicios */
+  const randomExerciseAvatar = useCallback(() => {
+    const ids = ['plaza', 'laura', 'anna', 'hans', 'maria'];
+    return ids[Math.floor(Math.random() * ids.length)];
+  }, []);
   return (
                       <div className="flex-1 flex flex-col overflow-y-auto hide-scrollbar p-4 md:p-8 max-w-4xl mx-auto w-full animate-in fade-in duration-500">
                           <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -351,13 +408,21 @@ function RutaPanel(rawProps) {
                                       {st === 0 && (
                                           <>
                                               <p className="text-sm text-violet-200/90 mb-4 rounded-xl bg-violet-950/50 border border-violet-500/25 p-4 leading-relaxed">{lesson.grammarTip}</p>
-                                              {lesson.phrases.map((p, i) => (
+                                              {lesson.phrases.map((p, i) => {
+                                                  const avId = randomExerciseAvatar();
+                                                  return (
                                                   <div key={i} className="mb-4 rounded-xl border border-white/10 bg-slate-900/60 p-4">
-                                                      <p className="text-lg font-bold text-white">{p.de}</p>
-                                                      <p className="text-sm text-gray-400">{p.es}</p>
-                                                      <button type="button" onClick={() => speakRutaDe(p.de)} className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-fuchsia-300 hover:text-white"><Icon name="volume-2" className="w-4 h-4" /> Escuchar</button>
+                                                      <div className="flex items-start gap-4">
+                                                          <RutaAvatar size={56} avatarId={avId} className="flex-shrink-0" />
+                                                          <div className="flex-1">
+                                                              <p className="text-lg font-bold text-white">{p.de}</p>
+                                                              <p className="text-sm text-gray-400">{p.es}</p>
+                                                              <button type="button" onClick={() => speakWithAvatar(p.de, avId)} className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-fuchsia-300 hover:text-white"><Icon name="volume-2" className="w-4 h-4" /> Escuchar</button>
+                                                          </div>
+                                                      </div>
                                                   </div>
-                                              ))}
+                                                  );
+                                              })}
                                               <button type="button" onClick={() => runSingleSubmitAction('ruta-to-fill-step', () => { setRutaRun({ ...rutaRun, step: 1 }); setRutaFillInput(''); setRutaSpeakErr(''); window.__mullerPlaySfx && window.__mullerPlaySfx('tick'); })} className="w-full rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 font-black py-3 text-white shadow-lg">Siguiente: huecos</button>
                                           </>
                                       )}
@@ -370,12 +435,19 @@ function RutaPanel(rawProps) {
                                               <button type="button" onClick={() => runSingleSubmitAction('ruta-fill-submit', () => { if (checkRutaFillAnswer(lesson)) { setRutaRun({ ...rutaRun, step: 2 }); setRutaTranscript(''); setRutaSpeakErr(''); } })} className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 font-black py-3 text-white">Comprobar y continuar</button>
                                           </>
                                       )}
-                                      {st === 2 && lesson.speak && (
+                                      {st === 2 && lesson.speak && (() => {
+                                          const spAvId = randomExerciseAvatar();
+                                          return (
                                           <>
-                                              <p className="text-gray-300 mb-2">Lee en voz alta en alemán:</p>
-                                              <p className="text-xl font-bold text-white mb-4 leading-snug">{lesson.speak.target}</p>
+                                              <div className="flex items-start gap-4 mb-4">
+                                                  <RutaAvatar size={64} avatarId={spAvId} className="flex-shrink-0" />
+                                                  <div className="flex-1">
+                                                      <p className="text-gray-300 mb-2">Lee en voz alta en alemán:</p>
+                                                      <p className="text-xl font-bold text-white mb-4 leading-snug">{lesson.speak.target}</p>
+                                                  </div>
+                                              </div>
                                               <div className="flex flex-wrap gap-2 mb-4">
-                                                  <button type="button" onClick={() => speakRutaDe(lesson.speak.target)} className="rounded-xl bg-slate-800 border border-white/15 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700">Escuchar modelo</button>
+                                                  <button type="button" onClick={() => speakWithAvatar(lesson.speak.target, spAvId)} className="rounded-xl bg-slate-800 border border-white/15 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700">Escuchar modelo</button>
                                                   <button type="button" disabled={rutaListening} onClick={startRutaListen} className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white hover:bg-rose-500 disabled:opacity-50">{rutaListening ? 'Escuchando…' : 'Grabar'}</button>
                                               </div>
                                               {rutaTranscript ? <p className="text-sm text-emerald-200/90 mb-2">Detectado: {rutaTranscript}</p> : null}
@@ -401,7 +473,7 @@ function RutaPanel(rawProps) {
                                               </button>
                                               <p className="text-[11px] text-gray-500 mt-2">Si hoy no puedes usar micrófono, puedes avanzar igualmente y practicar voz después.</p>
                                           </>
-                                      )}
+                                      )})()}
                                   </div>
                               );
                           })()}
