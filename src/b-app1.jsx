@@ -1336,7 +1336,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
           };
 
           const RUTA_SECTION_EXERCISES = 14;
-          const RUTA_REVIEW_RATIO = 0.2;
+          const RUTA_REVIEW_RATIO = 0.1;
           const RUTA_MIN_ACCURACY_TO_UNLOCK_NEXT_LEVEL = 0.7;
           const normalizeRutaLevelKey = (value) => {
               const s = String(value || '').toUpperCase();
@@ -1807,7 +1807,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
                               plan.push({
                                   id: `${srcLesson.id || lesson.id}-podcast-${i}`,
                                   type: 'podcast',
-                                  title: 'Podcast Ruta (~90 s) · Pausas y preguntas',
+                                  title: ['Podcast Ruta', 'Diálogo guiado', 'Práctica auditiva', 'Conversación dirigida', 'Ejercicio de escucha'][i % 5] + ' (~90 s) · Pausas y preguntas',
                                   podcast: pod,
                                   fromReview: useReview
                               });
@@ -1827,7 +1827,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
                               plan.push({
                                   id: `${srcLesson.id || lesson.id}-audio-story-${i}`,
                                   type: 'audio_story',
-                                  title: 'Historia oral (~90 s) · Pausas y preguntas',
+                                  title: ['Historia oral', 'Relato guiado', 'Narración auditiva', 'Cuento dirigido', 'Ejercicio de historia'][i % 5] + ' (~90 s) · Pausas y preguntas',
                                   podcast: story,
                                   fromReview: useReview
                               });
@@ -2140,13 +2140,28 @@ const finishPlacementWithLevel = (finalLevel) => {
               if (!exercise) return false;
               const got = (rutaFillInput || '').trim().toLowerCase().replace(/\s+/g, ' ');
               const bag = new Set([String(exercise.answer || '').trim().toLowerCase(), ...(Array.isArray(exercise.acceptedAnswers) ? exercise.acceptedAnswers.map((x) => String(x).trim().toLowerCase()) : [])].filter(Boolean));
+              /* Añadir variantes umlaut para cada palabra del bag */
+              const expandUmlaut = (w) => {
+                  const out = new Set([w]);
+                  if (/ä/.test(w)) out.add(w.replace(/ä/g, 'ae'));
+                  if (/ö/.test(w)) out.add(w.replace(/ö/g, 'oe'));
+                  if (/ü/.test(w)) out.add(w.replace(/ü/g, 'ue'));
+                  if (/ß/.test(w)) out.add(w.replace(/ß/g, 'ss'));
+                  if (/ae/.test(w)) out.add(w.replace(/ae/g, 'ä'));
+                  if (/oe/.test(w)) out.add(w.replace(/oe/g, 'ö'));
+                  if (/ue/.test(w)) out.add(w.replace(/ue/g, 'ü'));
+                  if (/ss/.test(w)) out.add(w.replace(/ss/g, 'ß'));
+                  return out;
+              };
+              const expandedBag = new Set();
+              bag.forEach((w) => { expandUmlaut(w).forEach((v) => expandedBag.add(v)); });
               let hit = false;
               let fuzzy = false;
-              for (const x of bag) {
+              for (const x of expandedBag) {
                   if (got === x) { hit = true; break; }
               }
               if (!hit) {
-                  for (const x of bag) {
+                  for (const x of expandedBag) {
                       if (!x) continue;
                       const d = levenshteinDistance(got, x);
                       if (d <= Math.max(1, Math.floor(x.length / 8))) { hit = true; fuzzy = true; break; }
@@ -3203,7 +3218,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                   return;
               }
               const line = lines[i];
-              const spoken = `${line.speaker === 'A' ? 'Sprecher A' : 'Sprecher B'}: ${line.text}`;
+              const spoken = line.text;
               speakRutaDe(spoken, {
                   onEnd: () => {
                       if (rutaPodcastPlaybackRef.current.cancelled) return;

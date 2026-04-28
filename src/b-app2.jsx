@@ -1,4 +1,4 @@
-﻿          const themeShellClass = uiTheme === 'light' ? 'muller-theme-light' : uiTheme === 'hc' ? 'muller-theme-hc' : '';
+          const themeShellClass = uiTheme === 'light' ? 'muller-theme-light' : uiTheme === 'hc' ? 'muller-theme-hc' : '';
 
           const currentPracticeList = practiceActive === 'diff' ? userStats.difficultVocab : (practiceActive === 'norm' ? userStats.normalVocab : userStats.difficultGrammar);
           const currentPracticeItem = currentPracticeList ? currentPracticeList[practiceIndex] : null;
@@ -3416,7 +3416,7 @@
                                       resumeRutaPodcastAfterCheckpoint();
                                       return;
                                   }
-                                  const lastHint = attempts === 2 ? (cp.hint || `Último intento: revisa la pregunta y las opciones en alemán.`) : '';
+                                  const lastHint = attempts === 3 ? (cp.hint || `Último intento: revisa la pregunta y las opciones en alemán.`) : '';
                                   setRutaRun({ ...rutaRun, exerciseAttempts: attempts, rutaLastChanceHint: lastHint, forcedReveal: false });
                                   setRutaSpeakErr(typeof window.__mullerRandomMotivation === 'function' ? window.__mullerRandomMotivation() : 'Casi — prueba otra vez.');
                               };
@@ -3437,7 +3437,7 @@
                                       setRutaRun({ ...rutaRun, step: 2, exerciseAttempts: 0, rutaLastChanceHint: '', forcedReveal: true });
                                       return;
                                   }
-                                  const lastHint = attempts === 2 ? (ex.hint || `Último intento: la respuesta correcta empieza por «${String(ex.answer || '').slice(0, 2)}…».`) : '';
+                                  const lastHint = attempts === 3 ? (ex.hint || `Último intento: la respuesta correcta empieza por «${String(ex.answer || '').slice(0, 2)}…».`) : '';
                                   setRutaRun({ ...rutaRun, exerciseAttempts: attempts, rutaLastChanceHint: lastHint, forcedReveal: false });
                                   setRutaSpeakErr(typeof window.__mullerRandomMotivation === 'function' ? window.__mullerRandomMotivation() : 'Casi — prueba otra vez.');
                               };
@@ -3502,7 +3502,7 @@
                                       setRutaRun({ ...rutaRun, step: 2, exerciseAttempts: 0, rutaLastChanceHint: '', forcedReveal: true });
                                       return;
                                   }
-                                  const lastHint = attempts === 2 ? (ex.hint || `Último intento: la solución tiene ${String(ex.answer || '').length} caracteres y empieza por «${String(ex.answer || '').slice(0, 2)}…».`) : '';
+                                  const lastHint = attempts === 3 ? (ex.hint || `Último intento: la solución tiene ${String(ex.answer || '').length} caracteres y empieza por «${String(ex.answer || '').slice(0, 2)}…».`) : '';
                                   setRutaRun({ ...rutaRun, exerciseAttempts: attempts, rutaLastChanceHint: lastHint, forcedReveal: false });
                                   setRutaSpeakErr(typeof window.__mullerRandomMotivation === 'function' ? window.__mullerRandomMotivation() : 'Inténtalo de nuevo.');
                               };
@@ -3652,7 +3652,6 @@
                                                   </>
                                               )}
                                               {ex.type === 'fill' && ex.promptEs ? <p className="text-xs text-emerald-200/85 mb-2"><span className="font-bold text-emerald-300/90">Sentido (español de España): </span>{ex.promptEs}</p> : null}
-                                              {ex.hint && ex.type === 'fill' ? <p className="text-xs text-gray-500 mb-2">Pista: {ex.hint}</p> : null}
                                               {rutaRun.rutaLastChanceHint ? <p className="text-sm text-amber-200 mb-2 font-bold border border-amber-500/40 rounded-lg px-3 py-2 bg-amber-950/40">{rutaRun.rutaLastChanceHint}</p> : null}
                                               <input value={rutaFillInput} onChange={(e) => setRutaFillInput(e.target.value)} onKeyDown={(e) => handleExerciseEnterSubmit(e, 'ruta-fill-submit', () => { submitRutaTypedExercise(); })} className="w-full rounded-xl bg-black/50 border border-fuchsia-500/40 px-4 py-3 text-white text-lg mb-3 outline-none focus:border-fuchsia-400" placeholder={ex.type === 'translate_es' ? 'Escribe en español' : 'Escribe en alemán'} autoComplete="off" />
                                               {rutaSpeakErr ? <p className="text-amber-200 text-sm mb-2">{rutaSpeakErr}</p> : null}
