@@ -1588,8 +1588,7 @@ const [placementFinished, setPlacementFinished] = useState(false);
                           const trick = String(item.trick || '').trim();
                           if (de && de.length > 3 && !de.includes('geladen') && !de.includes('fehlt') && !de.includes('Coloca') && !de.includes('Amplía')) {
                               bxWords.add(de);
-                              const whole = es || trick ? `${de} — ${es || trick}` : de;
-                              pushUniquePhrase(whole, es || trick || '', 'bx-vocab');
+                              pushUniquePhrase(de, es || trick || '', 'bx-vocab');
                               if (de.includes('(') && de.includes(')')) {
                                   const clean = de.replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
                                   if (clean && clean.length > 3) pushUniquePhrase(clean, es || trick || '', 'bx-vocab');
