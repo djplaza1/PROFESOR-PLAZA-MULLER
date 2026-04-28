@@ -38,6 +38,14 @@ src/a-core.jsx:
 
 src/b-app1.jsx:
   - Generación: buildRutaExercisePlan (L:1503)
+  - Bancos de historias temáticas: STORY_SCENES (L:1503+)
+    * 8 escenas: park, cafe, kino, reisen, einkaufen, arbeit, restaurant, schule
+    * Cada escena tiene conversaciones fluidas con sentido narrativo real
+  - Constructor de audio: buildRutaLongAudioPlan (L:1503+)
+    * Elige escena aleatoria de STORY_SCENES
+    * Genera checkpoints variados: mc_word, mc_question, fill, true_false
+    * Todas las opciones tienen contenido válido (sin guiones/rayas)
+    * Asegura 3 opciones siempre con relleno de fallback
   - Audio TTS Alemán: speakRutaDe (L:3139)
   - Audio TTS Español: speakRutaEs (L:3165) — Forzar es-ES
   - Playback Podcast: playRutaPodcastLine (L:3195)
@@ -46,6 +54,7 @@ src/b-app1.jsx:
   - Limpiar Podcast: clearRutaPodcastPlayback (L:3190)
   - Validación: checkRutaMcAnswer (L:2125), checkRutaFillAnswer (L:2140)
   - Finalizar lección: completeRutaLesson (L:1916)
+
 
 src/b-app2.jsx:
   - Vista: RutaPanel (Componente principal, ~L:3200-3800)
@@ -360,6 +369,12 @@ c-extra.jsx (cargado 4º)
   ├── Define: extractores de vocabulario, SRS, logros
   ├── Depende de: a-core.jsx (eventos globales)
   └── Independiente de: b-app1.jsx, b-app2.jsx
+
+================================================================================
+9. LOG DE AVERÍAS Y CAMBIOS
+================================================================================
+
+[2026-04-28] | buildRutaLongAudioPlan | Problema: Los ejercicios de podcast/audio_story generaban conversaciones sin sentido (frases sueltas sin conexión), checkpoints repetitivos (solo mc_word), y opciones de respuesta con guiones/rayas vacías. | Solución: Rediseñado buildRutaLongAudioPlan con 8 escenas temáticas (STORY_SCENES) que contienen conversaciones fluidas con sentido narrativo real (parque, café, cine, viajes, compras, trabajo, restaurante, escuela). Cada escena tiene 4-7 intercambios con vocabulario variado. Los checkpoints ahora son 4 tipos diferentes (mc_word, mc_question, fill, true_false) que rotan. Todas las opciones tienen contenido válido con relleno de fallback asegurado. Se extrae vocabulario de b1-b2-database.json para enriquecer los diálogos. | Líneas: ~1503+ (dentro de buildRutaExercisePlan) | Estado: OK
 
 ================================================================================
 FIN DEL MAPA TÉCNICO
