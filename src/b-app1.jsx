@@ -1658,59 +1658,234 @@ const [placementFinished, setPlacementFinished] = useState(false);
                   s = s.replace(/\s*\([^)]*\)\s*$/, '').trim();
                   return s.replace(/\s+/g, ' ').trim();
               };
+              /* ── Bancos de historias temáticas para conversaciones fluidas ── */
+              const STORY_SCENES = {
+                  park: {
+                      title: 'Im Park',
+                      scenes: [
+                          { a: 'Schönes Wetter heute, oder?', b: 'Ja, perfekt für einen Spaziergang im Park.', es: 'Hace buen tiempo hoy, ¿verdad? Sí, perfecto para pasear por el parque.' },
+                          { a: 'Sieh mal, die Kinder spielen Fußball.', b: 'Die sind ja richtig gut! Mein Sohn spielt auch gern Fußball.', es: 'Mira, los niños juegan al fútbol. ¡Son muy buenos! A mi hijo también le gusta jugar al fútbol.' },
+                          { a: 'Wie alt ist dein Sohn?', b: 'Er ist acht Jahre alt und geht in die zweite Klasse.', es: '¿Cuántos años tiene tu hijo? Tiene ocho años y va a segundo curso.' },
+                          { a: 'Meine Tochter ist zehn. Sie tanzt lieber als Fußball zu spielen.', b: 'Tanzen ist auch eine schöne Aktivität. Macht sie Ballett?', es: 'Mi hija tiene diez. Prefiere bailar a jugar al fútbol. Bailar también es una bonita actividad. ¿Hace ballet?' },
+                          { a: 'Ja, zweimal pro Woche. Die Übungen sind anstrengend, aber sie liebt es.', b: 'Das ist wichtig, dass Kinder Sport treiben. Es hält sie gesund.', es: 'Sí, dos veces por semana. Los ejercicios son agotadores, pero le encanta. Es importante que los niños hagan deporte. Los mantiene sanos.' },
+                          { a: 'Stimmt. Bewegung an der frischen Luft ist das Beste.', b: 'Ganz genau. Sollen wir uns morgen wieder hier treffen?', es: 'Cierto. El ejercicio al aire libre es lo mejor. Exactamente. ¿Quedamos mañana aquí otra vez?' },
+                          { a: 'Gerne! Ich bringe Kaffee mit.', b: 'Und ich besorge etwas zu essen. Bis morgen!', es: '¡Con gusto! Traeré café. Y yo traeré algo de comer. ¡Hasta mañana!' }
+                      ]
+                  },
+                  cafe: {
+                      title: 'Im Café',
+                      scenes: [
+                          { a: 'Was möchtest du trinken?', b: 'Ich hätte gern einen Cappuccino, bitte.', es: '¿Qué quieres beber? Quisiera un capuchino, por favor.' },
+                          { a: 'Ich nehme einen Tee mit Zitrone. Hast du schon den Kuchen gesehen?', b: 'Ja, der sieht lecker aus! Vielleicht probiere ich ein Stück Apfelkuchen.', es: 'Tomaré un té con limón. ¿Has visto ya la tarta? Sí, ¡tiene buena pinta! Quizá pruebe un trozo de tarta de manzana.' },
+                          { a: 'Gute Wahl. Ich mag den Schokoladenkuchen hier sehr.', b: 'Letztes Mal war ich mit meiner Kollegin hier. Sie hat mir den Laden empfohlen.', es: 'Buena elección. A mí me gusta mucho la tarta de chocolate aquí. La última vez vine con mi compañera de trabajo. Ella me recomendó este sitio.' },
+                          { a: 'Die Atmosphäre ist wirklich gemütlich. Perfekt zum Lernen oder Lesen.', b: 'Ja, und das Personal ist auch sehr freundlich. Kommst du oft hierher?', es: 'El ambiente es realmente acogedor. Perfecto para estudiar o leer. Sí, y el personal también es muy amable. ¿Vienes a menudo aquí?' },
+                          { a: 'Einmal pro Woche, meistens am Samstagvormittag.', b: 'Dann sehen wir uns bestimmt mal wieder. Ich wohne gleich um die Ecke.', es: 'Una vez por semana, normalmente los sábados por la mañana. Entonces seguro que nos vemos de nuevo. Vivo justo a la vuelta de la esquina.' }
+                      ]
+                  },
+                  kino: {
+                      title: 'Im Kino',
+                      scenes: [
+                          { a: 'Welchen Film möchtest du sehen?', b: 'Ich habe gehört, der neue Science-Fiction-Film soll spannend sein.', es: '¿Qué película quieres ver? He oído que la nueva de ciencia ficción es emocionante.' },
+                          { a: 'Den möchte ich auch sehen! Die Kritiken sind sehr gut.', b: 'Perfekt. Ich hole die Tickets online, dann müssen wir nicht anstehen.', es: '¡Esa también quiero verla! Las críticas son muy buenas. Perfecto. Sacaré las entradas online, así no tendremos que hacer cola.' },
+                          { a: 'Gute Idee. Sollen wir Popcorn und Getränke kaufen?', b: 'Ja, aber nicht zu viel. Ich möchte nicht während des Films auf die Toilette müssen.', es: 'Buena idea. ¿Compramos palomitas y bebidas? Sí, pero no demasiado. No quiero tener que ir al baño durante la película.' },
+                          { a: 'Stimmt. Übrigens, der Film dauert zweieinhalb Stunden.', b: 'Das ist okay. Danach können wir noch etwas essen gehen, wenn du magst.', es: 'Cierto. Por cierto, la película dura dos horas y media. Está bien. Después podemos ir a cenar algo, si quieres.' },
+                          { a: 'Gerne! Ich kenne ein gutes Restaurant in der Nähe.', b: 'Super. Dann lass uns losgehen, der Film fängt bald an.', es: '¡Con gusto! Conozco un buen restaurante cerca. Súper. Entonces vamos, la película empieza pronto.' }
+                      ]
+                  },
+                  reisen: {
+                      title: 'Reiseplanung',
+                      scenes: [
+                          { a: 'Hast du schon Pläne für den nächsten Urlaub?', b: 'Ja, ich möchte nach Österreich reisen. Die Berge dort sind wunderschön.', es: '¿Ya tienes planes para las próximas vacaciones? Sí, quiero viajar a Austria. Las montañas allí son preciosas.' },
+                          { a: 'Österreich ist wirklich schön. Ich war letztes Jahr in Salzburg.', b: 'Oh, Salzburg soll eine tolle Stadt sein. Warst du auch in den Alpen?', es: 'Austria es realmente bonita. Estuve el año pasado en Salzburgo. Oh, Salzburgo debe ser una ciudad genial. ¿Estuviste también en los Alpes?' },
+                          { a: 'Ja, wir haben eine Wanderung gemacht. Die Aussicht war atemberaubend.', b: 'Das klingt fantastisch! Ich werde auf jeden Fall wandern gehen.', es: 'Sí, hicimos una excursión. Las vistas eran impresionantes. ¡Suena fantástico! Definitivamente iré a hacer senderismo.' },
+                          { a: 'Du solltest auch traditionelles Essen probieren. Die österreichische Küche ist köstlich.', b: 'Gute Idee! Ich liebe Käsespätzle und Apfelstrudel.', es: 'Deberías probar también la comida tradicional. La cocina austriaca es deliciosa. ¡Buena idea! Me encantan los käsespätzle y el strudel de manzana.' },
+                          { a: 'Dann wünsche ich dir eine tolle Reise!', b: 'Vielen Dank! Ich freue mich schon sehr darauf.', es: '¡Entonces te deseo un buen viaje! ¡Muchas gracias! Ya tengo muchas ganas.' }
+                      ]
+                  },
+                  einkaufen: {
+                      title: 'Beim Einkaufen',
+                      scenes: [
+                          { a: 'Entschuldigung, können Sie mir helfen? Ich suche die Abteilung für Obst.', b: 'Ja, natürlich. Die Obstabteilung ist hinten links, neben den Milchprodukten.', es: 'Disculpe, ¿puede ayudarme? Busco la sección de fruta. Sí, claro. La sección de fruta está al fondo a la izquierda, junto a los lácteos.' },
+                          { a: 'Vielen Dank! Ich brauche auch noch Brot.', b: 'Das Brot finden Sie in der Bäckerei, direkt am Eingang.', es: '¡Muchas gracias! También necesito pan. El pan lo encontrará en la panadería, justo en la entrada.' },
+                          { a: 'Perfekt. Ich möchte heute Abend eine Gemüsesuppe kochen.', b: 'Das klingt lecker! Ich koche auch gern. Probieren Sie es mit frischen Kräutern, das gibt mehr Geschmack.', es: 'Perfecto. Quiero cocinar una sopa de verduras esta noche. ¡Suena delicioso! A mí también me gusta cocinar. Pruébelo con hierbas frescas, le da más sabor.' },
+                          { a: 'Guter Tipp! Ich nehme Petersilie und Schnittlauch mit.', b: 'Ausgezeichnet. Wenn Sie noch Fragen haben, ich bin gleich an der Kasse.', es: '¡Buen consejo! Llevaré perejil y cebollino. Excelente. Si tiene más preguntas, estaré en la caja.' }
+                      ]
+                  },
+                  arbeit: {
+                      title: 'Im Büro',
+                      scenes: [
+                          { a: 'Guten Morgen! Wie war dein Wochenende?', b: 'Sehr erholsam, ich war mit Freunden im Grünen. Und deins?', es: '¡Buenos días! ¿Qué tal tu fin de semana? Muy relajante, estuve con amigos en el campo. ¿Y el tuyo?' },
+                          { a: 'Auch schön. Ich habe am Samstag ein neues Projekt angefangen.', b: 'Ein neues Projekt? Klingt interessant. Worum geht es?', es: 'También bien. El sábado empecé un nuevo proyecto. ¿Un nuevo proyecto? Suena interesante. ¿De qué se trata?' },
+                          { a: 'Es geht um die Entwicklung einer neuen App für unsere Kunden.', b: 'Das ist ja spannend! Brauchst du Unterstützung dabei?', es: 'Trata sobre el desarrollo de una nueva aplicación para nuestros clientes. ¡Qué emocionante! ¿Necesitas ayuda con ello?' },
+                          { a: 'Ja, vielleicht kannst du mir bei der Datenbank helfen.', b: 'Gerne! Ich habe Erfahrung mit Datenbanken. Lass uns heute Nachmittag darüber sprechen.', es: 'Sí, quizá puedas ayudarme con la base de datos. ¡Con gusto! Tengo experiencia con bases de datos. Hablemos esta tarde sobre ello.' },
+                          { a: 'Perfekt. Ich bereite die Unterlagen vor und schicke sie dir vor dem Meeting.', b: 'Super, dann bin ich bestens vorbereitet. Bis später!', es: 'Perfecto. Prepararé los documentos y te los enviaré antes de la reunión. Súper, así estaré muy bien preparado. ¡Hasta luego!' }
+                      ]
+                  },
+                  restaurant: {
+                      title: 'Im Restaurant',
+                      scenes: [
+                          { a: 'Guten Abend! Einen Tisch für zwei Personen, bitte.', b: 'Guten Abend! Hier entlang, ich zeige Ihnen Ihren Platz.', es: '¡Buenas tardes! Una mesa para dos, por favor. ¡Buenas tardes! Por aquí, les enseño su sitio.' },
+                          { a: 'Die Speisekarte ist sehr vielfältig. Was nimmst du?', b: 'Ich denke, ich nehme das Schnitzel mit Pommes. Und du?', es: 'La carta es muy variada. ¿Qué vas a tomar? Creo que tomaré el schnitzel con patatas fritas. ¿Y tú?' },
+                          { a: 'Ich bin noch unentschlossen. Vielleicht den Fischteller.', b: 'Der Fischteller soll hier ausgezeichnet sein. Die Portionen sind auch groß.', es: 'Todavía no lo he decidido. Quizá el plato de pescado. El plato de pescado debe ser excelente aquí. Las raciones también son grandes.' },
+                          { a: 'Dann nehme ich den Fischteller. Möchtest du einen Salat als Vorspeise?', b: 'Gerne! Wir teilen uns einen gemischten Salat.', es: 'Entonces tomaré el plato de pescado. ¿Quieres una ensalada de entrante? ¡Con gusto! Compartimos una ensalada variada.' },
+                          { a: 'Das Essen war wirklich hervorragend. Sollen wir ein Dessert bestellen?', b: 'Ich bin leider zu satt. Aber vielleicht einen Espresso?', es: 'La comida ha sido realmente excelente. ¿Pedimos un postre? Por desgracia estoy demasiado lleno. ¿Pero quizá un espresso?' }
+                      ]
+                  },
+                  schule: {
+                      title: 'In der Sprachschule',
+                      scenes: [
+                          { a: 'Hallo! Bist du neu im Deutschkurs?', b: 'Ja, heute ist mein erster Tag. Ich bin ein bisschen nervös.', es: '¡Hola! ¿Eres nuevo en el curso de alemán? Sí, hoy es mi primer día. Estoy un poco nervioso.' },
+                          { a: 'Keine Sorge, der Kurs ist sehr entspannt. Die Lehrerin erklärt alles gut.', b: 'Das beruhigt mich. Ich habe schon ein bisschen Deutsch gelernt, aber ich möchte fließender sprechen.', es: 'No te preocupes, el curso es muy relajado. La profesora lo explica todo bien. Eso me tranquiliza. Ya he aprendido un poco de alemán, pero quiero hablar con más fluidez.' },
+                          { a: 'Das schaffst du! Am besten übst du jeden Tag ein bisschen.', b: 'Ja, ich versuche, jeden Tag zehn neue Wörter zu lernen.', es: '¡Lo conseguirás! Lo mejor es practicar un poco cada día. Sí, intento aprender diez palabras nuevas cada día.' },
+                          { a: 'Das ist eine gute Methode. Ich lese auch gern einfache Artikel auf Deutsch.', b: 'Das ist ein guter Tipp! Welche Zeitung empfiehlst du?', es: 'Es un buen método. A mí también me gusta leer artículos sencillos en alemán. ¡Es un buen consejo! ¿Qué periódico recomiendas?' },
+                          { a: 'Ich lese oft die Nachrichten auf der Website der Deutschen Welle.', b: 'Die werde ich mir auch ansehen. Danke für den Tipp!', es: 'A menudo leo las noticias en la página web de Deutsche Welle. También las echaré un vistazo. ¡Gracias por el consejo!' }
+                      ]
+                  }
+              };
+              const STORY_TOPIC_KEYS = Object.keys(STORY_SCENES);
               const buildRutaLongAudioPlan = (phrasePoolItems, connectorPool, variant) => {
                   const pool = phrasePoolItems
                       .map((p) => ({ de: extractDeClean(p.de), es: sanitizeRutaSpanishForUi(p.es || '', extractDeClean(p.de)) }))
                       .filter((p) => p.de.length > 12);
                   if (pool.length < 4) return null;
+                  /* Elegir una historia temática aleatoria */
+                  const topicKey = STORY_TOPIC_KEYS[Math.floor(Math.random() * STORY_TOPIC_KEYS.length)];
+                  const scene = STORY_SCENES[topicKey];
                   const lines = [];
                   let totalChars = 0;
-                  const fillerA = ['Interessant', 'Genau', 'Verstehe', 'Also gut', 'Aha', 'Richtig', 'Schön'];
-                  const fillerB = ['Ja', 'Hmm', 'Okay', 'Wirklich', 'Ach so', 'Super', 'Klar'];
-                  const intros = variant === 'story'
-                      ? ['Heute erzählen wir eine kleine Geschichte aus dem Alltag.', 'Die Szene beginnt ganz ruhig.', 'Hör genau zu: es geht um eine typische Situation.']
-                      : ['Willkommen zu einer kurzen Hörübung.', 'Zwei Personen sprechen miteinander.', 'Bleib entspannt und folge dem Gespräch.'];
-                  let idx = 0;
-                  intros.forEach((t, j) => {
-                      lines.push({ speaker: j % 2 === 0 ? 'A' : 'B', text: t });
-                      totalChars += t.length + 4;
-                  });
-                  while (totalChars < 1000 && lines.length < 58) {
-                      if (lines.length % 4 === 1) {
-                          const sp = lines.length % 2 === 0 ? 'A' : 'B';
-                          const tx = (sp === 'A' ? fillerA : fillerB)[lines.length % 7] + '.';
-                          lines.push({ speaker: sp, text: tx });
-                          totalChars += tx.length + 4;
-                          idx++;
-                      }
-                      const p = pool[idx % pool.length];
-                      idx++;
+                  /* Introducción según variante */
+                  const introText = variant === 'story'
+                      ? `Heute erleben wir eine kleine Geschichte: ${scene.title}.`
+                      : `Willkommen zu einem Gespräch: ${scene.title}.`;
+                  lines.push({ speaker: 'A', text: introText });
+                  totalChars += introText.length + 4;
+                  /* Insertar las líneas de la historia temática */
+                  const sceneLines = scene.scenes;
+                  for (let i = 0; i < sceneLines.length; i++) {
+                      const s = sceneLines[i];
+                      lines.push({ speaker: 'A', text: s.a });
+                      totalChars += s.a.length + 4;
+                      lines.push({ speaker: 'B', text: s.b });
+                      totalChars += s.b.length + 4;
+                  }
+                  /* Si aún no llegamos a 1000 caracteres, añadir frases del pool como extensión natural */
+                  let poolIdx = 0;
+                  while (totalChars < 1000 && lines.length < 40) {
+                      const p = pool[poolIdx % pool.length];
+                      poolIdx++;
+                      if (!p) break;
                       const sp = lines.length % 2 === 0 ? 'A' : 'B';
                       const body = p.de.replace(/\.$/, '') + '.';
-                      lines.push({ speaker: sp, text: body });
-                      totalChars += body.length + 4;
+                      /* Solo añadir si no es demasiado larga y no está ya repetida */
+                      if (body.length > 15 && !lines.some(l => l.text === body)) {
+                          lines.push({ speaker: sp, text: body });
+                          totalChars += body.length + 4;
+                      }
                   }
                   const n = lines.length;
-                  const pos = [Math.max(5, Math.floor(n * 0.22)), Math.max(10, Math.floor(n * 0.48)), Math.max(15, Math.floor(n * 0.68)), Math.max(20, Math.floor(n * 0.88))];
-                  const uniqPos = [...new Set(pos)].filter((x) => x >= 4 && x < n).slice(0, 4);
+                  /* Generar checkpoints variados */
+                  const pos = [Math.max(4, Math.floor(n * 0.25)), Math.max(8, Math.floor(n * 0.50)), Math.max(12, Math.floor(n * 0.75))];
+                  const uniqPos = [...new Set(pos)].filter((x) => x >= 3 && x < n).slice(0, 3);
+                  const checkpointTypes = ['mc_word', 'mc_question', 'fill', 'true_false'];
                   const checkpoints = uniqPos.map((afterLineIdx, cix) => {
                       const prevLine = lines[afterLineIdx - 1] || lines[0];
-                      const key = (chooseGapWord(prevLine.text) || 'Zeit').replace(/[.,!?]/g, '');
-                      const d1 = (chooseGapWord(pool[(idx + 1 + cix) % pool.length].de) || connectorPool[0] || 'Wetter').replace(/[.,!?]/g, '');
-                      const d2 = (chooseGapWord(pool[(idx + 2 + cix) % pool.length].de) || connectorPool[2] || 'Arbeit').replace(/[.,!?]/g, '');
-                      const correct = key.length > 2 ? key : 'wichtig';
-                      const opts = [...new Set([correct, d1, d2])].slice(0, 3).sort(() => Math.random() - 0.5);
-                      const stemEs = pool[(idx + cix) % pool.length].es;
-                      const meaningFrag = (stemEs && stemEs.length > 10 && !/[äöüÄÖÜß]{2}/.test(stemEs)) ? stemEs.slice(0, 100) : 'el matiz principal del turno que acabas de oír';
-                      return {
-                          afterLineIdx,
-                          promptEs: `Pregunta sobre lo que acabas de escuchar (español de España). Sobre la intervención de ${prevLine.speaker === 'A' ? 'la primera voz' : 'la segunda voz'}, elige en alemán la opción que mejor encaja. Contexto: ${meaningFrag}.`,
-                          options: opts,
-                          answer: correct,
-                          acceptedAnswers: expandGermanAccept(correct),
-                          hint: `Último intento: la opción modelo tiene ${correct.length} letras y empieza por «${correct.slice(0, 2)}».`,
-                          softNote: `En un examen formal conviene «${correct}».`
-                      };
+                      const prevLine2 = lines[Math.max(0, afterLineIdx - 2)] || lines[0];
+                      const cpType = checkpointTypes[cix % checkpointTypes.length];
+                      const sceneEs = scene.scenes[Math.min(cix, scene.scenes.length - 1)]?.es || '';
+                      if (cpType === 'mc_word') {
+                          /* Elegir palabra del contexto */
+                          const key = (chooseGapWord(prevLine.text) || 'wichtig').replace(/[.,!?]/g, '');
+                          const d1 = (chooseGapWord(pool[(poolIdx + 1 + cix) % pool.length]?.de || '') || connectorPool[0] || 'Wetter').replace(/[.,!?]/g, '');
+                          const d2 = (chooseGapWord(pool[(poolIdx + 2 + cix) % pool.length]?.de || '') || connectorPool[2] || 'Arbeit').replace(/[.,!?]/g, '');
+                          const correct = key.length > 2 ? key : 'wichtig';
+                          const opts = [...new Set([correct, d1, d2].filter(Boolean))].slice(0, 3);
+                          /* Rellenar si faltan opciones */
+                          while (opts.length < 3) {
+                              const fallback = ['wichtig', 'richtig', 'schön', 'genau', 'klar', 'super'][opts.length];
+                              if (!opts.includes(fallback)) opts.push(fallback);
+                          }
+                          opts.sort(() => Math.random() - 0.5);
+                          return {
+                              afterLineIdx,
+                              cpType: 'mc',
+                              promptEs: `¿Qué palabra alemana encaja mejor en lo que acabas de escuchar? Contexto: ${sceneEs.slice(0, 120)}`,
+                              options: opts,
+                              answer: correct,
+                              acceptedAnswers: expandGermanAccept(correct),
+                              hint: `Último intento: la palabra correcta tiene ${correct.length} letras y empieza por «${correct.slice(0, 2)}».`,
+                              softNote: `En contexto formal se usaría «${correct}».`
+                          };
+                      } else if (cpType === 'mc_question') {
+                          /* Pregunta de comprensión sobre lo escuchado */
+                          const qaBank = [
+                              { q: '¿De qué están hablando principalmente?', a: scene.title, d1: 'Über das Wetter', d2: 'Über die Arbeit' },
+                              { q: '¿Qué actividad mencionan?', a: chooseGapWord(prevLine.text) || 'Spaziergang', d1: 'Schwimmen', d2: 'Lesen' },
+                              { q: '¿Cómo describen la situación?', a: chooseGapWord(prevLine2.text) || 'schön', d1: 'schlecht', d2: 'langweilig' },
+                              { q: '¿Qué planean hacer?', a: chooseGapWord(prevLine.text) || 'treffen', d1: 'arbeiten', d2: 'schlafen' }
+                          ];
+                          const qa = qaBank[cix % qaBank.length];
+                          const opts = [qa.a, qa.d1, qa.d2].filter(Boolean);
+                          /* Asegurar 3 opciones */
+                          while (opts.length < 3) {
+                              const fb = ['vielleicht', 'natürlich', 'wirklich'][opts.length];
+                              if (!opts.includes(fb)) opts.push(fb);
+                          }
+                          opts.sort(() => Math.random() - 0.5);
+                          return {
+                              afterLineIdx,
+                              cpType: 'mc',
+                              promptEs: qa.q + ' (elige la opción más adecuada)',
+                              options: opts,
+                              answer: qa.a,
+                              acceptedAnswers: expandGermanAccept(qa.a),
+                              hint: `Pista: presta atención al tema principal de la conversación.`,
+                              softNote: `La respuesta más precisa es «${qa.a}».`
+                          };
+                      } else if (cpType === 'fill') {
+                          /* Rellenar hueco en una frase del diálogo */
+                          const sourceLine = prevLine.text;
+                          const gapWord = (chooseGapWord(sourceLine) || 'ist').replace(/[.,!?]/g, '');
+                          const escaped = gapWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                          const prompt = sourceLine.replace(new RegExp(`\\b${escaped}\\b`), '_____');
+                          const d1 = (chooseGapWord(pool[(poolIdx + 3 + cix) % pool.length]?.de || '') || 'geht').replace(/[.,!?]/g, '');
+                          const d2 = (chooseGapWord(pool[(poolIdx + 4 + cix) % pool.length]?.de || '') || 'macht').replace(/[.,!?]/g, '');
+                          const opts = [...new Set([gapWord, d1, d2].filter(Boolean))].slice(0, 3);
+                          while (opts.length < 3) {
+                              const fb = ['sagt', 'kommt', 'bleibt'][opts.length];
+                              if (!opts.includes(fb)) opts.push(fb);
+                          }
+                          opts.sort(() => Math.random() - 0.5);
+                          return {
+                              afterLineIdx,
+                              cpType: 'fill',
+                              promptEs: `Completa la frase que acabas de oír: «${prompt}»`,
+                              options: opts,
+                              answer: gapWord,
+                              acceptedAnswers: expandGermanAccept(gapWord),
+                              hint: `La palabra que falta tiene ${gapWord.length} letras.`,
+                              softNote: `La forma correcta es «${gapWord}».`
+                          };
+                      } else {
+                          /* Verdadero/Falso con 3 opciones (Richtig, Falsch, Nicht klar) */
+                          const tfStatements = [
+                              { stmt: `Die Personen sprechen über ${scene.title.toLowerCase()}.`, correct: 'Richtig' },
+                              { stmt: `Die Personen sind sich nicht einig.`, correct: 'Falsch' },
+                              { stmt: `Das Gespräch findet am Abend statt.`, correct: 'Falsch' },
+                              { stmt: `Die Stimmung ist freundlich.`, correct: 'Richtig' }
+                          ];
+                          const tf = tfStatements[cix % tfStatements.length];
+                          const tfOpts = ['Richtig', 'Falsch', 'Nicht klar'];
+                          return {
+                              afterLineIdx,
+                              cpType: 'true_false',
+                              promptEs: `¿Es correcta esta afirmación sobre lo que has escuchado? "${tf.stmt}"`,
+                              options: tfOpts,
+                              answer: tf.correct,
+                              acceptedAnswers: [tf.correct, tf.correct.toLowerCase()],
+                              hint: `Piensa en el tono general de la conversación.`,
+                              softNote: `La respuesta es «${tf.correct}».`
+                          };
+                      }
                   });
                   return { lines, checkpoints, approxSeconds: 92 };
               };
