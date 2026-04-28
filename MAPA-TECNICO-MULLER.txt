@@ -61,3 +61,8 @@
 [2026-04-28] | RUTA_REVIEW_RATIO | Problema: review al 10% generaba demasiadas repeticiones | Solución: bajado a 7% (0.07) | Líneas: ~1339 | Estado: OK
 [2026-04-28] | checkRutaTranslateClose | Problema: respuestas con "/" (ej: "llamarse/apellidarse") no se expandían para el usuario | Solución: añadida expansión de "/" también en la respuesta del usuario (a.includes('/')) | Líneas: ~2565-2573 | Estado: OK
 [2026-04-28] | translate_es acceptedAnswers | Problema: respuestas españolas con "/" no se expandían en acceptedAnswers | Solución: añadido split de "/" en acceptedAnswers de translate_es | Líneas: ~1560-1570 | Estado: OK
+[2026-04-28] | checkRutaTranslateClose tolerancia | Problema: tolerancia muy estricta en traducciones al español (len/6) | Solución: aumentada tolerancia a len/4 para es, len/6 para de; además expande "/" en ambas direcciones | Líneas: ~2565-2573 | Estado: OK
+[2026-04-28] | checkRutaMcAnswer tolerancia | Problema: tolerancia muy estricta en MC (len/9) | Solución: aumentada a len/7 | Líneas: ~2587-2600 | Estado: OK
+[2026-04-28] | checkRutaFillAnswer tolerancia | Problema: tolerancia muy estricta en fill (len/7) | Solución: aumentada a len/6 | Líneas: ~2602-2643 | Estado: OK
+[2026-04-28] | checkRutaSpeakAnswer tolerancia | Problema: tolerancia muy estricta en habla (factores 5/6/7/8) | Solución: reducidos factores a 4/5/6/7 para más flexibilidad | Líneas: ~2645-2657 | Estado: OK
+[2026-04-28] | checkRutaFillAnswer expandSlash | Problema: respuestas fill con "/" no se expandían | Solución: añadida función expandSlash que divide por "/" y acepta cualquiera de las partes | Líneas: ~2602-2643 | Estado: OK

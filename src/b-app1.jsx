@@ -2581,7 +2581,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                   for (const part of parts) {
                       if (a === normalizeRutaTypedLine(part)) return true;
                       const dPart = levenshteinDistance(a, normalizeRutaTypedLine(part));
-                      const tolPart = mode === 'de' ? Math.max(1, Math.floor(part.length / 7)) : Math.max(2, Math.floor(part.length / 5));
+                      const tolPart = mode === 'de' ? Math.max(1, Math.floor(part.length / 6)) : Math.max(2, Math.floor(part.length / 4));
                       if (dPart <= tolPart) return true;
                   }
               }
@@ -2593,7 +2593,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                   }
               }
               const dist = levenshteinDistance(a, b);
-              const tol = mode === 'de' ? Math.max(1, Math.floor(b.length / 7)) : Math.max(3, Math.floor(b.length / 5));
+              const tol = mode === 'de' ? Math.max(1, Math.floor(b.length / 6)) : Math.max(3, Math.floor(b.length / 4));
               return dist <= tol;
           };
 
@@ -2618,7 +2618,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               for (const c of bag) {
                   if (!c) continue;
                   const d = levenshteinDistance(o, c);
-                  const tol = Math.max(1, Math.floor(c.length / 9));
+                  const tol = Math.max(1, Math.floor(c.length / 7));
                   if (d <= tol) return { ok: true, soft: true };
               }
               return { ok: false, soft: false };
@@ -2660,7 +2660,7 @@ const finishPlacementWithLevel = (finalLevel) => {
                   for (const x of expandedBag) {
                       if (!x) continue;
                       const d = levenshteinDistance(got, x);
-                      if (d <= Math.max(1, Math.floor(x.length / 7))) { hit = true; fuzzy = true; break; }
+                      if (d <= Math.max(1, Math.floor(x.length / 6))) { hit = true; fuzzy = true; break; }
                   }
               }
               if (hit) {
@@ -2681,7 +2681,7 @@ const finishPlacementWithLevel = (finalLevel) => {
               if (!a || !b) { setRutaSpeakErr('Graba de nuevo con el micrófono.'); return false; }
               const dist = levenshteinDistance(a, b);
               const key = normalizeRutaLevelKey(levelKey || '');
-              const factor = (key === 'A0' || key === 'A1') ? 5 : (key === 'A2' ? 6 : (key === 'B1' ? 7 : 8));
+              const factor = (key === 'A0' || key === 'A1') ? 4 : (key === 'A2' ? 5 : (key === 'B1' ? 6 : 7));
               const tol = Math.max(1, Math.floor(b.length / factor));
               if (a === b || dist <= tol) { window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(true); setRutaSpeakErr(''); return true; }
               window.__mullerNotifyExerciseOutcome && window.__mullerNotifyExerciseOutcome(false);
