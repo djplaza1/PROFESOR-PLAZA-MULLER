@@ -9,6 +9,7 @@ const CHUNKS = [
   "src/hooks/useEscritura.js",
   "src/hooks/usePdfStudy.js",
   "src/features/ruta/ruta-panel.jsx",
+  "src/ui/ShortcutsModal.jsx",
   "src/b-app1.jsx",
   "src/b-app2.jsx",
   "src/c-extra.jsx"
@@ -27,5 +28,4 @@ const result = babel.transformSync(code, {
   minified: true
 });
 fs.writeFileSync("dist/app.js", result.code);
-console.log("? Build completo -> dist/app.js");
-
+console.log("✅ Build completo -> dist/app.js");
